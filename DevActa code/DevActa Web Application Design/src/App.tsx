@@ -14,6 +14,7 @@ import { HiringPage } from "./components/HiringPage";
 import { SettingsPage } from "./components/SettingsPage";
 import { MapPage } from "./components/MapPage";
 import { RetroGameInterface } from "./components/RetroGameInterface";
+import { HackathonChatRoom } from "./components/HackathonChatRoom";
 
 function AppContent() {
   const [appState, setAppState] = useState<'landing' | 'survey' | 'app'>('landing');
@@ -83,7 +84,9 @@ function AppContent() {
       case "map":
         return <MapPage />;
       case "hackathons":
-        return <HackathonsPage />;
+        return <HackathonsPage onPageChange={handlePageChange} />;
+      case "hackathon-chat":
+        return <HackathonChatRoom onBack={() => handlePageChange('hackathons')} />;
       case "challenges":
         return <ChallengesPage />;
       case "profile":
@@ -109,8 +112,8 @@ function AppContent() {
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-background">
-        {/* Show navigation when not in retro interface */}
-        {!(currentPage === 'games' && gameState === 'retro-interface') && (
+        {/* Show navigation when not in retro interface or chat room */}
+        {!(currentPage === 'games' && gameState === 'retro-interface') && currentPage !== 'hackathon-chat' && (
           <Navigation currentPage={currentPage} onPageChange={handlePageChange} />
         )}
         {renderPage()}

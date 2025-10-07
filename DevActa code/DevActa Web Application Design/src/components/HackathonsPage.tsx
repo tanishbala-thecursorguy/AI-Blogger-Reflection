@@ -7,7 +7,11 @@ import { Plus } from "lucide-react";
 import { PostHackathonDialog } from "./PostHackathonDialog";
 import { mockHackathons, currentUser } from "../data/mockData";
 
-export function HackathonsPage() {
+interface HackathonsPageProps {
+  onPageChange?: (page: string) => void;
+}
+
+export function HackathonsPage({ onPageChange }: HackathonsPageProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [hackathons, setHackathons] = useState(mockHackathons);
 
@@ -112,7 +116,7 @@ export function HackathonsPage() {
             variant="default"
             size="sm"
             className="professional-button-primary"
-            onClick={() => window.open(hackathon.meetLink, "_blank")}
+            onClick={() => onPageChange && onPageChange('hackathon-chat')}
           >
             <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
               <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
