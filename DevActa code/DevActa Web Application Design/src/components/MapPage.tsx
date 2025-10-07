@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
-import { MapPin, Users, Calendar, ExternalLink, Plus } from 'lucide-react';
+import { MapPin, Users, Calendar, ExternalLink, Plus, Mail, Building2, Upload, Briefcase } from 'lucide-react';
 
 import DynamicMapComponent from './DynamicMapComponent';
 
@@ -16,12 +16,15 @@ interface Startup {
   description: string;
   location: [number, number];
   founder: string;
+  email: string;
   website?: string;
+  logo?: string;
   industry: string;
   stage: 'idea' | 'mvp' | 'growth' | 'scale';
   employees: number;
   founded: string;
   tags: string[];
+  isHiring: boolean;
 }
 
 function MapStartups() {
@@ -71,12 +74,15 @@ function MapStartups() {
       name: '',
       description: '',
       founder: '',
+      email: '',
       website: '',
+      logo: '',
       industry: '',
       stage: 'idea' as const,
       employees: 1,
       founded: new Date().getFullYear().toString(),
       tags: [] as string[],
+      isHiring: false,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -87,33 +93,99 @@ function MapStartups() {
         name: '',
         description: '',
         founder: '',
+        email: '',
         website: '',
+        logo: '',
         industry: '',
         stage: 'idea',
         employees: 1,
         founded: new Date().getFullYear().toString(),
         tags: [],
+        isHiring: false,
       });
+    };
+
+    const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData(prev => ({ ...prev, logo: reader.result as string }));
+        };
+        reader.readAsDataURL(file);
+      }
     };
 
     return (
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent className="w-full max-w-md  overflow-y-auto !z-[99999] mt-8">
+        <DialogContent className="w-full max-w-3xl max-h-[85vh] overflow-y-auto !z-[99999]">
           <DialogHeader>
-            <DialogTitle>Add Your Startup</DialogTitle>
+            <DialogTitle className="text-2xl">Add Your Startup</DialogTitle>
             <DialogDescription>
               Fill in the details to add your startup to the map.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 pb-4">
-            <div>
-              <label className="text-sm font-medium">Startup Name</label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter startup name"
-                required
-              />
+          <form onSubmit={handleSubmit} className="space-y-6 pb-4">
+            {/* Logo Upload Section */}
+            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg bg-muted/50">
+              {formData.logo ? (
+                <div className="relative">
+                  <img src={formData.logo} alt="Logo preview" className="w-32 h-32 object-contain rounded-lg" />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute -top-2 -right-2"
+                    onClick={() => setFormData(prev => ({ ...prev, logo: '' }))}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Building2 className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+                  <label className="cursor-pointer">
+                    <span className="text-sm font-medium text-primary hover:underline">Upload Startup Logo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</p>
+                </div>
+              )}
+            </div>
+
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Startup Name
+                </label>
+                <Input
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter startup name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  Email Address
+                </label>
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="contact@startup.com"
+                  required
+                />
+              </div>
             </div>
             
             <div>
@@ -122,54 +194,69 @@ function MapStartups() {
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Describe your startup"
+                rows={4}
                 required
               />
             </div>
 
-            <div>
-              <label className="text-sm font-medium">Founder</label>
-              <Input
-                value={formData.founder}
-                onChange={(e) => setFormData(prev => ({ ...prev, founder: e.target.value }))}
-                placeholder="Your name"
-                required
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Founder</label>
+                <Input
+                  value={formData.founder}
+                  onChange={(e) => setFormData(prev => ({ ...prev, founder: e.target.value }))}
+                  placeholder="Your name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Industry</label>
+                <Input
+                  value={formData.industry}
+                  onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
+                  placeholder="e.g., SaaS, HealthTech, FinTech"
+                  required
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium">Industry</label>
-              <Input
-                value={formData.industry}
-                onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
-                placeholder="e.g., SaaS, HealthTech, FinTech"
-                required
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-medium">Stage</label>
+                <Select value={formData.stage} onValueChange={(value: any) => setFormData(prev => ({ ...prev, stage: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="idea">Idea Stage</SelectItem>
+                    <SelectItem value="mvp">MVP</SelectItem>
+                    <SelectItem value="growth">Growth</SelectItem>
+                    <SelectItem value="scale">Scale</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <label className="text-sm font-medium">Stage</label>
-              <Select value={formData.stage} onValueChange={(value: any) => setFormData(prev => ({ ...prev, stage: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="idea">Idea Stage</SelectItem>
-                  <SelectItem value="mvp">MVP</SelectItem>
-                  <SelectItem value="growth">Growth</SelectItem>
-                  <SelectItem value="scale">Scale</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div>
+                <label className="text-sm font-medium">Employees</label>
+                <Input
+                  type="number"
+                  value={formData.employees}
+                  onChange={(e) => setFormData(prev => ({ ...prev, employees: parseInt(e.target.value) || 1 }))}
+                  min="1"
+                  required
+                />
+              </div>
 
-            <div>
-              <label className="text-sm font-medium">Employees</label>
-              <Input
-                type="number"
-                value={formData.employees}
-                onChange={(e) => setFormData(prev => ({ ...prev, employees: parseInt(e.target.value) || 1 }))}
-                min="1"
-                required
-              />
+              <div>
+                <label className="text-sm font-medium">Founded Year</label>
+                <Input
+                  value={formData.founded}
+                  onChange={(e) => setFormData(prev => ({ ...prev, founded: e.target.value }))}
+                  placeholder="2024"
+                  required
+                />
+              </div>
             </div>
 
             <div>
@@ -182,15 +269,34 @@ function MapStartups() {
               />
             </div>
 
-                <div className="flex flex-col sm:flex-row gap-2 pt-4">
-                  <Button type="submit" className="flex-1">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Startup
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)} className="flex-1 sm:flex-none">
-                    Cancel
-                  </Button>
+            {/* Hiring Toggle */}
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+              <div className="flex items-center gap-3">
+                <Briefcase className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-medium">We're Hiring!</p>
+                  <p className="text-xs text-muted-foreground">Show hiring badge on the map</p>
                 </div>
+              </div>
+              <Button
+                type="button"
+                variant={formData.isHiring ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFormData(prev => ({ ...prev, isHiring: !prev.isHiring }))}
+              >
+                {formData.isHiring ? "Hiring ✓" : "Not Hiring"}
+              </Button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Button type="submit" className="flex-1" size="lg">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Startup
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)} className="flex-1 sm:flex-none" size="lg">
+                Cancel
+              </Button>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
@@ -300,13 +406,32 @@ function MapStartups() {
                     onClick={() => setSelectedStartup(startup)}
                   >
                     <CardHeader className="pb-2">
-                      <div className="flex items-start justify-between">
-                        <CardTitle className="text-sm font-semibold line-clamp-2">
-                          {startup.name}
-                        </CardTitle>
-                        <Badge className={`text-xs ${getStageColor(startup.stage)}`}>
-                          {startup.stage}
-                        </Badge>
+                      <div className="flex items-start gap-3">
+                        {startup.logo && (
+                          <img 
+                            src={startup.logo} 
+                            alt={`${startup.name} logo`}
+                            className="w-12 h-12 object-contain rounded border"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <CardTitle className="text-sm font-semibold line-clamp-2">
+                              {startup.name}
+                            </CardTitle>
+                            <div className="flex flex-col gap-1">
+                              <Badge className={`text-xs ${getStageColor(startup.stage)}`}>
+                                {startup.stage}
+                              </Badge>
+                              {startup.isHiring && (
+                                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                                  <Briefcase className="h-3 w-3 mr-1" />
+                                  Hiring
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="pt-0">
@@ -314,6 +439,10 @@ function MapStartups() {
                         <div className="flex items-center text-xs text-muted-foreground">
                           <MapPin className="h-3 w-3 mr-1" />
                           <span className="line-clamp-1">{startup.founder}</span>
+                        </div>
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Mail className="h-3 w-3 mr-1" />
+                          <span className="line-clamp-1">{startup.email}</span>
                         </div>
                         <div className="flex items-center text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3 mr-1" />
@@ -326,20 +455,34 @@ function MapStartups() {
                         <p className="text-xs text-muted-foreground line-clamp-2">
                           {startup.description}
                         </p>
-                        {startup.website && (
+                        <div className="flex gap-2 pt-2">
+                          {startup.website && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(startup.website, '_blank');
+                              }}
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              Website
+                            </Button>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full text-xs"
+                            className="flex-1 text-xs"
                             onClick={(e) => {
                               e.stopPropagation();
-                              window.open(startup.website, '_blank');
+                              window.location.href = `mailto:${startup.email}`;
                             }}
                           >
-                            <ExternalLink className="h-3 w-3 mr-1" />
-                            Visit Website
+                            <Mail className="h-3 w-3 mr-1" />
+                            Contact
                           </Button>
-                        )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
