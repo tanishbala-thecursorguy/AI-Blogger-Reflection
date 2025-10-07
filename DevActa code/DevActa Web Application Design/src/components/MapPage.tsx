@@ -118,14 +118,15 @@ function MapStartups() {
 
     return (
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent className="w-full max-w-3xl max-h-[85vh] overflow-y-auto !z-[99999]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Add Your Startup</DialogTitle>
-            <DialogDescription>
-              Fill in the details to add your startup to the map.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-6 pb-4">
+        <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-hidden !z-[99999] p-0">
+          <div className="overflow-y-auto max-h-[90vh] px-6 py-4">
+            <DialogHeader className="pb-4">
+              <DialogTitle className="text-2xl">Add Your Startup</DialogTitle>
+              <DialogDescription>
+                Fill in the details to add your startup to the map.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-6 pb-4">
             {/* Logo Upload Section */}
             <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg bg-muted/50">
               {formData.logo ? (
@@ -288,7 +289,7 @@ function MapStartups() {
               </Button>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 sticky bottom-0 bg-background py-4 -mx-6 px-6 border-t mt-6">
               <Button type="submit" className="flex-1" size="lg">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Startup
@@ -298,6 +299,7 @@ function MapStartups() {
               </Button>
             </div>
           </form>
+          </div>
         </DialogContent>
       </Dialog>
     );
