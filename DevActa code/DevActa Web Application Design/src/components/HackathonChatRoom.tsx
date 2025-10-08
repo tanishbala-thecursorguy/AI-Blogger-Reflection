@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Hash, Send, Users, BookOpen, Shield, ArrowLeft, Paperclip, Smile } from "lucide-react";
 import { currentUser } from "../data/mockData";
+import React from "react";
 
 interface Message {
   id: number;
