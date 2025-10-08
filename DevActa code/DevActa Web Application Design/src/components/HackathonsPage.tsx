@@ -93,7 +93,7 @@ export function HackathonsPage({ onPageChange }: HackathonsPageProps) {
 
       <div className="flex items-center flex-wrap gap-3 mb-4">
         <Badge className="professional-badge-prize text-base px-4 py-1 bg-gradient-to-r from-purple-500 to-pink-500">
-          🎁 {hackathon.actaCards || hackathon.prizeMoney} ACTA Cards
+          🎁 {hackathon.actaCards || 100} ACTA Cards
         </Badge>
         <Badge variant="secondary" className="professional-badge-participants">
           👥 {hackathon.participants} participants

@@ -111,61 +111,66 @@ export const mockHackathons = [
     id: 1,
     title: "AI Innovation Challenge 2025",
     summary: "Build the next generation of AI-powered applications. Create innovative solutions using machine learning and natural language processing.",
-    prizeMoney: 50000,
-    discordLink: "https://discord.gg/ai-innovation",
+    actaCards: 500,
     meetLink: "https://meet.google.com/xyz-demo-link",
     postedBy: "Maria Lopez",
     postedDate: "2 days ago",
     status: "upcoming",
-    participants: 234
+    participants: 234,
+    date: "2025-02-15",
+    time: "10:00"
   },
   {
     id: 2,
     title: "Web3 Builder Hackathon",
     summary: "Develop decentralized applications on blockchain. Focus on DeFi, NFTs, or DAOs with cutting-edge smart contract development.",
-    prizeMoney: 75000,
-    discordLink: "https://discord.gg/web3-builders",
+    actaCards: 750,
     meetLink: "https://meet.google.com/abc-demo-link",
     postedBy: "Chen Wei",
     postedDate: "5 days ago",
     status: "upcoming",
-    participants: 189
+    participants: 189,
+    date: "2025-02-20",
+    time: "14:00"
   },
   {
     id: 3,
     title: "Sustainable Tech Summit",
     summary: "Create technology solutions for climate change and sustainability. Focus on green tech, renewable energy monitoring, or carbon tracking.",
-    prizeMoney: 30000,
-    discordLink: "https://discord.gg/sustainable-tech",
+    actaCards: 300,
     meetLink: "https://meet.google.com/def-demo-link",
     postedBy: "John Doe",
     postedDate: "1 week ago",
     status: "upcoming",
-    participants: 156
+    participants: 156,
+    date: "2025-02-25",
+    time: "09:00"
   },
   {
     id: 4,
     title: "HealthTech Innovation Week",
     summary: "Revolutionize healthcare with technology. Build apps for telemedicine, health monitoring, or medical data analysis.",
-    prizeMoney: 40000,
-    discordLink: "https://discord.gg/healthtech",
+    actaCards: 400,
     meetLink: "https://meet.google.com/health-demo",
     postedBy: "Alice Kim",
     postedDate: "2 weeks ago",
     status: "past",
-    participants: 301
+    participants: 301,
+    date: "2024-12-15",
+    time: "11:00"
   },
   {
     id: 5,
     title: "GameDev Showdown 2024",
     summary: "Create the most innovative indie game in 48 hours. Any genre, any platform, pure creativity unleashed.",
-    prizeMoney: 25000,
-    discordLink: "https://discord.gg/gamedev-showdown",
+    actaCards: 250,
     meetLink: "https://meet.google.com/game-demo",
     postedBy: "Raj Patel",
     postedDate: "3 weeks ago",
     status: "past",
-    participants: 412
+    participants: 412,
+    date: "2024-12-01",
+    time: "16:00"
   }
 ];
 
