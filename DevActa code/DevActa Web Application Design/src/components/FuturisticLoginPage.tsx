@@ -72,7 +72,7 @@ export function FuturisticLoginPage({ onLogin, onSignUp }: FuturisticLoginPagePr
             <div className="logo-professional mb-8">
               <img
                 src="/logo.png"
-                alt="DevArena"
+                alt="DevActa"
                 className="w-40 h-40 mx-auto object-contain"
               />
             </div>
@@ -96,7 +96,7 @@ export function FuturisticLoginPage({ onLogin, onSignUp }: FuturisticLoginPagePr
             <div className="lg:hidden mb-8 text-center">
               <img
                 src="/logo.png"
-                alt="DevArena"
+                alt="DevActa"
                 className="w-20 h-20 mx-auto object-contain mb-4"
               />
               <h1 className="professional-title text-3xl mb-2">

@@ -33,7 +33,7 @@ export function PostDialog({ open, onOpenChange, onPost }: PostDialogProps) {
         <DialogHeader>
           <DialogTitle>Share Your Project</DialogTitle>
           <DialogDescription>
-            Share your latest project with the DevArena community. Include your project details and GitHub repository link.
+            Share your latest project with the DevActa community. Include your project details and GitHub repository link.
           </DialogDescription>
         </DialogHeader>
         

@@ -143,7 +143,7 @@ export function ProfileSetupSurvey({ onComplete }: ProfileSetupSurveyProps) {
             </div>
           </div>
           <h2 className="professional-title text-4xl mb-4 text-gray-900">Profile Created!</h2>
-          <p className="professional-subtitle text-xl text-gray-600">Welcome to DevArena</p>
+          <p className="professional-subtitle text-xl text-gray-600">Welcome to DevActa</p>
         </div>
       </div>
     );
