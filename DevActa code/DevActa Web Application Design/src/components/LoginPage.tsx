@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 
@@ -18,13 +19,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         <div className="text-center">
           {/* Logo */}
           <div className="mb-8">
-            <h1 className="text-3xl text-primary mb-2">DevArena</h1>
+            <h1 className="text-3xl text-primary mb-2">DevActa</h1>
             <p className="text-muted-foreground">Connect. Code. Compete.</p>
           </div>
 
           {/* Welcome Message */}
           <div className="mb-8">
-            <h2 className="text-2xl mb-3">Welcome to DevArena</h2>
+            <h2 className="text-2xl mb-3">Welcome to DevActa</h2>
             <p className="text-muted-foreground">
               Join the community of developers showcasing their projects and leveling up their skills.
             </p>
@@ -44,7 +45,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             </Button>
             
             <p className="text-sm text-muted-foreground">
-              Only developers with GitHub accounts can join DevArena
+              Only developers with GitHub accounts can join DevActa
             </p>
           </div>
 

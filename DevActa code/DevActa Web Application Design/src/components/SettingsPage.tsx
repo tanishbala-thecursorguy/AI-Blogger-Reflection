@@ -1,3 +1,4 @@
+import React from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { useTheme } from "../contexts/ThemeContext";
@@ -21,7 +22,7 @@ export function SettingsPage() {
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl mb-2">Settings</h1>
-          <p className="text-muted-foreground">Customize your DevArena experience</p>
+          <p className="text-muted-foreground">Customize your DevActa experience</p>
         </div>
 
         {/* Theme Settings */}
@@ -102,7 +103,7 @@ export function SettingsPage() {
         {/* About */}
         <Card className="p-6 bg-card mt-6">
           <div className="mb-6">
-            <h2 className="text-xl mb-2">About DevArena</h2>
+            <h2 className="text-xl mb-2">About DevActa</h2>
             <p className="text-muted-foreground">Application information and resources</p>
           </div>
 
@@ -110,7 +111,7 @@ export function SettingsPage() {
             <div>
               <div className="text-2xl mb-2">📖</div>
               <h4 className="mb-1">Documentation</h4>
-              <p className="text-sm text-muted-foreground">Learn how to use DevArena</p>
+              <p className="text-sm text-muted-foreground">Learn how to use DevActa</p>
             </div>
             <div>
               <div className="text-2xl mb-2">🐛</div>

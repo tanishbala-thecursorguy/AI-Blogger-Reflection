@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark" | "pink" | "blue" | "black" | "green" | "purple" | "orange";
 
@@ -13,7 +13,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("devarena-theme") as Theme;
+    const savedTheme = localStorage.getItem("DevActa-theme") as Theme;
     if (savedTheme) {
       setTheme(savedTheme);
     }
@@ -31,7 +31,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
     
     // Save to localStorage
-    localStorage.setItem("devarena-theme", theme);
+    localStorage.setItem("DevActa-theme", theme);
   }, [theme]);
 
   return (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -171,7 +171,7 @@ export function HiringPage({ onPageChange }: HiringPageProps) {
         {/* Hiring Information */}
         <Card className="p-8 bg-card mt-12">
           <div className="text-center">
-            <h2 className="text-2xl mb-4">Why Hire Through DevArena?</h2>
+            <h2 className="text-2xl mb-4">Why Hire Through DevActa?</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
                 <div className="text-3xl mb-3">🏆</div>
