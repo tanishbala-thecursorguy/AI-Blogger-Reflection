@@ -305,6 +305,10 @@ function MapStartups() {
     );
   };
 
+  const handleStartupSelect = useCallback((startup: any) => {
+    setSelectedStartup(startup as Startup);
+  }, []);
+
   return (
     <div className="h-screen w-full bg-background overflow-hidden">
       <div className="h-screen w-full flex">
@@ -312,8 +316,8 @@ function MapStartups() {
         <div className="flex-1 h-screen relative z-0">
           <DynamicMapComponent 
             ref={mapRef}
-            startups={startups} 
-            onStartupSelect={setSelectedStartup}
+            startups={startups as any} 
+            onStartupSelect={handleStartupSelect}
             onMapClick={handleMapClick}
           />
           

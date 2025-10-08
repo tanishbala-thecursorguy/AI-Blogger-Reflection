@@ -53,12 +53,15 @@ interface Startup {
   description: string;
   location: [number, number];
   founder: string;
+  email: string;
   website?: string;
+  logo?: string;
   industry: string;
   stage: 'idea' | 'mvp' | 'growth' | 'scale';
   employees: number;
   founded: string;
   tags: string[];
+  isHiring: boolean;
 }
 
 interface DynamicMapComponentProps {
