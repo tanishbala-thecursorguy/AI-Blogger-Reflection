@@ -1,7 +1,7 @@
 
   # DevActa Web Application Design
 
-  This is a code bundle for DevActa Web Application Design. The original project is available at https://www.figma.com/design/si1BXWGh6fw3q09ihCfoPf/DevArena-Web-Application-Design.
+  This is a code bundle for DevActa Web Application Design. The original project is available at https://www.figma.com/design/si1BXWGh6fw3q09ihCfoPf/DevActa-Web-Application-Design.
 
   ## Running the code
 
