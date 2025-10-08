@@ -77,8 +77,25 @@ const DynamicMapComponent = forwardRef<any, DynamicMapComponentProps>(({ startup
   const markersRef = useRef<L.Marker[]>([]);
   const userLocationRef = useRef<L.Marker | null>(null);
 
-  const getIcon = (stage: string) => {
-    switch (stage) {
+  const getIcon = (startup: any) => {
+    // If startup has a logo, create a custom icon with the logo
+    if (startup.logo) {
+      return L.divIcon({
+        html: `
+          <div class="custom-startup-marker">
+            <img src="${startup.logo}" alt="${startup.name}" class="startup-logo" />
+            ${startup.isHiring ? '<div class="hiring-badge">HIRING</div>' : ''}
+          </div>
+        `,
+        className: 'custom-startup-icon',
+        iconSize: [50, 50],
+        iconAnchor: [25, 50],
+        popupAnchor: [0, -50]
+      });
+    }
+    
+    // Fallback to stage-based icons if no logo
+    switch (startup.stage) {
       case 'idea':
         return ideaIcon;
       case 'mvp':
@@ -197,21 +214,32 @@ const DynamicMapComponent = forwardRef<any, DynamicMapComponentProps>(({ startup
 
     // Add new markers
     startups.forEach((startup) => {
-      const marker = L.marker(startup.location, { icon: getIcon(startup.stage) })
+      const marker = L.marker(startup.location, { icon: getIcon(startup) })
         .addTo(mapInstanceRef.current!)
         .bindPopup(`
-          <div class="p-2">
-            <h3 class="font-semibold text-sm">${startup.name}</h3>
-            <p class="text-xs text-gray-600 mt-1">${startup.founder}</p>
-            <p class="text-xs text-gray-500 mt-1">${startup.industry} • ${startup.employees} employees</p>
-            <span class="inline-block px-2 py-1 text-xs rounded mt-2 ${
-              startup.stage === 'idea' ? 'bg-gray-500 text-white' :
-              startup.stage === 'mvp' ? 'bg-blue-500 text-white' :
-              startup.stage === 'growth' ? 'bg-green-500 text-white' :
-              'bg-purple-500 text-white'
-            }">
-              ${startup.stage}
-            </span>
+          <div class="p-3 min-w-[200px]">
+            <div class="flex items-start gap-3 mb-3">
+              ${startup.logo ? `<img src="${startup.logo}" alt="${startup.name}" class="w-12 h-12 object-cover rounded-lg border" />` : ''}
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm">${startup.name}</h3>
+                <p class="text-xs text-gray-600 mt-1">${startup.founder}</p>
+                <p class="text-xs text-gray-500 mt-1">${startup.industry} • ${startup.employees} employees</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="inline-block px-2 py-1 text-xs rounded ${
+                startup.stage === 'idea' ? 'bg-gray-500 text-white' :
+                startup.stage === 'mvp' ? 'bg-blue-500 text-white' :
+                startup.stage === 'growth' ? 'bg-green-500 text-white' :
+                'bg-purple-500 text-white'
+              }">
+                ${startup.stage}
+              </span>
+              ${startup.isHiring ? '<span class="inline-block px-2 py-1 text-xs rounded bg-green-500 text-white">HIRING</span>' : ''}
+            </div>
+            <p class="text-xs text-gray-600 line-clamp-2">${startup.description}</p>
+            ${startup.email ? `<p class="text-xs text-blue-600 mt-2">📧 ${startup.email}</p>` : ''}
+            ${startup.website ? `<p class="text-xs text-blue-600 mt-1">🌐 <a href="${startup.website}" target="_blank" class="hover:underline">Website</a></p>` : ''}
           </div>
         `);
 
