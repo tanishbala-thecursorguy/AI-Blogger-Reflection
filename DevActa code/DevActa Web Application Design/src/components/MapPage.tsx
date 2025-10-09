@@ -359,7 +359,11 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
   // Posts Overlay Component
   const PostsOverlay = () => {
     console.log('PostsOverlay rendering, showPosts:', showPosts);
-    if (!showPosts) return null;
+    if (!showPosts) {
+      console.log('PostsOverlay not rendering because showPosts is false');
+      return null;
+    }
+    console.log('PostsOverlay rendering the overlay');
 
     return (
       <div className="absolute inset-0 bg-black/50 z-[9998] flex items-center justify-center">
@@ -563,9 +567,9 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
   };
 
   return (
-    <div className="h-screen w-full bg-background overflow-hidden relative">
+    <div className="h-[calc(100vh-80px)] w-full bg-background overflow-hidden relative">
       {/* Full Screen Map */}
-      <div className="h-screen w-full">
+      <div className="h-[calc(100vh-80px)] w-full">
           <DynamicMapComponent 
             ref={mapRef}
           startups={startups as any} 
@@ -659,6 +663,13 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
 
       {/* Posts Overlay */}
       <PostsOverlay />
+      
+      {/* Debug overlay to test if showPosts is working */}
+      {showPosts && (
+        <div className="absolute top-10 left-10 bg-red-500 text-white p-4 rounded z-[99999]">
+          Posts overlay should be visible! showPosts: {showPosts.toString()}
+        </div>
+      )}
 
         {/* Startup Creation Form */}
         <StartupCreationForm />
