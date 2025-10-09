@@ -366,7 +366,7 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
     console.log('PostsOverlay rendering the overlay');
 
     return (
-      <div className="absolute inset-0 bg-black/50 z-[9998] flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-2xl w-[90vw] max-w-4xl max-h-[90vh] overflow-hidden">
           <div className="flex items-center justify-between p-4 border-b">
             <h2 className="text-xl font-bold">Startup Posts</h2>
@@ -686,7 +686,7 @@ interface MapPageProps {
 
 export function MapPage({ onPageChange }: MapPageProps) {
   return (
-    <div className="h-screen w-full bg-background overflow-hidden">
+    <div className="h-[calc(100vh-80px)] w-full bg-background overflow-hidden">
       <MapStartups onPageChange={onPageChange} />
     </div>
   );
