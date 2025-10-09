@@ -168,10 +168,10 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
           <div className="overflow-y-auto max-h-[90vh] px-6 py-4">
             <DialogHeader className="pb-4">
               <DialogTitle className="text-2xl">Add Your Startup</DialogTitle>
-              <DialogDescription>
-                Fill in the details to add your startup to the map.
-              </DialogDescription>
-            </DialogHeader>
+            <DialogDescription>
+              Fill in the details to add your startup to the map.
+            </DialogDescription>
+          </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-6 pb-4">
             {/* Logo Upload Section */}
             <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg bg-muted/50">
@@ -207,17 +207,17 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
 
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+            <div>
                 <label className="text-sm font-medium flex items-center gap-2">
                   <Building2 className="h-4 w-4" />
                   Startup Name
                 </label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Enter startup name"
-                  required
-                />
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter startup name"
+                required
+              />
               </div>
 
               <div>
@@ -247,52 +247,52 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Founder</label>
-                <Input
-                  value={formData.founder}
-                  onChange={(e) => setFormData(prev => ({ ...prev, founder: e.target.value }))}
-                  placeholder="Your name"
-                  required
-                />
-              </div>
+            <div>
+              <label className="text-sm font-medium">Founder</label>
+              <Input
+                value={formData.founder}
+                onChange={(e) => setFormData(prev => ({ ...prev, founder: e.target.value }))}
+                placeholder="Your name"
+                required
+              />
+            </div>
 
-              <div>
-                <label className="text-sm font-medium">Industry</label>
-                <Input
-                  value={formData.industry}
-                  onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
-                  placeholder="e.g., SaaS, HealthTech, FinTech"
-                  required
-                />
+            <div>
+              <label className="text-sm font-medium">Industry</label>
+              <Input
+                value={formData.industry}
+                onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
+                placeholder="e.g., SaaS, HealthTech, FinTech"
+                required
+              />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium">Stage</label>
-                <Select value={formData.stage} onValueChange={(value: any) => setFormData(prev => ({ ...prev, stage: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="idea">Idea Stage</SelectItem>
-                    <SelectItem value="mvp">MVP</SelectItem>
-                    <SelectItem value="growth">Growth</SelectItem>
-                    <SelectItem value="scale">Scale</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div>
+              <label className="text-sm font-medium">Stage</label>
+              <Select value={formData.stage} onValueChange={(value: any) => setFormData(prev => ({ ...prev, stage: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="idea">Idea Stage</SelectItem>
+                  <SelectItem value="mvp">MVP</SelectItem>
+                  <SelectItem value="growth">Growth</SelectItem>
+                  <SelectItem value="scale">Scale</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div>
-                <label className="text-sm font-medium">Employees</label>
-                <Input
-                  type="number"
-                  value={formData.employees}
-                  onChange={(e) => setFormData(prev => ({ ...prev, employees: parseInt(e.target.value) || 1 }))}
-                  min="1"
-                  required
-                />
+            <div>
+              <label className="text-sm font-medium">Employees</label>
+              <Input
+                type="number"
+                value={formData.employees}
+                onChange={(e) => setFormData(prev => ({ ...prev, employees: parseInt(e.target.value) || 1 }))}
+                min="1"
+                required
+              />
               </div>
 
               <div>
@@ -337,13 +337,13 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
 
             <div className="flex flex-col sm:flex-row gap-3 pt-4 sticky bottom-0 bg-background py-4 -mx-6 px-6 border-t mt-6">
               <Button type="submit" className="flex-1" size="lg">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Startup
-              </Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Startup
+                  </Button>
               <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)} className="flex-1 sm:flex-none" size="lg">
-                Cancel
-              </Button>
-            </div>
+                    Cancel
+                  </Button>
+                </div>
           </form>
           </div>
         </DialogContent>
@@ -566,13 +566,13 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
     <div className="h-screen w-full bg-background overflow-hidden relative">
       {/* Full Screen Map */}
       <div className="h-screen w-full">
-        <DynamicMapComponent 
-          ref={mapRef}
+          <DynamicMapComponent 
+            ref={mapRef}
           startups={startups as any} 
           onStartupSelect={handleStartupSelect}
-          onMapClick={handleMapClick}
-        />
-        
+            onMapClick={handleMapClick}
+          />
+          
         {/* Posts Button - Top Left */}
         <button
           onClick={() => {
@@ -580,17 +580,17 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
             setShowPosts(true);
             console.log('Posts button clicked, setting showPosts to true');
           }}
-          className="absolute top-4 left-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-lg transition-colors flex items-center gap-2"
+          className="absolute top-4 left-4 z-[9999] bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 rounded-lg p-3 shadow-lg transition-colors flex items-center gap-2 font-bold"
           title="View Posts"
         >
-          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
           </svg>
-          <span className="text-sm font-medium">Posts</span>
+          <span className="text-sm font-medium text-white">Posts</span>
         </button>
 
         {/* Zoom Controls - Below Posts Button */}
-        <div className="absolute top-20 left-4 z-[9999] flex flex-col gap-2 bg-red-500 p-2 rounded">
+        <div className="absolute top-20 left-4 z-[9999] flex flex-col gap-2 bg-green-500 p-2 rounded">
           <button
             className="bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-lg transition-colors text-center min-w-[40px]"
             title="Zoom In"
@@ -630,22 +630,22 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
         </div>
 
         {/* Location Button - Top Right */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (mapRef.current) {
-              mapRef.current.centerOnUserLocation();
-            }
-          }}
-          className="absolute top-4 right-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
-          title="Center on my location"
-        >
-          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (mapRef.current) {
+                mapRef.current.centerOnUserLocation();
+              }
+            }}
+            className="absolute top-4 right-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
+            title="Center on my location"
+          >
+            <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
 
         {/* Add Startup Button - Bottom Right */}
         <button
@@ -655,13 +655,13 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
         >
           <Plus className="w-6 h-6" />
         </button>
-      </div>
+            </div>
 
       {/* Posts Overlay */}
       <PostsOverlay />
-      
-      {/* Startup Creation Form */}
-      <StartupCreationForm />
+
+        {/* Startup Creation Form */}
+        <StartupCreationForm />
       
       {/* Startup Details Popup */}
       <StartupDetailsPopup />
