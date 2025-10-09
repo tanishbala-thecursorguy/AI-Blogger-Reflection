@@ -577,24 +577,26 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
             onMapClick={handleMapClick}
           />
           
-        {/* Posts Button - Top Left */}
-        <button
-          onClick={() => {
-            console.log('Posts button clicked, current showPosts:', showPosts);
-            setShowPosts(true);
-            console.log('Posts button clicked, setting showPosts to true');
-          }}
-          className="absolute top-4 left-4 z-[9999] bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 rounded-lg p-3 shadow-lg transition-colors flex items-center gap-2 font-bold"
-          title="View Posts"
-        >
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-          </svg>
-          <span className="text-sm font-medium text-white">Posts</span>
-        </button>
+        {/* Left Side Controls Container */}
+        <div className="absolute top-4 left-4 z-[9999] flex items-start gap-3">
+          {/* Posts Button */}
+          <button
+            onClick={() => {
+              console.log('Posts button clicked, current showPosts:', showPosts);
+              setShowPosts(true);
+              console.log('Posts button clicked, setting showPosts to true');
+            }}
+            className="bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 rounded-lg p-3 shadow-lg transition-colors flex items-center gap-2 font-bold"
+            title="View Posts"
+          >
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+            <span className="text-sm font-medium text-white">Posts</span>
+          </button>
 
-        {/* Zoom Controls - Below Posts Button */}
-        <div className="absolute top-20 left-4 z-[9999] flex flex-col gap-2 bg-green-500 p-2 rounded">
+          {/* Zoom Controls */}
+          <div className="flex flex-col gap-2 bg-green-500 p-2 rounded">
           <button
             className="bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-lg transition-colors text-center min-w-[40px]"
             title="Zoom In"
@@ -631,6 +633,7 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
             </svg>
           </button>
+          </div>
         </div>
 
         {/* Location Button - Top Right */}
