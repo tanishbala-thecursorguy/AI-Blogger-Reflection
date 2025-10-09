@@ -37,6 +37,7 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newStartupLocation, setNewStartupLocation] = useState<[number, number] | null>(null);
   const [showStartupPopup, setShowStartupPopup] = useState(false);
+  const [showPosts, setShowPosts] = useState(false);
   const mapRef = useRef<any>(null);
 
   const getStageColor = (stage: string) => {
@@ -315,6 +316,95 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
     setShowStartupPopup(true);
   }, []);
 
+  // Posts Overlay Component
+  const PostsOverlay = () => {
+    if (!showPosts) return null;
+
+    return (
+      <div className="absolute inset-0 bg-black/50 z-[9998] flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-2xl w-[90vw] max-w-4xl max-h-[90vh] overflow-hidden">
+          <div className="flex items-center justify-between p-4 border-b">
+            <h2 className="text-xl font-bold">Startup Posts</h2>
+            <button
+              onClick={() => setShowPosts(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-4">
+            <div className="space-y-4">
+              {/* Sample posts - you can replace with real data */}
+              {startups.map((startup) => (
+                <div key={startup.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3">
+                    {startup.logo && (
+                      <img 
+                        src={startup.logo} 
+                        alt={`${startup.name} logo`}
+                        className="w-12 h-12 object-cover rounded-full border"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-semibold">{startup.name}</h3>
+                        <Badge className={`text-xs ${getStageColor(startup.stage)} text-white`}>
+                          {startup.stage}
+                        </Badge>
+                        {startup.isHiring && (
+                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                            Hiring
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-gray-600 text-sm mb-3">{startup.description}</p>
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <span>👥 {startup.employees} employees</span>
+                        <span>📅 Founded {startup.founded}</span>
+                        <span>🏢 {startup.industry}</span>
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.location.href = `mailto:${startup.email}`}
+                        >
+                          <Mail className="h-3 w-3 mr-1" />
+                          Contact
+                        </Button>
+                        {startup.website && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(startup.website, '_blank')}
+                          >
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            Website
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {startups.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium">No startup posts yet</p>
+                  <p className="text-sm">Add some startups to see their posts here!</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Startup Details Popup Component
   const StartupDetailsPopup = () => {
     if (!selectedStartup) return null;
@@ -444,7 +534,7 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
         
         {/* Posts Button - Top Left */}
         <button
-          onClick={() => onPageChange && onPageChange('feed')}
+          onClick={() => setShowPosts(true)}
           className="absolute top-4 left-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-lg transition-colors flex items-center gap-2"
           title="View Posts"
         >
@@ -463,7 +553,7 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
               mapRef.current.centerOnUserLocation();
             }
           }}
-          className="absolute top-4 right-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
+          className="absolute top-16 right-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
           title="Center on my location"
         >
           <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -475,13 +565,16 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
         {/* Add Startup Button - Bottom Right */}
         <button
           onClick={() => setShowCreateForm(true)}
-          className="absolute bottom-4 right-4 z-[9999] bg-primary hover:bg-primary/90 text-white rounded-full p-4 shadow-lg transition-colors"
+          className="absolute bottom-16 right-4 z-[9999] bg-primary hover:bg-primary/90 text-white rounded-full p-4 shadow-lg transition-colors"
           title="Add your startup"
         >
           <Plus className="w-6 h-6" />
         </button>
       </div>
 
+      {/* Posts Overlay */}
+      <PostsOverlay />
+      
       {/* Startup Creation Form */}
       <StartupCreationForm />
       
