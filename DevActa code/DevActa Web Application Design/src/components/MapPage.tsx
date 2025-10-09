@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -39,6 +39,46 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
   const [showStartupPopup, setShowStartupPopup] = useState(false);
   const [showPosts, setShowPosts] = useState(false);
   const mapRef = useRef<any>(null);
+
+  // Add some sample startups for testing
+  useEffect(() => {
+    if (startups.length === 0) {
+      setStartups([
+        {
+          id: '1',
+          name: 'TechCorp Solutions',
+          description: 'We are revolutionizing the tech industry with innovative AI-powered solutions that help businesses scale efficiently.',
+          location: [17.6868, 83.2185] as [number, number],
+          founder: 'John Smith',
+          email: 'john@techcorp.com',
+          website: 'https://techcorp.com',
+          logo: 'https://via.placeholder.com/100x100/4F46E5/FFFFFF?text=TC',
+          industry: 'Technology',
+          stage: 'growth' as const,
+          employees: 45,
+          founded: '2020',
+          tags: ['AI', 'Machine Learning', 'SaaS'],
+          isHiring: true
+        },
+        {
+          id: '2',
+          name: 'GreenTech Innovations',
+          description: 'Building sustainable technology solutions for a greener future. We focus on renewable energy and eco-friendly products.',
+          location: [17.7200, 83.3200] as [number, number],
+          founder: 'Sarah Johnson',
+          email: 'sarah@greentech.com',
+          website: 'https://greentech.com',
+          logo: 'https://via.placeholder.com/100x100/10B981/FFFFFF?text=GT',
+          industry: 'Clean Energy',
+          stage: 'mvp' as const,
+          employees: 12,
+          founded: '2022',
+          tags: ['Sustainability', 'Renewable Energy', 'IoT'],
+          isHiring: false
+        }
+      ]);
+    }
+  }, [startups.length]);
 
   const getStageColor = (stage: string) => {
     switch (stage) {
@@ -318,6 +358,7 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
 
   // Posts Overlay Component
   const PostsOverlay = () => {
+    console.log('PostsOverlay rendering, showPosts:', showPosts);
     if (!showPosts) return null;
 
     return (
@@ -534,7 +575,11 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
         
         {/* Posts Button - Top Left */}
         <button
-          onClick={() => setShowPosts(true)}
+          onClick={() => {
+            console.log('Posts button clicked, current showPosts:', showPosts);
+            setShowPosts(true);
+            console.log('Posts button clicked, setting showPosts to true');
+          }}
           className="absolute top-4 left-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-lg transition-colors flex items-center gap-2"
           title="View Posts"
         >
@@ -543,6 +588,38 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
           </svg>
           <span className="text-sm font-medium">Posts</span>
         </button>
+
+        {/* Zoom Controls - Below Posts Button */}
+        <div className="absolute top-16 left-4 z-[9999] flex flex-col gap-1">
+          <button
+            className="bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
+            title="Zoom In"
+            onClick={() => {
+              if (mapRef.current && mapRef.current.getMap) {
+                const map = mapRef.current.getMap();
+                map.zoomIn();
+              }
+            }}
+          >
+            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </button>
+          <button
+            className="bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
+            title="Zoom Out"
+            onClick={() => {
+              if (mapRef.current && mapRef.current.getMap) {
+                const map = mapRef.current.getMap();
+                map.zoomOut();
+              }
+            }}
+          >
+            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
+            </svg>
+          </button>
+        </div>
 
         {/* Location Button - Top Right */}
         <button
@@ -553,7 +630,7 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
               mapRef.current.centerOnUserLocation();
             }
           }}
-          className="absolute top-16 right-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
+          className="absolute top-4 right-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
           title="Center on my location"
         >
           <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
