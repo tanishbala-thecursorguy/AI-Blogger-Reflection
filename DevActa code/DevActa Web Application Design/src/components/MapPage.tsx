@@ -27,11 +27,16 @@ interface Startup {
   isHiring: boolean;
 }
 
-function MapStartups() {
+interface MapStartupsProps {
+  onPageChange?: (page: string) => void;
+}
+
+function MapStartups({ onPageChange }: MapStartupsProps) {
   const [startups, setStartups] = useState<Startup[]>([]);
   const [selectedStartup, setSelectedStartup] = useState<Startup | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newStartupLocation, setNewStartupLocation] = useState<[number, number] | null>(null);
+  const [showStartupPopup, setShowStartupPopup] = useState(false);
   const mapRef = useRef<any>(null);
 
   const getStageColor = (stage: string) => {
@@ -307,208 +312,193 @@ function MapStartups() {
 
   const handleStartupSelect = useCallback((startup: any) => {
     setSelectedStartup(startup as Startup);
+    setShowStartupPopup(true);
   }, []);
 
-  return (
-    <div className="h-screen w-full bg-background overflow-hidden">
-      <div className="h-screen w-full flex">
-        {/* Map */}
-        <div className="flex-1 h-screen relative z-0">
-          <DynamicMapComponent 
-            ref={mapRef}
-            startups={startups as any} 
-            onStartupSelect={handleStartupSelect}
-            onMapClick={handleMapClick}
-          />
-          
-          {/* Location button - outside map container */}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (mapRef.current) {
-                mapRef.current.centerOnUserLocation();
-              }
-            }}
-            className="absolute top-4 right-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
-            title="Center on my location"
-          >
-            <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-        </div>
+  // Startup Details Popup Component
+  const StartupDetailsPopup = () => {
+    if (!selectedStartup) return null;
 
-        {/* Sidebar */}
-        <div className="w-1/3 h-screen bg-card border-l border-border p-4 overflow-y-auto">
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-xl font-bold text-foreground mb-2">Startup Ecosystem</h2>
-              <p className="text-sm text-muted-foreground">
-                Click anywhere on the map to add your startup!
-              </p>
-            </div>
-
-            {/* Filter buttons */}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={() => setStartups(startups)}
-              >
-                All
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={() => setStartups(startups.filter(s => s.stage === 'idea'))}
-              >
-                Idea
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={() => setStartups(startups.filter(s => s.stage === 'mvp'))}
-              >
-                MVP
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={() => setStartups(startups.filter(s => s.stage === 'growth'))}
-              >
-                Growth
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={() => setStartups(startups.filter(s => s.stage === 'scale'))}
-              >
-                Scale
-              </Button>
-            </div>
-
-            {/* Startups list */}
-            <div className="space-y-3">
-              {startups.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-sm">No startups yet</p>
-                  <p className="text-xs">Click on the map to add your first startup!</p>
+    return (
+      <Dialog open={showStartupPopup} onOpenChange={setShowStartupPopup}>
+        <DialogContent className="w-[90vw] max-w-4xl max-h-[90vh] overflow-hidden !z-[99999] p-0">
+          <div className="overflow-y-auto max-h-[90vh] px-6 py-4">
+            <DialogHeader className="pb-4">
+              <div className="flex items-center gap-4">
+                {selectedStartup.logo && (
+                  <img 
+                    src={selectedStartup.logo} 
+                    alt={`${selectedStartup.name} logo`}
+                    className="w-16 h-16 object-cover rounded-lg border"
+                  />
+                )}
+                <div>
+                  <DialogTitle className="text-3xl">{selectedStartup.name}</DialogTitle>
+                  <DialogDescription className="text-lg">
+                    {selectedStartup.industry} • Founded {selectedStartup.founded}
+                  </DialogDescription>
                 </div>
-              ) : (
-                startups.map((startup) => (
-                  <Card
-                    key={startup.id}
-                    className={`cursor-pointer transition-all hover:shadow-md ${
-                      selectedStartup?.id === startup.id ? 'ring-2 ring-primary' : ''
-                    }`}
-                    onClick={() => setSelectedStartup(startup)}
-                  >
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start gap-3">
-                        {startup.logo && (
-                          <img 
-                            src={startup.logo} 
-                            alt={`${startup.name} logo`}
-                            className="w-12 h-12 object-contain rounded border"
-                          />
-                        )}
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between gap-2">
-                            <CardTitle className="text-sm font-semibold line-clamp-2">
-                              {startup.name}
-                            </CardTitle>
-                            <div className="flex flex-col gap-1">
-                              <Badge className={`text-xs ${getStageColor(startup.stage)}`}>
-                                {startup.stage}
-                              </Badge>
-                              {startup.isHiring && (
-                                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                                  <Briefcase className="h-3 w-3 mr-1" />
-                                  Hiring
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
+              </div>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* Company Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-xl font-semibold mb-3">Company Information</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{selectedStartup.employees} employees</p>
+                        <p className="text-sm text-muted-foreground">Team size</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{selectedStartup.industry}</p>
+                        <p className="text-sm text-muted-foreground">Industry</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{selectedStartup.founded}</p>
+                        <p className="text-sm text-muted-foreground">Founded year</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-3">Contact Information</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{selectedStartup.email}</p>
+                        <p className="text-sm text-muted-foreground">Email address</p>
+                      </div>
+                    </div>
+                    {selectedStartup.website && (
+                      <div className="flex items-center gap-3">
+                        <ExternalLink className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <a href={selectedStartup.website} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
+                            Visit Website
+                          </a>
+                          <p className="text-sm text-muted-foreground">Company website</p>
                         </div>
                       </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="space-y-2">
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          <span className="line-clamp-1">{startup.founder}</span>
-                        </div>
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <Mail className="h-3 w-3 mr-1" />
-                          <span className="line-clamp-1">{startup.email}</span>
-                        </div>
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          <span>Founded {startup.founded}</span>
-                        </div>
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <Users className="h-3 w-3 mr-1" />
-                          <span>{startup.employees} employees</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {startup.description}
-                        </p>
-                        <div className="flex gap-2 pt-2">
-                          {startup.website && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex-1 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                window.open(startup.website, '_blank');
-                              }}
-                            >
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              Website
-                            </Button>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 text-xs"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.location.href = `mailto:${startup.email}`;
-                            }}
-                          >
-                            <Mail className="h-3 w-3 mr-1" />
-                            Contact
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h3 className="text-xl font-semibold mb-3">About</h3>
+                <p className="text-gray-700 leading-relaxed">{selectedStartup.description}</p>
+              </div>
+
+              {/* Status */}
+              <div className="flex items-center gap-4">
+                <Badge className={`text-sm px-4 py-2 ${getStageColor(selectedStartup.stage)} text-white`}>
+                  {selectedStartup.stage.toUpperCase()} STAGE
+                </Badge>
+                {selectedStartup.isHiring && (
+                  <Badge className="text-sm px-4 py-2 bg-green-500 text-white">
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    WE'RE HIRING
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+              <Button variant="outline" onClick={() => setShowStartupPopup(false)}>
+                Close
+              </Button>
+              <Button onClick={() => window.location.href = `mailto:${selectedStartup.email}`}>
+                <Mail className="h-4 w-4 mr-2" />
+                Contact Startup
+              </Button>
             </div>
           </div>
-        </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
-        {/* Startup Creation Form */}
-        <StartupCreationForm />
+  return (
+    <div className="h-screen w-full bg-background overflow-hidden relative">
+      {/* Full Screen Map */}
+      <div className="h-screen w-full">
+        <DynamicMapComponent 
+          ref={mapRef}
+          startups={startups as any} 
+          onStartupSelect={handleStartupSelect}
+          onMapClick={handleMapClick}
+        />
+        
+        {/* Posts Button - Top Left */}
+        <button
+          onClick={() => onPageChange && onPageChange('feed')}
+          className="absolute top-4 left-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-lg transition-colors flex items-center gap-2"
+          title="View Posts"
+        >
+          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+          </svg>
+          <span className="text-sm font-medium">Posts</span>
+        </button>
+
+        {/* Location Button - Top Right */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (mapRef.current) {
+              mapRef.current.centerOnUserLocation();
+            }
+          }}
+          className="absolute top-4 right-4 z-[9999] bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
+          title="Center on my location"
+        >
+          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+
+        {/* Add Startup Button - Bottom Right */}
+        <button
+          onClick={() => setShowCreateForm(true)}
+          className="absolute bottom-4 right-4 z-[9999] bg-primary hover:bg-primary/90 text-white rounded-full p-4 shadow-lg transition-colors"
+          title="Add your startup"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
       </div>
+
+      {/* Startup Creation Form */}
+      <StartupCreationForm />
+      
+      {/* Startup Details Popup */}
+      <StartupDetailsPopup />
     </div>
   );
 }
 
-export function MapPage() {
+interface MapPageProps {
+  onPageChange?: (page: string) => void;
+}
+
+export function MapPage({ onPageChange }: MapPageProps) {
   return (
     <div className="h-screen w-full bg-background overflow-hidden">
-      <MapStartups />
+      <MapStartups onPageChange={onPageChange} />
     </div>
   );
 }

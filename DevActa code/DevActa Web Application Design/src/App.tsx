@@ -82,7 +82,7 @@ function AppContent() {
       case "leaderboard":
         return <LeaderboardPage />;
       case "map":
-        return <MapPage />;
+        return <MapPage onPageChange={handlePageChange} />;
       case "hackathons":
         return <HackathonsPage onPageChange={handlePageChange} />;
       case "hackathon-chat":
