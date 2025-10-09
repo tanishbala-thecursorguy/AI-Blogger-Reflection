@@ -590,32 +590,40 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
         </button>
 
         {/* Zoom Controls - Below Posts Button */}
-        <div className="absolute top-16 left-4 z-[9999] flex flex-col gap-1">
+        <div className="absolute top-20 left-4 z-[9999] flex flex-col gap-2 bg-red-500 p-2 rounded">
           <button
-            className="bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
+            className="bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-lg transition-colors text-center min-w-[40px]"
             title="Zoom In"
             onClick={() => {
+              console.log('Zoom In clicked');
               if (mapRef.current && mapRef.current.getMap) {
                 const map = mapRef.current.getMap();
+                console.log('Map instance:', map);
                 map.zoomIn();
+              } else {
+                console.log('Map ref not available');
               }
             }}
           >
-            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-700 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
           </button>
           <button
-            className="bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-2 shadow-lg transition-colors"
+            className="bg-white hover:bg-gray-50 border border-gray-300 rounded-lg p-3 shadow-lg transition-colors text-center min-w-[40px]"
             title="Zoom Out"
             onClick={() => {
+              console.log('Zoom Out clicked');
               if (mapRef.current && mapRef.current.getMap) {
                 const map = mapRef.current.getMap();
+                console.log('Map instance:', map);
                 map.zoomOut();
+              } else {
+                console.log('Map ref not available');
               }
             }}
           >
-            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-700 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
             </svg>
           </button>
