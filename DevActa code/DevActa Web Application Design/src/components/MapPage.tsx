@@ -588,7 +588,7 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
             setShowPosts(true);
             console.log('Posts button clicked, setting showPosts to true');
           }}
-          className="absolute bottom-4 left-4 z-[9999] bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 rounded-lg p-3 shadow-lg transition-colors flex items-center gap-2 font-bold"
+          className="fixed bottom-4 left-4 z-[9999] bg-red-500 hover:bg-red-600 text-white border border-red-600 rounded-lg p-4 shadow-lg transition-colors flex items-center gap-2 font-bold"
           title="View Posts"
         >
           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
