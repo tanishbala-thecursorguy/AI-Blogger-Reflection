@@ -366,8 +366,12 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
     console.log('PostsOverlay rendering the overlay');
 
     return (
-      <div className="fixed inset-0 bg-black/50 z-[99999] flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-2xl w-[90vw] max-w-4xl max-h-[90vh] overflow-hidden">
+      <div className="absolute inset-0 z-[99999] flex">
+        {/* Backdrop */}
+        <div className="flex-1 bg-black/30" onClick={() => setShowPosts(false)}></div>
+        
+        {/* Sidebar */}
+        <div className="w-1/2 bg-white shadow-2xl flex flex-col">
           <div className="flex items-center justify-between p-4 border-b">
             <h2 className="text-xl font-bold">Startup Posts</h2>
             <button
@@ -380,7 +384,7 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
             </button>
           </div>
           
-          <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-4">
+          <div className="flex-1 overflow-y-auto p-4">
             <div className="space-y-4">
               {/* Sample posts - you can replace with real data */}
               {startups.map((startup) => (
