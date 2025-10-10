@@ -581,14 +581,14 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
             onMapClick={handleMapClick}
           />
           
-        {/* Posts Button - Positioned to the right of default zoom controls */}
+        {/* Posts Button - Bottom Left Corner */}
         <button
           onClick={() => {
             console.log('Posts button clicked, current showPosts:', showPosts);
             setShowPosts(true);
             console.log('Posts button clicked, setting showPosts to true');
           }}
-          className="absolute top-4 left-20 z-[9999] bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 rounded-lg p-3 shadow-lg transition-colors flex items-center gap-2 font-bold"
+          className="absolute bottom-4 left-4 z-[9999] bg-blue-500 hover:bg-blue-600 text-white border border-blue-600 rounded-lg p-3 shadow-lg transition-colors flex items-center gap-2 font-bold"
           title="View Posts"
         >
           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -618,7 +618,7 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
         {/* Add Startup Button - Bottom Right */}
         <button
           onClick={() => setShowCreateForm(true)}
-          className="absolute bottom-16 right-4 z-[9999] bg-primary hover:bg-primary/90 text-white rounded-full p-4 shadow-lg transition-colors"
+          className="absolute bottom-4 right-4 z-[9999] bg-primary hover:bg-primary/90 text-white rounded-full p-4 shadow-lg transition-colors"
           title="Add your startup"
         >
           <Plus className="w-6 h-6" />
