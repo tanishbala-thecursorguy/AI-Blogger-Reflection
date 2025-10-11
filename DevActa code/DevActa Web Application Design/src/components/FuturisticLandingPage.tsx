@@ -164,7 +164,10 @@ export function FuturisticLandingPage({ onGetStarted }: FuturisticLandingPagePro
                 {marqueeItems.map((item, idx) => (
                   <div
                     key={idx}
-                    className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light tracking-tight py-8 marquee-item whitespace-nowrap text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+                    className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light tracking-tight py-8 marquee-item whitespace-nowrap text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.8)] shadow-[0_0_50px_rgba(255,255,255,0.3)]"
+                    style={{
+                      textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.4)'
+                    }}
                   >
                     {item}
                   </div>
