@@ -126,17 +126,27 @@ export function FuturisticLandingPage({ onGetStarted }: FuturisticLandingPagePro
               <img
                 src="/logo.png"
                 alt="DevActa Logo"
-                className="w-24 h-24 object-contain filter brightness-0 invert"
+                className="w-24 h-24 object-contain filter brightness-0 invert drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]"
               />
             </div>
 
             {/* Title */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-medium leading-tight tracking-tight text-white mb-8 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">
+            <h1 
+              className="text-5xl md:text-6xl lg:text-7xl font-medium leading-tight tracking-tight text-white mb-8"
+              style={{
+                textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.4), 0 0 40px rgba(255,255,255,0.2)'
+              }}
+            >
               DevActa
             </h1>
 
             {/* Description */}
-            <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-8 drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+            <p 
+              className="text-lg md:text-xl text-white leading-relaxed mb-8"
+              style={{
+                textShadow: '0 0 8px rgba(255,255,255,0.6), 0 0 16px rgba(255,255,255,0.4), 0 0 24px rgba(255,255,255,0.2)'
+              }}
+            >
               Where developers compete, build, and grow together. Join thousands of developers worldwide.
             </p>
 
@@ -144,7 +154,10 @@ export function FuturisticLandingPage({ onGetStarted }: FuturisticLandingPagePro
                 <div className="mb-8">
                   <button
                     onClick={onGetStarted}
-                    className="group relative px-8 py-4 bg-white text-black rounded-md font-medium overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+                    className="group relative px-8 py-4 bg-white text-black rounded-md font-medium overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.8)] drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+                    style={{
+                      boxShadow: '0 0 20px rgba(255,255,255,0.4), 0 0 40px rgba(255,255,255,0.2)'
+                    }}
                   >
                     <span className="relative z-10">Get Started</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
@@ -152,7 +165,12 @@ export function FuturisticLandingPage({ onGetStarted }: FuturisticLandingPagePro
                 </div>
 
             {/* Footer */}
-            <p className="text-sm text-white/60 drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">
+            <p 
+              className="text-sm text-white/80"
+              style={{
+                textShadow: '0 0 5px rgba(255,255,255,0.6), 0 0 10px rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.2)'
+              }}
+            >
               Powered by Acta
             </p>
           </div>
