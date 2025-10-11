@@ -116,7 +116,7 @@ export function FuturisticLandingPage({ onGetStarted }: FuturisticLandingPagePro
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-background text-foreground flex items-center justify-center px-6 overflow-hidden">
+    <div className="fixed inset-0 bg-black text-white flex items-center justify-center px-6 overflow-hidden">
       <div className="w-full max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
           {/* Left Content */}
@@ -126,17 +126,17 @@ export function FuturisticLandingPage({ onGetStarted }: FuturisticLandingPagePro
               <img
                 src="/logo.png"
                 alt="DevActa Logo"
-                className="w-24 h-24 object-contain"
+                className="w-24 h-24 object-contain filter brightness-0 invert"
               />
             </div>
 
             {/* Title */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-medium leading-tight tracking-tight text-foreground mb-8">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-medium leading-tight tracking-tight text-white mb-8 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">
               DevActa
             </h1>
 
             {/* Description */}
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8">
+            <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-8 drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
               Where developers compete, build, and grow together. Join thousands of developers worldwide.
             </p>
 
@@ -144,7 +144,7 @@ export function FuturisticLandingPage({ onGetStarted }: FuturisticLandingPagePro
                 <div className="mb-8">
                   <button
                     onClick={onGetStarted}
-                    className="group relative px-8 py-4 bg-black text-white rounded-md font-medium overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                    className="group relative px-8 py-4 bg-white text-black rounded-md font-medium overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]"
                   >
                     <span className="relative z-10">Get Started</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
@@ -152,7 +152,7 @@ export function FuturisticLandingPage({ onGetStarted }: FuturisticLandingPagePro
                 </div>
 
             {/* Footer */}
-            <p className="text-sm text-muted-foreground/60">
+            <p className="text-sm text-white/60 drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">
               Powered by Acta
             </p>
           </div>
@@ -164,7 +164,7 @@ export function FuturisticLandingPage({ onGetStarted }: FuturisticLandingPagePro
                 {marqueeItems.map((item, idx) => (
                   <div
                     key={idx}
-                    className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light tracking-tight py-8 marquee-item whitespace-nowrap"
+                    className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light tracking-tight py-8 marquee-item whitespace-nowrap text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]"
                   >
                     {item}
                   </div>
@@ -172,10 +172,10 @@ export function FuturisticLandingPage({ onGetStarted }: FuturisticLandingPagePro
               </VerticalMarquee>
 
               {/* Top vignette - maximum fade */}
-              <div className="pointer-events-none absolute top-0 left-0 right-0 h-[400px] bg-gradient-to-b from-background from-30% via-background/98 via-50% via-background/85 via-70% to-transparent z-20"></div>
+              <div className="pointer-events-none absolute top-0 left-0 right-0 h-[400px] bg-gradient-to-b from-black from-30% via-black/98 via-50% via-black/85 via-70% to-transparent z-20"></div>
 
               {/* Bottom vignette - maximum fade */}
-              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[400px] bg-gradient-to-t from-background from-30% via-background/98 via-50% via-background/85 via-70% to-transparent z-20"></div>
+              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[400px] bg-gradient-to-t from-black from-30% via-black/98 via-50% via-black/85 via-70% to-transparent z-20"></div>
             </div>
           </div>
         </div>
