@@ -581,6 +581,11 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
             onMapClick={handleMapClick}
           />
           
+        {/* TEST BUTTON - Very Visible */}
+        <div className="fixed top-20 right-4 z-[99999] bg-yellow-500 text-black p-4 rounded-lg font-bold text-lg">
+          MAP PAGE LOADED
+        </div>
+
         {/* Posts Button - Bottom Left Corner */}
         <button
           onClick={() => {
@@ -588,7 +593,7 @@ function MapStartups({ onPageChange }: MapStartupsProps) {
             setShowPosts(true);
             console.log('Posts button clicked, setting showPosts to true');
           }}
-          className="fixed bottom-4 left-4 z-[9999] bg-red-500 hover:bg-red-600 text-white border border-red-600 rounded-lg p-4 shadow-lg transition-colors flex items-center gap-2 font-bold"
+          className="fixed bottom-4 left-4 z-[9999] bg-red-500 hover:bg-red-600 text-white border border-red-600 rounded-lg p-4 shadow-lg transition-colors flex items-center gap-2 font-bold text-lg"
           title="View Posts"
         >
           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
