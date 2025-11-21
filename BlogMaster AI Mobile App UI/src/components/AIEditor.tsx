@@ -4,6 +4,7 @@ import { Card } from './ui/card';
 import { Textarea } from './ui/textarea';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
+import { enhanceContent } from '../utils/openai';
 import {
   ArrowLeft,
   Heart,
@@ -14,6 +15,8 @@ import {
   BookOpen,
   Sparkles,
   CheckCircle,
+  Copy,
+  Download,
 } from 'lucide-react';
 
 interface AIEditorProps {
@@ -69,10 +72,11 @@ const editorModes = [
 ];
 
 export function AIEditor({ onBack }: AIEditorProps) {
-  const [content, setContent] = useState(
-    'Artificial intelligence is transforming the way businesses approach content marketing. AI tools can help create, optimize, and distribute content more efficiently than ever before.\n\nBy leveraging machine learning algorithms, marketers can analyze vast amounts of data to understand what content resonates with their audience. This enables them to create more targeted and effective campaigns.'
-  );
+  const [content, setContent] = useState('');
+  const [enhancedContent, setEnhancedContent] = useState('');
   const [selectedModes, setSelectedModes] = useState<string[]>([]);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const toggleMode = (mode: string) => {
     if (selectedModes.includes(mode)) {
@@ -80,6 +84,32 @@ export function AIEditor({ onBack }: AIEditorProps) {
     } else {
       setSelectedModes([...selectedModes, mode]);
     }
+  };
+
+  const handleApplyEnhancements = async () => {
+    if (!content.trim() || selectedModes.length === 0) return;
+    
+    setIsEnhancing(true);
+    setError(null);
+    setEnhancedContent('');
+    
+    try {
+      const enhanced = await enhanceContent(content, selectedModes);
+      setEnhancedContent(enhanced);
+      setContent(enhanced);
+      setSelectedModes([]);
+    } catch (err: any) {
+      setError(err.message || 'Failed to enhance content. Please try again.');
+      console.error('Error enhancing content:', err);
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  const handleReset = () => {
+    setEnhancedContent('');
+    setSelectedModes([]);
+    setError(null);
   };
 
   return (
@@ -159,20 +189,91 @@ export function AIEditor({ onBack }: AIEditorProps) {
           </div>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <Card className="bg-red-500/10 border-red-500/20 p-4 rounded-2xl">
+            <p className="text-red-400 text-sm">{error}</p>
+          </Card>
+        )}
+
         {/* Apply Changes */}
         {selectedModes.length > 0 && (
           <Button
-            className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl"
+            onClick={handleApplyEnhancements}
+            disabled={!content.trim() || isEnhancing}
+            className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50"
           >
-            <Sparkles className="w-5 h-5 mr-2" />
-            Apply {selectedModes.length} Enhancement{selectedModes.length > 1 ? 's' : ''}
+            {isEnhancing ? (
+              <>
+                <Sparkles className="w-5 h-5 mr-2 animate-spin" />
+                Enhancing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5 mr-2" />
+                Apply {selectedModes.length} Enhancement{selectedModes.length > 1 ? 's' : ''}
+              </>
+            )}
           </Button>
+        )}
+
+        {/* Enhanced Content Preview */}
+        {enhancedContent && enhancedContent !== content && (
+          <Card className="bg-white border-white/10 p-5 rounded-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-black">Enhanced Content</Label>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-400" />
+                <span className="text-black/60 text-sm">Enhanced</span>
+              </div>
+            </div>
+            <Textarea
+              value={enhancedContent}
+              onChange={(e) => {
+                setEnhancedContent(e.target.value);
+                setContent(e.target.value);
+              }}
+              className="bg-white/5 border-white/10 text-black min-h-[300px] rounded-xl font-mono text-sm"
+            />
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  const blob = new Blob([enhancedContent], { type: 'text/markdown' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'enhanced-content.md';
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                size="sm"
+                variant="outline"
+                className="bg-white/5 border-black/20 text-black hover:bg-black/5 rounded-lg"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+              <Button
+                onClick={() => {
+                  if (navigator.clipboard) {
+                    navigator.clipboard.writeText(enhancedContent);
+                  }
+                }}
+                size="sm"
+                variant="outline"
+                className="bg-white/5 border-black/20 text-black hover:bg-black/5 rounded-lg"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Copy
+              </Button>
+            </div>
+          </Card>
         )}
 
         {/* Real-time Preview */}
         <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-white">Preview</Label>
+            <Label className="text-white">Current Content</Label>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-400" />
               <span className="text-white/60 text-sm">Live editing</span>
@@ -180,7 +281,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
           </div>
           <div className="prose prose-sm max-w-none">
             <p className="text-white/80 whitespace-pre-wrap">
-              {content}
+              {content || 'Paste your content above to start editing...'}
             </p>
           </div>
         </Card>
@@ -188,12 +289,29 @@ export function AIEditor({ onBack }: AIEditorProps) {
         {/* Action Buttons */}
         <div className="flex gap-3">
           <Button
+            onClick={handleReset}
             variant="outline"
             className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 h-12 rounded-xl"
           >
             Reset
           </Button>
-          <Button className="flex-1 bg-white text-black hover:bg-white/90 h-12 rounded-xl">
+          <Button
+            onClick={() => {
+              const templates = JSON.parse(localStorage.getItem('blogTemplates') || '[]');
+              templates.push({
+                id: Date.now(),
+                name: `Content - ${new Date().toLocaleDateString()}`,
+                content: content,
+                tone: 'Custom',
+                keywords: [],
+                createdAt: new Date().toISOString(),
+              });
+              localStorage.setItem('blogTemplates', JSON.stringify(templates));
+              alert('Content saved successfully!');
+            }}
+            disabled={!content.trim()}
+            className="flex-1 bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50"
+          >
             Save Changes
           </Button>
         </div>

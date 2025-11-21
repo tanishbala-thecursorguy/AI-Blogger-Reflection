@@ -34,7 +34,7 @@ const tasks = [
     icon: Lightbulb,
     title: 'Topic Generator',
     description: 'Get trending topic ideas based on your niche',
-    screen: 'blog-generator' as Screen,
+    screen: 'topic-generator' as Screen,
   },
   {
     icon: ListTree,

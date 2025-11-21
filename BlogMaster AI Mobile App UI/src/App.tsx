@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { OnboardingScreens } from './components/OnboardingScreens';
 import { AuthScreen } from './components/AuthScreen';
 import { HomeDashboard } from './components/HomeDashboard';
@@ -15,6 +15,7 @@ import { ImageGenerator } from './components/ImageGenerator';
 import { ExportMenu } from './components/ExportMenu';
 import { SettingsPage } from './components/SettingsPage';
 import { TemplatesHistory } from './components/TemplatesHistory';
+import { TopicGenerator } from './components/TopicGenerator';
 
 export type Screen = 
   | 'onboarding' 
@@ -22,6 +23,7 @@ export type Screen =
   | 'home' 
   | 'tasks' 
   | 'blog-generator'
+  | 'topic-generator'
   | 'seo-outline'
   | 'keyword-research'
   | 'competitor-analysis'
@@ -49,6 +51,7 @@ export default function App() {
       {currentScreen === 'home' && <HomeDashboard userName={userName} onNavigate={navigate} />}
       {currentScreen === 'tasks' && <TaskCreation onNavigate={navigate} onBack={() => navigate('home')} />}
       {currentScreen === 'blog-generator' && <BlogGenerator onBack={() => navigate('home')} onNavigate={navigate} />}
+      {currentScreen === 'topic-generator' && <TopicGenerator onBack={() => navigate('tasks')} onNavigate={navigate} />}
       {currentScreen === 'seo-outline' && <SEOOutlineGenerator onBack={() => navigate('home')} />}
       {currentScreen === 'keyword-research' && <KeywordResearch onBack={() => navigate('home')} />}
       {currentScreen === 'competitor-analysis' && <CompetitorAnalysis onBack={() => navigate('home')} />}

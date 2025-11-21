@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -7,6 +7,7 @@ import { Slider } from './ui/slider';
 import { Switch } from './ui/switch';
 import { Card } from './ui/card';
 import { Screen } from '../App';
+import { generateBlog } from '../utils/openai';
 import {
   ArrowLeft,
   Sparkles,
@@ -33,21 +34,56 @@ const writingStyles = [
 ];
 
 export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
-  const [topic, setTopic] = useState('');
+  // Load selected topics from localStorage if available
+  const loadSelectedTopics = () => {
+    try {
+      const stored = localStorage.getItem('selectedTopics');
+      if (stored) {
+        const topics = JSON.parse(stored);
+        localStorage.removeItem('selectedTopics');
+        return topics[0] || ''; // Use first topic as default
+      }
+    } catch (e) {
+      console.error('Error loading selected topics:', e);
+    }
+    return '';
+  };
+
+  const [topic, setTopic] = useState(loadSelectedTopics());
   const [selectedStyle, setSelectedStyle] = useState('Professional');
   const [wordCount, setWordCount] = useState([1500]);
   const [seoMode, setSeoMode] = useState(true);
-  const [keywords, setKeywords] = useState<string[]>(['AI blogging', 'content marketing']);
+  const [keywords, setKeywords] = useState<string[]>([]);
   const [newKeyword, setNewKeyword] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    if (!topic.trim()) return;
+    
     setIsGenerating(true);
-    setTimeout(() => {
-      setIsGenerating(false);
+    setError(null);
+    setShowPreview(false);
+    
+    try {
+      const content = await generateBlog({
+        topic: topic.trim(),
+        style: selectedStyle,
+        wordCount: wordCount[0],
+        keywords: keywords,
+        seoMode: seoMode,
+      });
+      
+      setGeneratedContent(content);
       setShowPreview(true);
-    }, 2000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate blog. Please try again.');
+      console.error('Error generating blog:', err);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const addKeyword = () => {
@@ -208,22 +244,63 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
           )}
         </Button>
 
+        {/* Error Message */}
+        {error && (
+          <Card className="bg-red-500/10 border-red-500/20 p-4 rounded-2xl">
+            <p className="text-red-400 text-sm">{error}</p>
+          </Card>
+        )}
+
         {/* Live Preview */}
-        {showPreview && (
+        {showPreview && generatedContent && (
           <Card className="bg-white border-white/10 p-6 rounded-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-black">Live Preview</h2>
+              <h2 className="text-black font-semibold">Generated Blog</h2>
               <div className="flex gap-2">
                 <Button
-                  onClick={() => onNavigate('export')}
+                  onClick={() => {
+                    const blob = new Blob([generatedContent], { type: 'text/markdown' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${topic.replace(/\s+/g, '-')}-blog.md`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-lg border-black/20 text-black hover:bg-black/5"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (navigator.clipboard) {
+                      navigator.clipboard.writeText(generatedContent);
+                    }
+                  }}
                   size="sm"
                   variant="outline"
                   className="rounded-lg border-black/20 text-black hover:bg-black/5"
                 >
                   <Share2 className="w-4 h-4 mr-2" />
-                  Export
+                  Copy
                 </Button>
                 <Button
+                  onClick={() => {
+                    const templates = JSON.parse(localStorage.getItem('blogTemplates') || '[]');
+                    templates.push({
+                      id: Date.now(),
+                      name: topic,
+                      content: generatedContent,
+                      tone: selectedStyle,
+                      keywords: keywords,
+                      createdAt: new Date().toISOString(),
+                    });
+                    localStorage.setItem('blogTemplates', JSON.stringify(templates));
+                    alert('Blog saved successfully!');
+                  }}
                   size="sm"
                   variant="outline"
                   className="rounded-lg border-black/20 text-black hover:bg-black/5"
@@ -234,37 +311,13 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
               </div>
             </div>
 
-            <div className="prose prose-sm max-w-none text-black">
-              <h1 className="text-black">How to Use AI for Content Marketing: The Complete 2025 Guide</h1>
-              
-              <p className="text-black/80">
-                Artificial intelligence is revolutionizing the way businesses approach content 
-                marketing. From generating ideas to optimizing for SEO, AI tools are becoming 
-                indispensable for modern marketers.
-              </p>
-
-              <h2 className="text-black">Understanding AI in Content Marketing</h2>
-              
-              <p className="text-black/80">
-                AI-powered content marketing tools use machine learning algorithms to analyze 
-                data, predict trends, and generate human-like content. These tools can help you 
-                create blog posts, social media content, and email campaigns in a fraction of 
-                the time it would take manually.
-              </p>
-
-              <h3 className="text-black">Benefits of AI Content Marketing</h3>
-              
-              <ul className="text-black/80">
-                <li>Save time on content creation</li>
-                <li>Improve SEO performance</li>
-                <li>Generate data-driven insights</li>
-                <li>Scale content production</li>
-              </ul>
-
-              <p className="text-black/60 text-sm border-t border-black/10 pt-4 mt-6">
-                This is a preview of your generated content. You can edit, export, or continue generating more sections.
-              </p>
-            </div>
+            <Textarea
+              value={generatedContent}
+              onChange={(e) => setGeneratedContent(e.target.value)}
+              className="bg-white/5 border-white/10 text-black min-h-[500px] rounded-xl font-mono text-sm leading-relaxed"
+              placeholder="Generated content will appear here..."
+              readOnly={false}
+            />
           </Card>
         )}
       </div>

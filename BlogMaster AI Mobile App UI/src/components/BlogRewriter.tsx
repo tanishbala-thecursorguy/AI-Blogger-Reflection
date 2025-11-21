@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
+import { rewriteBlog } from '../utils/openai';
 import {
   ArrowLeft,
   Search,
@@ -12,6 +13,8 @@ import {
   Minimize,
   Eraser,
   RefreshCw,
+  Download,
+  Copy,
 } from 'lucide-react';
 
 interface BlogRewriterProps {
@@ -55,6 +58,9 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
   const [originalText, setOriginalText] = useState('');
   const [rewrittenText, setRewrittenText] = useState('');
   const [selectedTone, setSelectedTone] = useState('Professional');
+  const [selectedActions, setSelectedActions] = useState<string[]>([]);
+  const [isRewriting, setIsRewriting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const toneOptions = [
     'Professional',
@@ -65,11 +71,41 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
     'Academic',
   ];
 
-  const handleRewrite = (action: string) => {
-    // Simulate rewriting
-    setRewrittenText(
-      'Artificial intelligence has revolutionized content marketing strategies across industries. Modern AI tools enable businesses to create, optimize, and distribute content with unprecedented efficiency and precision.\n\nThrough advanced machine learning algorithms, marketers can now analyze massive datasets to identify content that truly resonates with their target audience. This data-driven approach allows for the creation of highly targeted, effective marketing campaigns that deliver measurable results.'
-    );
+  const handleActionClick = (action: string) => {
+    if (selectedActions.includes(action)) {
+      setSelectedActions(selectedActions.filter(a => a !== action));
+    } else {
+      setSelectedActions([...selectedActions, action]);
+    }
+  };
+
+  const handleRewrite = async (action?: string) => {
+    if (!originalText.trim()) return;
+    
+    const improvements = action ? [action] : selectedActions;
+    if (improvements.length === 0 && !action) {
+      // Default to tone rewrite
+      improvements.push('Improve readability');
+    }
+    
+    setIsRewriting(true);
+    setError(null);
+    setRewrittenText('');
+    
+    try {
+      const content = await rewriteBlog(originalText, {
+        style: action === 'tone' ? selectedTone : undefined,
+        tone: action === 'tone' ? selectedTone : selectedTone,
+        improvements: improvements,
+      });
+      
+      setRewrittenText(content);
+    } catch (err: any) {
+      setError(err.message || 'Failed to rewrite blog. Please try again.');
+      console.error('Error rewriting blog:', err);
+    } finally {
+      setIsRewriting(false);
+    }
   };
 
   return (
@@ -109,29 +145,55 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
 
         {/* Rewrite Actions */}
         <div className="space-y-3">
-          <Label className="text-white">Quick Actions</Label>
+          <Label className="text-white">Quick Actions (Select one or more)</Label>
           <div className="grid grid-cols-2 gap-3">
             {rewriteOptions.map((option) => {
               const Icon = option.icon;
+              const isSelected = selectedActions.includes(option.label);
               return (
                 <Card
                   key={option.label}
-                  onClick={() => handleRewrite(option.label)}
-                  className="bg-white/5 border-white/10 p-4 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer"
+                  onClick={() => handleActionClick(option.label)}
+                  className={`p-4 rounded-2xl transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-white text-black border-white'
+                      : 'bg-white/5 border-white/10 hover:bg-white/10'
+                  }`}
                 >
                   <div className="space-y-2">
-                    <div className="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-white" strokeWidth={1.5} />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      isSelected ? 'bg-black/10' : 'bg-white/10'
+                    }`}>
+                      <Icon className={`w-5 h-5 ${isSelected ? 'text-black' : 'text-white'}`} strokeWidth={1.5} />
                     </div>
                     <div>
-                      <h3 className="text-white text-sm mb-0.5">{option.label}</h3>
-                      <p className="text-white/60 text-xs">{option.description}</p>
+                      <h3 className={`text-sm mb-0.5 ${isSelected ? 'text-black' : 'text-white'}`}>{option.label}</h3>
+                      <p className={`text-xs ${isSelected ? 'text-black/60' : 'text-white/60'}`}>{option.description}</p>
                     </div>
                   </div>
                 </Card>
               );
             })}
           </div>
+          {selectedActions.length > 0 && (
+            <Button
+              onClick={() => handleRewrite()}
+              disabled={!originalText || isRewriting}
+              className="w-full bg-white text-black hover:bg-white/90 h-11 rounded-xl disabled:opacity-50"
+            >
+              {isRewriting ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Rewriting...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Apply Selected Improvements
+                </>
+              )}
+            </Button>
+          )}
         </div>
 
         {/* Tone Selector */}
@@ -154,54 +216,121 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
           </div>
           <Button
             onClick={() => handleRewrite('tone')}
-            disabled={!originalText}
+            disabled={!originalText || isRewriting}
             className="w-full bg-white text-black hover:bg-white/90 h-11 rounded-xl disabled:opacity-50"
           >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Rewrite in {selectedTone} Tone
+            {isRewriting ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                Rewriting...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Rewrite in {selectedTone} Tone
+              </>
+            )}
           </Button>
         </Card>
+
+        {/* Error Message */}
+        {error && (
+          <Card className="bg-red-500/10 border-red-500/20 p-4 rounded-2xl">
+            <p className="text-red-400 text-sm">{error}</p>
+          </Card>
+        )}
 
         {/* Before/After Comparison */}
         {rewrittenText && (
           <div className="space-y-3">
-            <Label className="text-white">Before / After</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-white">Rewritten Content</Label>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    const blob = new Blob([rewrittenText], { type: 'text/markdown' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'rewritten-blog.md';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  size="sm"
+                  variant="outline"
+                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 h-9 rounded-xl"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (navigator.clipboard) {
+                      navigator.clipboard.writeText(rewrittenText);
+                    }
+                  }}
+                  size="sm"
+                  variant="outline"
+                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 h-9 rounded-xl"
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy
+                </Button>
+              </div>
+            </div>
             
             {/* Before */}
             <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-white/60 text-sm">Before</span>
+                <span className="text-white/60 text-sm">Original</span>
                 <span className="text-white/60 text-sm">
                   {originalText.split(' ').length} words
                 </span>
               </div>
-              <p className="text-white/80 text-sm leading-relaxed">
-                {originalText || 'No original text'}
-              </p>
+              <Textarea
+                value={originalText}
+                onChange={(e) => setOriginalText(e.target.value)}
+                className="bg-white/5 border-white/10 text-white min-h-[150px] rounded-xl text-sm"
+                readOnly
+              />
             </Card>
 
             {/* After */}
             <Card className="bg-white border-white/10 p-5 rounded-2xl space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-black/60 text-sm">After</span>
+                <span className="text-black/60 text-sm">Rewritten</span>
                 <span className="text-black/60 text-sm">
                   {rewrittenText.split(' ').length} words
                 </span>
               </div>
-              <p className="text-black/80 text-sm leading-relaxed">
-                {rewrittenText}
-              </p>
+              <Textarea
+                value={rewrittenText}
+                onChange={(e) => setRewrittenText(e.target.value)}
+                className="bg-white/5 border-white/10 text-black min-h-[400px] rounded-xl font-mono text-sm"
+                placeholder="Rewritten content will appear here..."
+              />
             </Card>
 
             {/* Action Buttons */}
             <div className="flex gap-3">
               <Button
+                onClick={() => {
+                  setRewrittenText('');
+                  setSelectedActions([]);
+                }}
                 variant="outline"
                 className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 h-11 rounded-xl"
               >
-                Try Again
+                Clear
               </Button>
-              <Button className="flex-1 bg-white text-black hover:bg-white/90 h-11 rounded-xl">
+              <Button
+                onClick={() => {
+                  setOriginalText(rewrittenText);
+                  setRewrittenText('');
+                  setSelectedActions([]);
+                }}
+                className="flex-1 bg-white text-black hover:bg-white/90 h-11 rounded-xl"
+              >
                 Use This Version
               </Button>
             </div>
