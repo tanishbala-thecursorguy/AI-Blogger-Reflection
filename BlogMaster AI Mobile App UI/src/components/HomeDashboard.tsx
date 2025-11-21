@@ -1,3 +1,4 @@
+import React from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Screen } from '../App';
@@ -21,12 +22,12 @@ interface HomeDashboardProps {
 }
 
 const quickActions = [
-  { icon: FileText, label: 'Generate Blog', screen: 'blog-generator' as Screen, color: 'bg-white/10' },
-  { icon: Lightbulb, label: 'Topic Ideas', screen: 'tasks' as Screen, color: 'bg-white/10' },
-  { icon: ListTree, label: 'SEO Outline', screen: 'seo-outline' as Screen, color: 'bg-white/10' },
-  { icon: RefreshCw, label: 'Rewrite Blog', screen: 'blog-rewriter' as Screen, color: 'bg-white/10' },
-  { icon: Target, label: 'Competitor Analysis', screen: 'competitor-analysis' as Screen, color: 'bg-white/10' },
-  { icon: Search, label: 'Keyword Research', screen: 'keyword-research' as Screen, color: 'bg-white/10' },
+  { icon: FileText, label: 'Generate Blog', screen: 'blog-generator' as Screen },
+  { icon: Lightbulb, label: 'Topic Ideas', screen: 'tasks' as Screen },
+  { icon: ListTree, label: 'SEO Outline', screen: 'seo-outline' as Screen },
+  { icon: RefreshCw, label: 'Rewrite Blog', screen: 'blog-rewriter' as Screen },
+  { icon: Target, label: 'Competitor Analysis', screen: 'competitor-analysis' as Screen },
+  { icon: Search, label: 'Keyword Research', screen: 'keyword-research' as Screen },
 ];
 
 const recentBlogs = [
@@ -119,7 +120,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
                   onClick={() => onNavigate(action.screen)}
                   className="bg-white/5 border-white/10 p-5 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer"
                 >
-                  <div className={`${action.color} w-12 h-12 rounded-xl flex items-center justify-center mb-3`}>
+                  <div className="bg-white/10 w-12 h-12 rounded-xl flex items-center justify-center mb-3">
                     <Icon className="w-6 h-6 text-white" strokeWidth={1.5} />
                   </div>
                   <div className="text-white text-sm">{action.label}</div>

@@ -1,20 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { Separator } from './ui/separator';
+import { Screen } from '../App';
 import {
   ArrowLeft,
   User,
   Edit,
-  Palette,
   FileText,
   BookOpen,
-  Moon,
-  Sun,
-  HelpCircle,
+  GraduationCap,
   LogOut,
   ChevronRight,
 } from 'lucide-react';
@@ -22,13 +20,50 @@ import {
 interface SettingsPageProps {
   onBack: () => void;
   onLogout: () => void;
+  onNavigate: (screen: Screen) => void;
 }
 
-export function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
-  const [darkMode, setDarkMode] = useState(true);
-  const [name, setName] = useState('Sarah Johnson');
-  const [email, setEmail] = useState('sarah@example.com');
-  const [defaultTone, setDefaultTone] = useState('Professional');
+export function SettingsPage({ onBack, onLogout, onNavigate }: SettingsPageProps) {
+  const [name, setName] = useState(() => {
+    const saved = localStorage.getItem('userName') || 'Sarah Johnson';
+    return saved;
+  });
+  const [email, setEmail] = useState(() => {
+    const saved = localStorage.getItem('userEmail') || 'sarah@example.com';
+    return saved;
+  });
+  const [defaultTone, setDefaultTone] = useState(() => {
+    const saved = localStorage.getItem('defaultTone') || 'Professional';
+    return saved;
+  });
+  
+  // Auto-save name, email, and tone to localStorage
+  useEffect(() => {
+    if (name) {
+      localStorage.setItem('userName', name);
+    }
+  }, [name]);
+
+  useEffect(() => {
+    if (email) {
+      localStorage.setItem('userEmail', email);
+    }
+  }, [email]);
+
+  useEffect(() => {
+    if (defaultTone) {
+      localStorage.setItem('defaultTone', defaultTone);
+    }
+  }, [defaultTone]);
+
+  // Get template count
+  const [templateCount, setTemplateCount] = useState(0);
+  useEffect(() => {
+    const templates = localStorage.getItem('blogTemplates');
+    if (templates) {
+      setTemplateCount(JSON.parse(templates).length);
+    }
+  }, []);
 
   const toneOptions = ['Professional', 'Casual', 'Friendly', 'Authoritative', 'Conversational'];
 
@@ -134,14 +169,17 @@ export function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
             <h2 className="text-white">Blog Templates</h2>
           </div>
           
-          <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
+          <button 
+            onClick={() => onNavigate('templates-history')}
+            className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+          >
             <div className="flex items-center gap-3">
               <div className="bg-white/10 w-10 h-10 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <div className="text-left">
                 <div className="text-white text-sm">Manage Templates</div>
-                <div className="text-white/60 text-xs">5 saved templates</div>
+                <div className="text-white/60 text-xs">{templateCount} saved templates</div>
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-white/40" />
@@ -179,41 +217,14 @@ export function SettingsPage({ onBack, onLogout }: SettingsPageProps) {
           </div>
         </Card>
 
-        {/* Appearance */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
-          <div className="flex items-center gap-2">
-            <Palette className="w-5 h-5 text-white" />
-            <h2 className="text-white">Appearance</h2>
-          </div>
-          
-          <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-            <div className="flex items-center gap-3">
-              {darkMode ? (
-                <Moon className="w-5 h-5 text-white" />
-              ) : (
-                <Sun className="w-5 h-5 text-white" />
-              )}
-              <div>
-                <div className="text-white text-sm">Dark Mode</div>
-                <div className="text-white/60 text-xs">Pure black & white theme</div>
-              </div>
-            </div>
-            <Switch
-              checked={darkMode}
-              onCheckedChange={setDarkMode}
-              className="data-[state=checked]:bg-white"
-            />
-          </div>
-        </Card>
-
-        {/* Support */}
+        {/* Tutorials */}
         <Card className="bg-white/5 border-white/10 p-5 rounded-2xl">
           <button className="w-full flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
             <div className="flex items-center gap-3">
-              <HelpCircle className="w-5 h-5 text-white" />
+              <GraduationCap className="w-5 h-5 text-white" />
               <div className="text-left">
-                <div className="text-white text-sm">Help & Support</div>
-                <div className="text-white/60 text-xs">FAQs and contact</div>
+                <div className="text-white text-sm">Tutorials</div>
+                <div className="text-white/60 text-xs">Learn how to use BlogMaster AI</div>
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-white/40" />

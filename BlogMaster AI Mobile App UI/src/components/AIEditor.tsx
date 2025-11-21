@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Textarea } from './ui/textarea';
@@ -109,7 +109,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="bg-white/10 border-white/10 text-white placeholder:text-white/40 min-h-[200px] rounded-xl resize-none"
+            className="bg-white/10 border-white/10 text-white placeholder:text-white/40 min-h-[200px] rounded-xl"
             placeholder="Paste your content here..."
           />
           <div className="flex items-center justify-between text-white/60 text-sm">
@@ -139,7 +139,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-start gap-3 flex-1">
-                      <div className="bg-white/10 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <div className="bg-white/10 w-10 h-10 rounded-lg flex items-center justify-center">
                         <Icon className="w-5 h-5 text-white" strokeWidth={1.5} />
                       </div>
                       <div className="flex-1">
@@ -150,7 +150,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
                     <Switch
                       checked={isSelected}
                       onCheckedChange={() => toggleMode(mode.label)}
-                      className="data-[state=checked]:bg-white flex-shrink-0"
+                      className="data-[state=checked]:bg-white"
                     />
                   </div>
                 </Card>
@@ -170,16 +170,16 @@ export function AIEditor({ onBack }: AIEditorProps) {
         )}
 
         {/* Real-time Preview */}
-        <Card className="bg-white border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-black">Preview</Label>
+            <Label className="text-white">Preview</Label>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <span className="text-black/60 text-sm">Live editing</span>
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span className="text-white/60 text-sm">Live editing</span>
             </div>
           </div>
           <div className="prose prose-sm max-w-none">
-            <p className="text-black/80 leading-relaxed">
+            <p className="text-white/80 whitespace-pre-wrap">
               {content}
             </p>
           </div>
@@ -189,11 +189,11 @@ export function AIEditor({ onBack }: AIEditorProps) {
         <div className="flex gap-3">
           <Button
             variant="outline"
-            className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 h-11 rounded-xl"
+            className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 h-12 rounded-xl"
           >
             Reset
           </Button>
-          <Button className="flex-1 bg-white text-black hover:bg-white/90 h-11 rounded-xl">
+          <Button className="flex-1 bg-white text-black hover:bg-white/90 h-12 rounded-xl">
             Save Changes
           </Button>
         </div>

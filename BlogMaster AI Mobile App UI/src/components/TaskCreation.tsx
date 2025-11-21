@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Screen } from '../App';
@@ -133,8 +134,8 @@ export function TaskCreation({ onNavigate, onBack }: TaskCreationProps) {
                   <Icon className="w-6 h-6 text-white" strokeWidth={1.5} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-white mb-1">{task.title}</h3>
-                  <p className="text-white/60 text-sm">{task.description}</p>
+                  <h3 className="text-white text-base mb-1 font-medium">{task.title}</h3>
+                  <p className="text-white/60 text-sm leading-relaxed">{task.description}</p>
                 </div>
               </div>
             </Card>

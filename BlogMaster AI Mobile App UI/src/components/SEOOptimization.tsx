@@ -1,7 +1,9 @@
+import React from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
+import { Label } from './ui/label';
 import {
   ArrowLeft,
   CheckCircle,
@@ -206,8 +208,8 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
                 key={idx}
                 className="flex items-start gap-3 p-3 bg-white/5 rounded-xl"
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-white/60 mt-2 flex-shrink-0" />
-                <span className="text-white/80 text-sm flex-1">{gap}</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-2 flex-shrink-0" />
+                <span className="text-white/80 text-sm">{gap}</span>
               </div>
             ))}
           </div>

@@ -14,6 +14,7 @@ import { InternalLinking } from './components/InternalLinking';
 import { ImageGenerator } from './components/ImageGenerator';
 import { ExportMenu } from './components/ExportMenu';
 import { SettingsPage } from './components/SettingsPage';
+import { TemplatesHistory } from './components/TemplatesHistory';
 
 export type Screen = 
   | 'onboarding' 
@@ -30,7 +31,8 @@ export type Screen =
   | 'internal-linking'
   | 'image-generator'
   | 'export'
-  | 'settings';
+  | 'settings'
+  | 'templates-history';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('onboarding');
@@ -56,7 +58,8 @@ export default function App() {
       {currentScreen === 'internal-linking' && <InternalLinking onBack={() => navigate('home')} />}
       {currentScreen === 'image-generator' && <ImageGenerator onBack={() => navigate('home')} />}
       {currentScreen === 'export' && <ExportMenu onBack={() => navigate('home')} />}
-      {currentScreen === 'settings' && <SettingsPage onBack={() => navigate('home')} onLogout={() => navigate('auth')} />}
+      {currentScreen === 'settings' && <SettingsPage onBack={() => navigate('home')} onLogout={() => navigate('auth')} onNavigate={navigate} />}
+      {currentScreen === 'templates-history' && <TemplatesHistory onBack={() => navigate('settings')} />}
     </div>
   );
 }
