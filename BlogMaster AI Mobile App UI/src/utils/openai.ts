@@ -137,12 +137,21 @@ OUTPUT MUST ALWAYS FOLLOW THIS EXACT FORMAT:
 - Keep explanations clear and structured
 `;
 
+// Helper function to calculate max_tokens based on word count
+// Rough estimate: 1 word ≈ 1.3 tokens, so for 3000 words ≈ 4000 tokens
+function calculateMaxTokens(wordCount: number): number {
+  // Use 1.5 tokens per word as a safe estimate, add buffer
+  return Math.ceil(wordCount * 1.5) + 500; // Add 500 buffer
+}
+
 // Helper function to call Groq API
-async function callGroqAPI(prompt: string, systemPrompt: string): Promise<string | null> {
+async function callGroqAPI(prompt: string, systemPrompt: string, wordCount?: number): Promise<string | null> {
   if (!GROQ_API_KEY) {
     console.log('Groq API key not found, skipping Groq API call');
     return null;
   }
+  
+  const maxTokens = wordCount ? calculateMaxTokens(wordCount) : 4000;
   
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -164,7 +173,7 @@ async function callGroqAPI(prompt: string, systemPrompt: string): Promise<string
           },
         ],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: Math.min(maxTokens, 16384), // Groq has a max limit
       }),
     });
 
@@ -194,7 +203,7 @@ async function callGroqAPI(prompt: string, systemPrompt: string): Promise<string
 }
 
 // Helper function to call Hugging Face API
-async function callHuggingFaceAPI(prompt: string, systemPrompt: string): Promise<string | null> {
+async function callHuggingFaceAPI(prompt: string, systemPrompt: string, wordCount?: number): Promise<string | null> {
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -204,6 +213,8 @@ async function callHuggingFaceAPI(prompt: string, systemPrompt: string): Promise
       headers['Authorization'] = `Bearer ${HUGGINGFACE_API_KEY}`;
     }
 
+    const maxTokens = wordCount ? calculateMaxTokens(wordCount) : 4000;
+
     const response = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
       method: 'POST',
       headers,
@@ -211,7 +222,7 @@ async function callHuggingFaceAPI(prompt: string, systemPrompt: string): Promise
         inputs: `<s>[INST] ${systemPrompt}\n\n${prompt} [/INST]`,
         parameters: {
           temperature: 0.7,
-          max_new_tokens: 4000,
+          max_new_tokens: Math.min(maxTokens, 4096), // HF model limit
           return_full_text: false,
         },
       }),
@@ -228,7 +239,7 @@ async function callHuggingFaceAPI(prompt: string, systemPrompt: string): Promise
             inputs: `<s>[INST] ${systemPrompt}\n\n${prompt} [/INST]`,
             parameters: {
               temperature: 0.7,
-              max_new_tokens: 4000,
+              max_new_tokens: Math.min(wordCount ? calculateMaxTokens(wordCount) : 4000, 4096),
               return_full_text: false,
             },
           }),
@@ -275,27 +286,30 @@ export async function generateBlog(options: {
 
   const prompt = `Write a comprehensive blog post about "${topic}" in a ${style} writing style.
 
-Requirements:
-- Word count: Approximately ${wordCount} words
+CRITICAL REQUIREMENTS:
+- EXACT word count: ${wordCount} words (NO MORE, NO LESS - this is essential)
+- You MUST write exactly ${wordCount} words, not ${wordCount + 100}, not ${wordCount - 100}, but EXACTLY ${wordCount} words
+- Count your words carefully and ensure the final output is exactly ${wordCount} words
 ${keywordsText}${seoText}
 - Follow the exact format provided below
 - Use clear, professional language
 - Include practical examples and actionable advice
 - Make it beginner-friendly yet expert-level
 - Ensure all sections from the template are included
+- Adjust the length of each section to meet the ${wordCount} word requirement
 
 ${BLOG_FORMAT_INSTRUCTIONS}
 
-Now write the blog post following this exact format:`;
+Now write the blog post following this exact format. Remember: The total word count MUST be exactly ${wordCount} words.`;
 
-  const systemPrompt = 'You are an expert blog writer who creates clear, educational, SEO-optimized content that follows exact formatting instructions.';
+  const systemPrompt = `You are an expert blog writer who creates clear, educational, SEO-optimized content that follows exact formatting instructions. You ALWAYS write the EXACT number of words requested - never more, never less. If asked for ${wordCount} words, you write exactly ${wordCount} words.`;
 
   // Try Groq first (faster), then Hugging Face
   let result: string | null = null;
   let groqError: Error | null = null;
   
   try {
-    result = await callGroqAPI(prompt, systemPrompt);
+    result = await callGroqAPI(prompt, systemPrompt, wordCount);
   } catch (error: any) {
     groqError = error;
     console.log('Groq API failed, trying Hugging Face fallback...');
@@ -303,7 +317,22 @@ Now write the blog post following this exact format:`;
   
   if (!result && !groqError) {
     console.log('Groq API returned no result, trying Hugging Face fallback...');
-    result = await callHuggingFaceAPI(prompt, systemPrompt);
+    result = await callHuggingFaceAPI(prompt, systemPrompt, wordCount);
+  }
+  
+  // Verify word count if result is close
+  if (result) {
+    const actualWordCount = result.split(/\s+/).length;
+    const difference = Math.abs(actualWordCount - wordCount);
+    const tolerance = Math.ceil(wordCount * 0.1); // 10% tolerance
+    
+    if (difference > tolerance) {
+      console.log(`Word count: requested ${wordCount}, got ${actualWordCount}, difference: ${difference}`);
+      // Try to adjust if way off (but don't fail if close)
+      if (difference > wordCount * 0.2) { // More than 20% off
+        console.warn(`Warning: Generated content has ${actualWordCount} words, requested ${wordCount}`);
+      }
+    }
   }
 
   if (!result) {
@@ -424,12 +453,15 @@ ${BLOG_FORMAT_INSTRUCTIONS}
 
 Now enhance the content following this exact format:`;
 
-  const systemPrompt = 'You are an expert content editor who enhances blog content while maintaining its core message and structure.';
+  const systemPrompt = 'You are an expert content editor who enhances blog content while maintaining its core message and structure. Maintain a similar length to the original content.';
 
-  let result = await callGroqAPI(prompt, systemPrompt);
+  // Estimate word count from original content
+  const originalWordCount = content.split(/\s+/).length;
+  
+  let result = await callGroqAPI(prompt, systemPrompt, originalWordCount);
   
   if (!result) {
-    result = await callHuggingFaceAPI(prompt, systemPrompt);
+    result = await callHuggingFaceAPI(prompt, systemPrompt, originalWordCount);
   }
 
   if (!result) {
