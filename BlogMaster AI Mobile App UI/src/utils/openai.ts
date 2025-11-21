@@ -272,6 +272,81 @@ async function callHuggingFaceAPI(prompt: string, systemPrompt: string, wordCoun
   }
 }
 
+// Helper function to get tone/style instructions based on writing style
+function getStyleInstructions(style: string): string {
+  const styleMap: Record<string, string> = {
+    'Professional': `TONE & STYLE REQUIREMENTS:
+- Use formal, authoritative language
+- Write in third person or professional second person
+- Maintain a serious, business-focused tone
+- Use technical terminology appropriately
+- Structure sentences clearly and concisely
+- Avoid casual language, slang, or contractions
+- Present facts and data objectively
+- Use professional transitions and connectors`,
+
+    'Human-like': `TONE & STYLE REQUIREMENTS:
+- Write in a natural, conversational tone
+- Use first or second person (I, you, we)
+- Include casual language and everyday expressions
+- Make it feel like a friendly expert is talking to you
+- Use contractions naturally (don't, can't, it's)
+- Add personal touches and relatable examples
+- Break down complex ideas simply
+- Use friendly, approachable language`,
+
+    'Storytelling': `TONE & STYLE REQUIREMENTS:
+- Use narrative techniques and storytelling elements
+- Begin with engaging hooks or anecdotes
+- Create a narrative arc (beginning, middle, end)
+- Use descriptive language and vivid imagery
+- Include examples told as short stories
+- Build emotional connections with readers
+- Use transitions that flow like a story
+- End with memorable conclusions or takeaways`,
+
+    'Emotional': `TONE & STYLE REQUIREMENTS:
+- Appeal to readers' emotions throughout
+- Use powerful, evocative language
+- Include emotional triggers and relatable feelings
+- Connect content to personal experiences
+- Use strong descriptive words that evoke emotion
+- Include empathetic language and understanding
+- Build emotional engagement in each section
+- Use passionate, heartfelt expressions`,
+
+    'Beginner-friendly': `TONE & STYLE REQUIREMENTS:
+- Use simple, clear language (avoid jargon)
+- Explain technical terms when introduced
+- Break down complex concepts into easy steps
+- Use analogies and simple comparisons
+- Write in second person (you) to guide readers
+- Include "why" explanations, not just "how"
+- Use short sentences and clear paragraphs
+- Provide encouragement and reassurance`,
+
+    'Expert Blogger': `TONE & STYLE REQUIREMENTS:
+- Write with deep expertise and authority
+- Use advanced terminology and industry insights
+- Share insider knowledge and pro tips
+- Include data, statistics, and research references
+- Provide detailed, technical explanations
+- Use sophisticated language while remaining clear
+- Demonstrate mastery of the subject
+- Include advanced strategies and nuanced perspectives`,
+
+    'Custom Tone': `TONE & STYLE REQUIREMENTS:
+- Use a balanced, versatile tone
+- Adapt style to the content's needs
+- Mix professional and approachable elements
+- Maintain consistency throughout
+- Use varied sentence structures
+- Include both formal and informal elements appropriately`
+  };
+
+  return styleMap[style] || styleMap['Professional'];
+}
+
 export async function generateBlog(options: {
   topic: string;
   style: string;
@@ -283,6 +358,7 @@ export async function generateBlog(options: {
 
   const keywordsText = keywords.length > 0 ? `Target keywords: ${keywords.join(', ')}. ` : '';
   const seoText = seoMode ? 'Optimize for SEO and include target keywords naturally. ' : '';
+  const styleInstructions = getStyleInstructions(style);
 
   const prompt = `Write a comprehensive blog post about "${topic}" in a ${style} writing style.
 
@@ -290,19 +366,32 @@ CRITICAL REQUIREMENTS:
 - EXACT word count: ${wordCount} words (NO MORE, NO LESS - this is essential)
 - You MUST write exactly ${wordCount} words, not ${wordCount + 100}, not ${wordCount - 100}, but EXACTLY ${wordCount} words
 - Count your words carefully and ensure the final output is exactly ${wordCount} words
+
+${styleInstructions}
+
+CONTENT REQUIREMENTS:
 ${keywordsText}${seoText}
-- Follow the exact format provided below
-- Use clear, professional language
+- Follow the EXACT format provided below - every section must be included
+- Use the ${style} tone consistently throughout ALL sections
 - Include practical examples and actionable advice
-- Make it beginner-friendly yet expert-level
+- Maintain the ${style} style in every paragraph, heading, and section
 - Ensure all sections from the template are included
 - Adjust the length of each section to meet the ${wordCount} word requirement
+- The tone must match the ${style} style in introduction, body, examples, FAQs, and conclusion
 
 ${BLOG_FORMAT_INSTRUCTIONS}
 
-Now write the blog post following this exact format. Remember: The total word count MUST be exactly ${wordCount} words.`;
+IMPORTANT: Apply the ${style} writing style to EVERY part of the blog post - introduction, headings, examples, tips, FAQs, and conclusion. The entire content must reflect the ${style} tone consistently.
 
-  const systemPrompt = `You are an expert blog writer who creates clear, educational, SEO-optimized content that follows exact formatting instructions. You ALWAYS write the EXACT number of words requested - never more, never less. If asked for ${wordCount} words, you write exactly ${wordCount} words.`;
+Now write the blog post following this exact format. Remember: The total word count MUST be exactly ${wordCount} words, and the ${style} tone must be consistent throughout.`;
+
+  const systemPrompt = `You are an expert blog writer who creates clear, educational, SEO-optimized content that follows exact formatting instructions and maintains consistent tone throughout. 
+
+KEY RULES:
+1. You ALWAYS write the EXACT number of words requested - never more, never less. If asked for ${wordCount} words, you write exactly ${wordCount} words.
+2. You MUST maintain the ${style} writing style consistently throughout the ENTIRE blog post - every section, paragraph, heading, example, and FAQ must reflect the ${style} tone.
+3. You MUST follow the exact format template provided - include all required sections in the specified order.
+4. The tone and style must be uniform across all sections - introduction, body content, examples, tips, FAQs, and conclusion all must use the ${style} style.`;
 
   // Try Groq first (faster), then Hugging Face
   let result: string | null = null;
