@@ -352,6 +352,9 @@ export async function rewriteBlog(content: string, options: {
 }): Promise<string> {
   const { style, tone, improvements = [] } = options;
 
+  // Estimate word count from original content
+  const originalWordCount = content.split(/\s+/).length;
+
   const improvementsText = improvements.length > 0 
     ? `\nApply these improvements: ${improvements.join(', ')}.`
     : '';
@@ -361,6 +364,8 @@ export async function rewriteBlog(content: string, options: {
 ${content}
 
 Requirements:
+- EXACT word count: ${originalWordCount} words (maintain the same length as the original)
+- You MUST write approximately ${originalWordCount} words to match the original content length
 ${style ? `- Writing style: ${style}` : ''}
 ${tone ? `- Tone: ${tone}` : ''}
 ${improvementsText}
@@ -368,17 +373,18 @@ ${improvementsText}
 - Maintain all key information while improving clarity and structure
 - Make it more engaging and professional
 - Ensure SEO optimization
+- Keep the word count close to the original (${originalWordCount} words)
 
 ${BLOG_FORMAT_INSTRUCTIONS}
 
-Now rewrite the blog post following this exact format:`;
+Now rewrite the blog post following this exact format. Remember: Maintain approximately ${originalWordCount} words to match the original content length.`;
 
-  const systemPrompt = 'You are an expert blog editor who rewrites content to be clearer, more engaging, and better structured while maintaining the original information.';
+  const systemPrompt = `You are an expert blog editor who rewrites content to be clearer, more engaging, and better structured while maintaining the original information. You ALWAYS maintain approximately the same word count as the original content (${originalWordCount} words).`;
 
-  let result = await callGroqAPI(prompt, systemPrompt);
+  let result = await callGroqAPI(prompt, systemPrompt, originalWordCount);
   
   if (!result) {
-    result = await callHuggingFaceAPI(prompt, systemPrompt);
+    result = await callHuggingFaceAPI(prompt, systemPrompt, originalWordCount);
   }
 
   if (!result) {
