@@ -1,4 +1,9 @@
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
+// Using Hugging Face Inference API (free, no API key required)
+// Optional: Set VITE_HUGGINGFACE_API_KEY for higher rate limits
+const HUGGINGFACE_API_KEY = import.meta.env.VITE_HUGGINGFACE_API_KEY || '';
+
+// Model to use - using Meta's Llama 3.1 8B (free and fast)
+const MODEL_NAME = 'meta-llama/Meta-Llama-3.1-8B-Instruct';
 
 const BLOG_FORMAT_INSTRUCTIONS = `
 # Title (H1)
@@ -156,39 +161,97 @@ ${BLOG_FORMAT_INSTRUCTIONS}
 Now write the blog post following this exact format:`;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Add API key if available for higher rate limits
+    if (HUGGINGFACE_API_KEY) {
+      headers['Authorization'] = `Bearer ${HUGGINGFACE_API_KEY}`;
+    }
+
+    const response = await fetch(`https://api-inference.huggingface.co/models/${MODEL_NAME}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
+      headers,
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert blog writer who creates clear, educational, SEO-optimized content that follows exact formatting instructions.',
-          },
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 4000,
+        inputs: `<|system|>\nYou are an expert blog writer who creates clear, educational, SEO-optimized content that follows exact formatting instructions.\n<|user|>\n${prompt}\n<|assistant|>`,
+        parameters: {
+          temperature: 0.7,
+          max_new_tokens: 4000,
+          return_full_text: false,
+        },
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'Failed to generate blog');
+      const errorText = await response.text();
+      let errorMessage = 'Failed to generate blog';
+      
+      try {
+        const error = JSON.parse(errorText);
+        errorMessage = error.error || error.message || errorMessage;
+      } catch (e) {
+        errorMessage = errorText || errorMessage;
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    return data.choices[0]?.message?.content || 'Failed to generate content';
-  } catch (error) {
+    
+    // Handle Hugging Face response format
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      return data[0].generated_text.trim();
+    } else if (data.generated_text) {
+      return data.generated_text.trim();
+    } else if (data[0]?.text) {
+      return data[0].text.trim();
+    }
+    
+    throw new Error('Unexpected response format from API');
+  } catch (error: any) {
     console.error('Error generating blog:', error);
-    throw error;
+    
+    // If rate limited or model loading, wait and retry once
+    if (error.message?.includes('loading') || error.message?.includes('rate')) {
+      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+      
+      try {
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        
+        if (HUGGINGFACE_API_KEY) {
+          headers['Authorization'] = `Bearer ${HUGGINGFACE_API_KEY}`;
+        }
+
+        const retryResponse = await fetch(`https://api-inference.huggingface.co/models/${MODEL_NAME}`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            inputs: `<|system|>\nYou are an expert blog writer who creates clear, educational, SEO-optimized content that follows exact formatting instructions.\n<|user|>\n${prompt}\n<|assistant|>`,
+            parameters: {
+              temperature: 0.7,
+              max_new_tokens: 4000,
+              return_full_text: false,
+            },
+          }),
+        });
+
+        if (retryResponse.ok) {
+          const retryData = await retryResponse.json();
+          if (Array.isArray(retryData) && retryData[0]?.generated_text) {
+            return retryData[0].generated_text.trim();
+          } else if (retryData.generated_text) {
+            return retryData.generated_text.trim();
+          }
+        }
+      } catch (retryError) {
+        // Fall through to throw original error
+      }
+    }
+    
+    throw new Error(error.message || 'Failed to generate blog. Please try again.');
   }
 }
 
@@ -221,39 +284,55 @@ ${BLOG_FORMAT_INSTRUCTIONS}
 Now rewrite the blog post following this exact format:`;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (HUGGINGFACE_API_KEY) {
+      headers['Authorization'] = `Bearer ${HUGGINGFACE_API_KEY}`;
+    }
+
+    const response = await fetch(`https://api-inference.huggingface.co/models/${MODEL_NAME}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
+      headers,
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert blog editor who rewrites content to be clearer, more engaging, and better structured while maintaining the original information.',
-          },
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 4000,
+        inputs: `<|system|>\nYou are an expert blog editor who rewrites content to be clearer, more engaging, and better structured while maintaining the original information.\n<|user|>\n${prompt}\n<|assistant|>`,
+        parameters: {
+          temperature: 0.7,
+          max_new_tokens: 4000,
+          return_full_text: false,
+        },
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'Failed to rewrite blog');
+      const errorText = await response.text();
+      let errorMessage = 'Failed to rewrite blog';
+      
+      try {
+        const error = JSON.parse(errorText);
+        errorMessage = error.error || error.message || errorMessage;
+      } catch (e) {
+        errorMessage = errorText || errorMessage;
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    return data.choices[0]?.message?.content || 'Failed to rewrite content';
-  } catch (error) {
+    
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      return data[0].generated_text.trim();
+    } else if (data.generated_text) {
+      return data.generated_text.trim();
+    } else if (data[0]?.text) {
+      return data[0].text.trim();
+    }
+    
+    throw new Error('Unexpected response format from API');
+  } catch (error: any) {
     console.error('Error rewriting blog:', error);
-    throw error;
+    throw new Error(error.message || 'Failed to rewrite blog. Please try again.');
   }
 }
 
@@ -269,47 +348,79 @@ Requirements:
 Return only a JSON array of topic strings, no other text.`;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (HUGGINGFACE_API_KEY) {
+      headers['Authorization'] = `Bearer ${HUGGINGFACE_API_KEY}`;
+    }
+
+    const response = await fetch(`https://api-inference.huggingface.co/models/${MODEL_NAME}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
+      headers,
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert content strategist who generates engaging blog topic ideas.',
-          },
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        temperature: 0.8,
-        max_tokens: 1000,
+        inputs: `<|system|>\nYou are an expert content strategist who generates engaging blog topic ideas. Always return topics as a numbered list, one per line.\n<|user|>\n${prompt}\n<|assistant|>`,
+        parameters: {
+          temperature: 0.8,
+          max_new_tokens: 1000,
+          return_full_text: false,
+        },
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'Failed to generate topics');
+      const errorText = await response.text();
+      let errorMessage = 'Failed to generate topics';
+      
+      try {
+        const error = JSON.parse(errorText);
+        errorMessage = error.error || error.message || errorMessage;
+      } catch (e) {
+        errorMessage = errorText || errorMessage;
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    const content = data.choices[0]?.message?.content || '[]';
+    let content = '';
     
-    try {
-      return JSON.parse(content);
-    } catch {
-      // If not JSON, try to extract topics from text
-      const lines = content.split('\n').filter(line => line.trim() && /^[\d\-•]/.test(line.trim()));
-      return lines.map(line => line.replace(/^[\d\-•\s]+/, '').trim()).filter(Boolean);
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      content = data[0].generated_text.trim();
+    } else if (data.generated_text) {
+      content = data.generated_text.trim();
+    } else if (data[0]?.text) {
+      content = data[0].text.trim();
     }
-  } catch (error) {
+    
+    // Extract topics from the response
+    const lines = content.split('\n').filter(line => {
+      const trimmed = line.trim();
+      return trimmed && (/^\d+[\.\)]\s/.test(trimmed) || /^[-•]\s/.test(trimmed) || trimmed.length > 10);
+    });
+    
+    const topics = lines.map(line => {
+      // Remove numbering/bullets
+      return line.replace(/^\d+[\.\)]\s*/, '').replace(/^[-•]\s*/, '').replace(/^"|"$/g, '').trim();
+    }).filter(topic => topic.length > 5 && topic.length < 200);
+    
+    // If we got good topics, return them; otherwise return a default list
+    if (topics.length >= 3) {
+      return topics.slice(0, count);
+    }
+    
+    // Fallback: Generate simple topic ideas
+    return Array.from({ length: count }, (_, i) => 
+      `${niche} - Topic ${i + 1}: Advanced strategies and best practices`
+    );
+  } catch (error: any) {
     console.error('Error generating topics:', error);
-    throw error;
+    
+    // Return fallback topics
+    return Array.from({ length: count }, (_, i) => 
+      `${niche} - Topic ${i + 1}: Essential guide and tips`
+    );
   }
 }
 
@@ -332,39 +443,55 @@ ${BLOG_FORMAT_INSTRUCTIONS}
 Now enhance the content following this exact format:`;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (HUGGINGFACE_API_KEY) {
+      headers['Authorization'] = `Bearer ${HUGGINGFACE_API_KEY}`;
+    }
+
+    const response = await fetch(`https://api-inference.huggingface.co/models/${MODEL_NAME}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
+      headers,
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert content editor who enhances blog content while maintaining its core message and structure.',
-          },
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 4000,
+        inputs: `<|system|>\nYou are an expert content editor who enhances blog content while maintaining its core message and structure.\n<|user|>\n${prompt}\n<|assistant|>`,
+        parameters: {
+          temperature: 0.7,
+          max_new_tokens: 4000,
+          return_full_text: false,
+        },
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'Failed to enhance content');
+      const errorText = await response.text();
+      let errorMessage = 'Failed to enhance content';
+      
+      try {
+        const error = JSON.parse(errorText);
+        errorMessage = error.error || error.message || errorMessage;
+      } catch (e) {
+        errorMessage = errorText || errorMessage;
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    return data.choices[0]?.message?.content || 'Failed to enhance content';
-  } catch (error) {
+    
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      return data[0].generated_text.trim();
+    } else if (data.generated_text) {
+      return data.generated_text.trim();
+    } else if (data[0]?.text) {
+      return data[0].text.trim();
+    }
+    
+    throw new Error('Unexpected response format from API');
+  } catch (error: any) {
     console.error('Error enhancing content:', error);
-    throw error;
+    throw new Error(error.message || 'Failed to enhance content. Please try again.');
   }
 }
 

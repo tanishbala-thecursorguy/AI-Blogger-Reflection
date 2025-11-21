@@ -19,10 +19,12 @@ A powerful blog generation and content creation tool built with React, TypeScrip
 npm install
 ```
 
-2. Create a `.env.local` file in the root directory:
+2. (Optional) Create a `.env.local` file for higher rate limits:
 ```env
-VITE_OPENAI_API_KEY=your_openai_api_key_here
+VITE_HUGGINGFACE_API_KEY=your_huggingface_api_key_here
 ```
+
+**Note**: The app works without any API key! Hugging Face provides a free tier. Adding an API key just gives you higher rate limits.
 
 3. Run the development server:
 ```bash
@@ -34,9 +36,12 @@ npm run dev
 npm run build
 ```
 
-## Environment Variables
+## Environment Variables (Optional)
 
-- `VITE_OPENAI_API_KEY`: Your OpenAI API key (required for AI features)
+- `VITE_HUGGINGFACE_API_KEY`: Your Hugging Face API key (optional - for higher rate limits)
+  - Without API key: Free tier with rate limits
+  - With API key: Higher rate limits and better performance
+  - Get free API key at: https://huggingface.co/settings/tokens
 
 ## Deployment
 
@@ -49,4 +54,4 @@ The app is configured for Vercel deployment. The build output directory is `dist
 - Vite
 - Tailwind CSS
 - Radix UI
-- OpenAI API
+- Hugging Face Inference API (Free, no API key required)
