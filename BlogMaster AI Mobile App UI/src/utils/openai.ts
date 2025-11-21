@@ -139,7 +139,10 @@ OUTPUT MUST ALWAYS FOLLOW THIS EXACT FORMAT:
 
 // Helper function to call Groq API
 async function callGroqAPI(prompt: string, systemPrompt: string): Promise<string | null> {
-  if (!GROQ_API_KEY) return null;
+  if (!GROQ_API_KEY) {
+    console.log('Groq API key not found, skipping Groq API call');
+    return null;
+  }
   
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -167,10 +170,25 @@ async function callGroqAPI(prompt: string, systemPrompt: string): Promise<string
 
     if (response.ok) {
       const data = await response.json();
-      return data.choices[0]?.message?.content?.trim() || null;
+      const content = data.choices[0]?.message?.content?.trim();
+      if (content) {
+        console.log('Groq API: Successfully generated content');
+        return content;
+      }
+    } else {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error('Groq API error:', response.status, errorData);
+      // If rate limited or unauthorized, don't retry
+      if (response.status === 401 || response.status === 429) {
+        throw new Error(`Groq API error: ${errorData.error?.message || errorData.error || 'Authentication or rate limit error'}`);
+      }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Groq API error:', error);
+    // Re-throw if it's an auth/rate limit error
+    if (error.message?.includes('Groq API error')) {
+      throw error;
+    }
   }
   return null;
 }
@@ -273,13 +291,25 @@ Now write the blog post following this exact format:`;
   const systemPrompt = 'You are an expert blog writer who creates clear, educational, SEO-optimized content that follows exact formatting instructions.';
 
   // Try Groq first (faster), then Hugging Face
-  let result = await callGroqAPI(prompt, systemPrompt);
+  let result: string | null = null;
+  let groqError: Error | null = null;
   
-  if (!result) {
+  try {
+    result = await callGroqAPI(prompt, systemPrompt);
+  } catch (error: any) {
+    groqError = error;
+    console.log('Groq API failed, trying Hugging Face fallback...');
+  }
+  
+  if (!result && !groqError) {
+    console.log('Groq API returned no result, trying Hugging Face fallback...');
     result = await callHuggingFaceAPI(prompt, systemPrompt);
   }
 
   if (!result) {
+    if (groqError) {
+      throw groqError;
+    }
     throw new Error('Failed to generate blog. Please try again. If using Hugging Face, the model may need a moment to load.');
   }
 
