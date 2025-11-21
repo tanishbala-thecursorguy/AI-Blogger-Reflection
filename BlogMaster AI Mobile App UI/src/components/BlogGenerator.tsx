@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -34,22 +34,7 @@ const writingStyles = [
 ];
 
 export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
-  // Load selected topics from localStorage if available
-  const loadSelectedTopics = () => {
-    try {
-      const stored = localStorage.getItem('selectedTopics');
-      if (stored) {
-        const topics = JSON.parse(stored);
-        localStorage.removeItem('selectedTopics');
-        return topics[0] || ''; // Use first topic as default
-      }
-    } catch (e) {
-      console.error('Error loading selected topics:', e);
-    }
-    return '';
-  };
-
-  const [topic, setTopic] = useState(loadSelectedTopics());
+  const [topic, setTopic] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('Professional');
   const [wordCount, setWordCount] = useState([1500]);
   const [seoMode, setSeoMode] = useState(true);
@@ -59,6 +44,22 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Load selected topics from localStorage if available
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('selectedTopics');
+      if (stored) {
+        const topics = JSON.parse(stored);
+        localStorage.removeItem('selectedTopics');
+        if (topics && topics.length > 0) {
+          setTopic(topics[0]); // Use first topic as default
+        }
+      }
+    } catch (e) {
+      console.error('Error loading selected topics:', e);
+    }
+  }, []);
 
   const handleGenerate = async () => {
     if (!topic.trim()) return;
