@@ -3,7 +3,6 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { Slider } from './ui/slider';
 import { Switch } from './ui/switch';
 import { Card } from './ui/card';
 import { Screen } from '../App';
@@ -36,7 +35,6 @@ const writingStyles = [
 export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
   const [topic, setTopic] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('Professional');
-  const [wordCount, setWordCount] = useState([1500]);
   const [seoMode, setSeoMode] = useState(true);
   const [keywords, setKeywords] = useState<string[]>([]);
   const [newKeyword, setNewKeyword] = useState('');
@@ -72,7 +70,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
       const content = await generateBlog({
         topic: topic.trim(),
         style: selectedStyle,
-        wordCount: wordCount[0],
+        wordCount: 1500, // Default word count
         keywords: keywords,
         seoMode: seoMode,
       });
@@ -149,26 +147,6 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                 {style}
               </button>
             ))}
-          </div>
-        </Card>
-
-        {/* Word Count Slider */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-white">Blog Length</Label>
-            <span className="text-white text-sm">{wordCount[0]} words</span>
-          </div>
-          <Slider
-            value={wordCount}
-            onValueChange={setWordCount}
-            min={800}
-            max={3000}
-            step={100}
-            className="[&_[role=slider]]:bg-white [&_[role=slider]]:border-white"
-          />
-          <div className="flex justify-between text-white/40 text-xs">
-            <span>800</span>
-            <span>3000</span>
           </div>
         </Card>
 
