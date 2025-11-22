@@ -294,6 +294,10 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
               <div className="flex gap-2">
                 <Button
                   onClick={() => {
+                    // Save to localStorage for export menu
+                    localStorage.setItem('lastGeneratedBlog', generatedContent);
+                    localStorage.setItem('lastBlogTitle', topic);
+                    
                     const blob = new Blob([generatedContent], { type: 'text/markdown' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
