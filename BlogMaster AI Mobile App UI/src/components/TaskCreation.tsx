@@ -8,7 +8,6 @@ import {
   ListTree,
   RefreshCw,
   Edit3,
-  Share2,
   Video,
   Image as ImageIcon,
   ArrowLeft,
@@ -53,12 +52,6 @@ const tasks = [
     title: 'AI Editor Mode',
     description: 'Fine-tune your content with AI-powered suggestions',
     screen: 'ai-editor' as Screen,
-  },
-  {
-    icon: Share2,
-    title: 'Turn Blog → Newsletter / Tweets / LinkedIn',
-    description: 'Repurpose your blog into social media content',
-    screen: 'export' as Screen,
   },
   {
     icon: Video,
