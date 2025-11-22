@@ -43,19 +43,41 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
   const [generatedContent, setGeneratedContent] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // Load selected topics from localStorage if available
+  // Load selected topics or SEO outline data from localStorage if available
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('selectedTopics');
-      if (stored) {
-        const topics = JSON.parse(stored);
-        localStorage.removeItem('selectedTopics');
-        if (topics && topics.length > 0) {
-          setTopic(topics[0]); // Use first topic as default
+      // Check for SEO outline data first
+      const seoTopic = localStorage.getItem('seoOutlineTopic');
+      const seoKeywords = localStorage.getItem('seoOutlineKeywords');
+      
+      if (seoTopic) {
+        setTopic(seoTopic);
+        localStorage.removeItem('seoOutlineTopic');
+        
+        if (seoKeywords) {
+          try {
+            const keywordsArray = JSON.parse(seoKeywords);
+            if (Array.isArray(keywordsArray)) {
+              setKeywords(keywordsArray);
+            }
+            localStorage.removeItem('seoOutlineKeywords');
+          } catch (e) {
+            console.error('Error parsing SEO keywords:', e);
+          }
+        }
+      } else {
+        // Check for selected topics from topic generator
+        const stored = localStorage.getItem('selectedTopics');
+        if (stored) {
+          const topics = JSON.parse(stored);
+          localStorage.removeItem('selectedTopics');
+          if (topics && topics.length > 0) {
+            setTopic(topics[0]); // Use first topic as default
+          }
         }
       }
     } catch (e) {
-      console.error('Error loading selected topics:', e);
+      console.error('Error loading topics:', e);
     }
   }, []);
 

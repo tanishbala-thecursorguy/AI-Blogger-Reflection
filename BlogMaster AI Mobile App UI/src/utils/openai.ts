@@ -603,7 +603,7 @@ export async function generateSEOOutline(
   keywords: string[] = []
 ): Promise<Array<{ level: string; text: string; expanded: boolean; children?: any[] }>> {
   const keywordsText = keywords.length > 0 
-    ? `\nTarget keywords to include: ${keywords.join(', ')}` 
+    ? `\n\nIMPORTANT: Include these target keywords naturally in the outline headings: ${keywords.join(', ')}. Ensure the outline is optimized for these keywords while maintaining relevance to the topic.` 
     : '';
 
   const prompt = `Generate a comprehensive SEO-optimized blog outline for the topic: "${topic}"
