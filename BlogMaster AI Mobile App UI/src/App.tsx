@@ -52,7 +52,7 @@ export default function App() {
       {currentScreen === 'tasks' && <TaskCreation onNavigate={navigate} onBack={() => navigate('home')} />}
       {currentScreen === 'blog-generator' && <BlogGenerator onBack={() => navigate('home')} onNavigate={navigate} />}
       {currentScreen === 'topic-generator' && <TopicGenerator onBack={() => navigate('tasks')} onNavigate={navigate} />}
-      {currentScreen === 'seo-outline' && <SEOOutlineGenerator onBack={() => navigate('home')} />}
+      {currentScreen === 'seo-outline' && <SEOOutlineGenerator onBack={() => navigate('home')} onNavigate={navigate} />}
       {currentScreen === 'keyword-research' && <KeywordResearch onBack={() => navigate('home')} />}
       {currentScreen === 'competitor-analysis' && <CompetitorAnalysis onBack={() => navigate('home')} />}
       {currentScreen === 'ai-editor' && <AIEditor onBack={() => navigate('home')} />}

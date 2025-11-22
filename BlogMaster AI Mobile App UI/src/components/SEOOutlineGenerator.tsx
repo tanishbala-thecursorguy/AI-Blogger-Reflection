@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card } from './ui/card';
+import { Screen } from '../App';
+import { generateSEOKeywords, generateSEOOutline } from '../utils/openai';
 import {
   ArrowLeft,
   Sparkles,
@@ -15,72 +17,66 @@ import {
 
 interface SEOOutlineGeneratorProps {
   onBack: () => void;
+  onNavigate?: (screen: Screen) => void;
 }
 
-const sampleKeywords = [
-  { keyword: 'AI content marketing', score: 95 },
-  { keyword: 'content marketing tools', score: 88 },
-  { keyword: 'AI blog writing', score: 82 },
-  { keyword: 'marketing automation', score: 76 },
-  { keyword: 'content strategy', score: 71 },
-];
-
-const sampleOutline = [
-  {
-    level: 'H1',
-    text: 'How to Use AI for Content Marketing: The Complete 2025 Guide',
-    expanded: true,
-    children: [
-      {
-        level: 'H2',
-        text: 'Understanding AI in Content Marketing',
-        expanded: true,
-        children: [
-          { level: 'H3', text: 'What is AI Content Marketing?', expanded: false },
-          { level: 'H3', text: 'Evolution of AI in Marketing', expanded: false },
-        ],
-      },
-      {
-        level: 'H2',
-        text: 'Benefits of AI Content Marketing',
-        expanded: true,
-        children: [
-          { level: 'H3', text: 'Time Efficiency and Automation', expanded: false },
-          { level: 'H3', text: 'Data-Driven Insights', expanded: false },
-          { level: 'H3', text: 'Personalization at Scale', expanded: false },
-        ],
-      },
-      {
-        level: 'H2',
-        text: 'Top AI Tools for Content Marketers',
-        expanded: false,
-      },
-      {
-        level: 'H2',
-        text: 'Best Practices for AI Content Creation',
-        expanded: false,
-      },
-      {
-        level: 'H2',
-        text: 'Common Challenges and Solutions',
-        expanded: false,
-      },
-      {
-        level: 'H2',
-        text: 'Conclusion',
-        expanded: false,
-      },
-    ],
-  },
-];
-
-export function SEOOutlineGenerator({ onBack }: SEOOutlineGeneratorProps) {
+export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorProps) {
   const [topic, setTopic] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+  const [keywords, setKeywords] = useState<Array<{ keyword: string; score: number }>>([]);
+  const [outline, setOutline] = useState<Array<{ level: string; text: string; expanded: boolean; children?: any[] }>>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleGenerate = () => {
-    setShowResults(true);
+  const handleGenerate = async () => {
+    if (!topic.trim()) return;
+    
+    setIsGenerating(true);
+    setError(null);
+    setShowResults(false);
+    setSelectedKeywords([]);
+    setKeywords([]);
+    setOutline([]);
+    
+    try {
+      // Generate keywords first
+      const generatedKeywords = await generateSEOKeywords(topic.trim(), 10);
+      setKeywords(generatedKeywords);
+      
+      // Generate outline
+      const generatedOutline = await generateSEOOutline(topic.trim(), []);
+      setOutline(generatedOutline);
+      
+      // Auto-select first keyword
+      if (generatedKeywords.length > 0) {
+        setSelectedKeywords([generatedKeywords[0].keyword]);
+      }
+      
+      setShowResults(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate outline. Please try again.');
+      console.error('Error generating outline:', err);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (!topic.trim()) return;
+    
+    setIsGenerating(true);
+    setError(null);
+    
+    try {
+      const generatedOutline = await generateSEOOutline(topic.trim(), selectedKeywords);
+      setOutline(generatedOutline);
+    } catch (err: any) {
+      setError(err.message || 'Failed to regenerate outline. Please try again.');
+      console.error('Error regenerating outline:', err);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const toggleKeyword = (keyword: string) => {
@@ -164,12 +160,27 @@ export function SEOOutlineGenerator({ onBack }: SEOOutlineGeneratorProps) {
           />
           <Button
             onClick={handleGenerate}
-            disabled={!topic}
+            disabled={!topic.trim() || isGenerating}
             className="w-full bg-white text-black hover:bg-white/90 h-11 rounded-xl disabled:opacity-50"
           >
-            <Sparkles className="w-5 h-5 mr-2" />
-            Generate Outline
+            {isGenerating ? (
+              <>
+                <Sparkles className="w-5 h-5 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5 mr-2" />
+                Generate Outline
+              </>
+            )}
           </Button>
+          
+          {error && (
+            <Card className="bg-red-500/10 border-red-500/20 p-4 rounded-2xl mt-4">
+              <p className="text-red-400 text-sm">{error}</p>
+            </Card>
+          )}
         </Card>
 
         {showResults && (
@@ -180,37 +191,41 @@ export function SEOOutlineGenerator({ onBack }: SEOOutlineGeneratorProps) {
                 <Label className="text-white">Keyword Suggestions</Label>
                 <span className="text-white/60 text-sm">{selectedKeywords.length} selected</span>
               </div>
-              <div className="space-y-2">
-                {sampleKeywords.map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => toggleKeyword(item.keyword)}
-                    className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
-                      selectedKeywords.includes(item.keyword)
-                        ? 'bg-white/10 border-white/20'
-                        : 'bg-white/5 border-white/10 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-5 h-5 rounded border flex items-center justify-center ${
-                          selectedKeywords.includes(item.keyword)
-                            ? 'bg-white border-white'
-                            : 'border-white/20'
-                        }`}
-                      >
-                        {selectedKeywords.includes(item.keyword) && (
-                          <Check className="w-3 h-3 text-black" />
-                        )}
+              {keywords.length > 0 ? (
+                <div className="space-y-2">
+                  {keywords.map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => toggleKeyword(item.keyword)}
+                      className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
+                        selectedKeywords.includes(item.keyword)
+                          ? 'bg-white/10 border-white/20'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-5 h-5 rounded border flex items-center justify-center ${
+                            selectedKeywords.includes(item.keyword)
+                              ? 'bg-white border-white'
+                              : 'border-white/20'
+                          }`}
+                        >
+                          {selectedKeywords.includes(item.keyword) && (
+                            <Check className="w-3 h-3 text-black" />
+                          )}
+                        </div>
+                        <span className="text-white">{item.keyword}</span>
                       </div>
-                      <span className="text-white">{item.keyword}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-white/60 text-sm">Score: {item.score}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-white/60 text-sm">Score: {item.score}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-white/60 text-sm text-center py-4">Generating keywords...</p>
+              )}
             </Card>
 
             {/* Outline Preview */}
@@ -221,9 +236,11 @@ export function SEOOutlineGenerator({ onBack }: SEOOutlineGeneratorProps) {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="text-white hover:bg-white/10 rounded-lg"
+                    onClick={handleRegenerate}
+                    disabled={isGenerating || !topic.trim()}
+                    className="text-white hover:bg-white/10 rounded-lg disabled:opacity-50"
                   >
-                    <RefreshCw className="w-4 h-4 mr-2" />
+                    <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
                     Regenerate
                   </Button>
                   <Button
@@ -237,11 +254,15 @@ export function SEOOutlineGenerator({ onBack }: SEOOutlineGeneratorProps) {
                 </div>
               </div>
               
-              <div className="space-y-1">
-                {sampleOutline.map((node, idx) => (
-                  <OutlineNode key={idx} node={node} />
-                ))}
-              </div>
+              {outline.length > 0 ? (
+                <div className="space-y-1">
+                  {outline.map((node, idx) => (
+                    <OutlineNode key={idx} node={node} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-white/60 text-sm text-center py-4">Generating outline...</p>
+              )}
             </Card>
 
             {/* Action Buttons */}
@@ -252,7 +273,18 @@ export function SEOOutlineGenerator({ onBack }: SEOOutlineGeneratorProps) {
               >
                 Auto-Optimize
               </Button>
-              <Button className="flex-1 bg-white text-black hover:bg-white/90 h-11 rounded-xl">
+              <Button
+                onClick={() => {
+                  if (onNavigate) {
+                    // Pass topic and selected keywords to blog generator
+                    localStorage.setItem('seoOutlineTopic', topic);
+                    localStorage.setItem('seoOutlineKeywords', JSON.stringify(selectedKeywords));
+                    onNavigate('blog-generator');
+                  }
+                }}
+                disabled={outline.length === 0}
+                className="flex-1 bg-white text-black hover:bg-white/90 h-11 rounded-xl disabled:opacity-50"
+              >
                 Generate Blog
               </Button>
             </div>

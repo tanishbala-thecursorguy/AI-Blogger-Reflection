@@ -530,6 +530,187 @@ Requirements:
   );
 }
 
+export async function generateSEOKeywords(topic: string, count: number = 10): Promise<Array<{ keyword: string; score: number }>> {
+  const prompt = `Generate ${count} SEO-friendly keyword suggestions for the topic: "${topic}"
+
+Requirements:
+- Keywords should be highly relevant to the topic
+- Include a mix of short-tail and long-tail keywords
+- Keywords should be searchable and have SEO potential
+- Return keywords with SEO relevance scores (0-100)
+
+Return the response as a JSON array of objects with "keyword" and "score" fields. Example format:
+[
+  {"keyword": "example keyword", "score": 95},
+  {"keyword": "another keyword", "score": 88}
+]`;
+
+  const systemPrompt = 'You are an SEO expert who generates highly relevant, searchable keywords for content topics. Return only valid JSON array.';
+
+  let result = await callGroqAPI(prompt, systemPrompt);
+  
+  if (!result) {
+    result = await callHuggingFaceAPI(prompt, systemPrompt);
+  }
+
+  if (!result) {
+    // Fallback keywords
+    return Array.from({ length: count }, (_, i) => ({
+      keyword: `${topic} ${i + 1}`,
+      score: 85 - (i * 5),
+    }));
+  }
+
+  // Try to parse JSON
+  try {
+    // Clean up the response - remove markdown code blocks if present
+    let cleaned = result.trim();
+    cleaned = cleaned.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
+    
+    const keywords = JSON.parse(cleaned);
+    if (Array.isArray(keywords) && keywords.length > 0) {
+      return keywords.slice(0, count).map((item: any) => ({
+        keyword: item.keyword || item.key || String(item),
+        score: typeof item.score === 'number' ? item.score : Math.floor(95 - Math.random() * 20),
+      }));
+    }
+  } catch (e) {
+    console.error('Error parsing keywords JSON:', e);
+  }
+
+  // Fallback: Extract keywords from text
+  const lines = result.split('\n').filter(line => {
+    const trimmed = line.trim();
+    return trimmed && (trimmed.includes('keyword') || trimmed.length > 5 && trimmed.length < 100);
+  });
+
+  return lines.slice(0, count).map((line, idx) => {
+    // Try to extract keyword and score
+    const match = line.match(/(?:keyword|key|word)[:"]?\s*["']?([^"',:]+)["']?/i);
+    const keyword = match ? match[1].trim() : line.replace(/[^\w\s-]/g, '').trim();
+    const scoreMatch = line.match(/score[:]?\s*(\d+)/i);
+    const score = scoreMatch ? parseInt(scoreMatch[1]) : (95 - idx * 5);
+    
+    return {
+      keyword: keyword || `${topic} keyword ${idx + 1}`,
+      score: Math.max(50, Math.min(100, score)),
+    };
+  });
+}
+
+export async function generateSEOOutline(
+  topic: string,
+  keywords: string[] = []
+): Promise<Array<{ level: string; text: string; expanded: boolean; children?: any[] }>> {
+  const keywordsText = keywords.length > 0 
+    ? `\nTarget keywords to include: ${keywords.join(', ')}` 
+    : '';
+
+  const prompt = `Generate a comprehensive SEO-optimized blog outline for the topic: "${topic}"
+${keywordsText}
+
+Requirements:
+- Create a hierarchical outline with H1, H2, and H3 headings
+- Include 1 main H1 title
+- Include 6-8 H2 sections
+- Include 2-3 H3 subsections under each H2
+- All headings should be SEO-friendly and keyword-rich
+- Follow best practices for content structure
+- Include sections like Introduction, Benefits, Tools, Best Practices, Challenges, Conclusion
+
+Return the outline in this exact JSON format:
+{
+  "h1": "Main Title",
+  "sections": [
+    {
+      "h2": "Section Title",
+      "h3": ["Subsection 1", "Subsection 2", "Subsection 3"]
+    }
+  ]
+}`;
+
+  const systemPrompt = 'You are an SEO content strategist who creates well-structured, SEO-optimized blog outlines. Return only valid JSON.';
+
+  let result = await callGroqAPI(prompt, systemPrompt);
+  
+  if (!result) {
+    result = await callHuggingFaceAPI(prompt, systemPrompt);
+  }
+
+  if (!result) {
+    // Fallback outline
+    return [{
+      level: 'H1',
+      text: `${topic}: Complete Guide`,
+      expanded: true,
+      children: [
+        { level: 'H2', text: `Understanding ${topic}`, expanded: true, children: [] },
+        { level: 'H2', text: `Benefits of ${topic}`, expanded: false },
+        { level: 'H2', text: `Best Practices`, expanded: false },
+        { level: 'H2', text: `Conclusion`, expanded: false },
+      ],
+    }];
+  }
+
+  // Try to parse JSON
+  try {
+    let cleaned = result.trim();
+    cleaned = cleaned.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
+    
+    const data = JSON.parse(cleaned);
+    
+    // Convert to outline format
+    const outline: any[] = [{
+      level: 'H1',
+      text: data.h1 || data.title || `${topic}: Complete Guide`,
+      expanded: true,
+      children: (data.sections || []).map((section: any) => ({
+        level: 'H2',
+        text: section.h2 || section.title || section.text || 'Section',
+        expanded: true,
+        children: (section.h3 || []).map((h3: string | any) => ({
+          level: 'H3',
+          text: typeof h3 === 'string' ? h3 : (h3.text || h3.title || 'Subsection'),
+          expanded: false,
+        })),
+      })),
+    }];
+
+    return outline;
+  } catch (e) {
+    console.error('Error parsing outline JSON:', e);
+    
+    // Fallback: Try to extract headings from text
+    const lines = result.split('\n').filter(line => line.trim());
+    const outline: any[] = [{ level: 'H1', text: topic, expanded: true, children: [] }];
+    
+    let currentH2: any = null;
+    for (const line of lines) {
+      if (line.match(/^#\s+/)) { // H1
+        outline[0].text = line.replace(/^#+\s+/, '').trim();
+      } else if (line.match(/^##\s+/)) { // H2
+        if (currentH2) outline[0].children.push(currentH2);
+        currentH2 = { level: 'H2', text: line.replace(/^##+\s+/, '').trim(), expanded: true, children: [] };
+      } else if (line.match(/^###\s+/) && currentH2) { // H3
+        currentH2.children.push({ level: 'H3', text: line.replace(/^###+\s+/, '').trim(), expanded: false });
+      }
+    }
+    if (currentH2) outline[0].children.push(currentH2);
+    
+    return outline.length > 0 && outline[0].children.length > 0 ? outline : [{
+      level: 'H1',
+      text: `${topic}: Complete Guide`,
+      expanded: true,
+      children: [
+        { level: 'H2', text: `Introduction to ${topic}`, expanded: true, children: [] },
+        { level: 'H2', text: `Benefits`, expanded: true, children: [] },
+        { level: 'H2', text: `Best Practices`, expanded: true, children: [] },
+        { level: 'H2', text: `Conclusion`, expanded: true, children: [] },
+      ],
+    }];
+  }
+}
+
 export async function enhanceContent(content: string, enhancements: string[]): Promise<string> {
   const enhancementsText = enhancements.join(', ');
 
