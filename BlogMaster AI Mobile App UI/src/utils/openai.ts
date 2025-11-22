@@ -144,6 +144,77 @@ function calculateMaxTokens(wordCount: number): number {
   return Math.ceil(wordCount * 1.5) + 500; // Add 500 buffer
 }
 
+// Helper function to generate multiple variants (3 variations)
+async function generateMultipleVariants(
+  basePrompt: string,
+  systemPrompt: string,
+  wordCount?: number,
+  variantCount: number = 3
+): Promise<string[]> {
+  const variants: string[] = [];
+  
+  // Generate variants with slight variations in instructions
+  const variantInstructions = [
+    'Create a unique, creative version with different examples and fresh perspectives.',
+    'Generate an alternative approach with varied structure and different key points.',
+    'Write a variation with a distinct style and unique insights.',
+  ];
+  
+  // Generate variants sequentially to avoid rate limits
+  for (let i = 0; i < variantCount; i++) {
+    try {
+      const variantPrompt = `${basePrompt}\n\nVARIANT ${i + 1} INSTRUCTION: ${variantInstructions[i] || 'Generate a unique variant.'}`;
+      
+      // Try Groq first
+      let result = await callGroqAPI(variantPrompt, systemPrompt, wordCount);
+      
+      if (!result) {
+        // Fallback to Hugging Face
+        result = await callHuggingFaceAPI(variantPrompt, systemPrompt, wordCount);
+      }
+      
+      if (result) {
+        variants.push(result);
+      }
+      
+      // Small delay between requests to avoid rate limits
+      if (i < variantCount - 1 && variants.length < variantCount) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+    } catch (error) {
+      console.error(`Error generating variant ${i + 1}:`, error);
+      // Continue with other variants even if one fails
+    }
+  }
+  
+  // If we got less than requested, generate at least one
+  if (variants.length === 0) {
+    // Try once more without variant instructions
+    try {
+      let result = await callGroqAPI(basePrompt, systemPrompt, wordCount);
+      if (!result) {
+        result = await callHuggingFaceAPI(basePrompt, systemPrompt, wordCount);
+      }
+      if (result) {
+        variants.push(result);
+        // Duplicate to have at least 2 variants
+        if (variants.length === 1) {
+          variants.push(result + '\n\n[Note: This is a duplicate. Please regenerate for more variety.]');
+        }
+      }
+    } catch (error) {
+      console.error('Error generating fallback variant:', error);
+    }
+  }
+  
+  // Ensure we have at least one variant
+  if (variants.length === 0) {
+    throw new Error('Failed to generate any variants. Please try again.');
+  }
+  
+  return variants;
+}
+
 // Helper function to call Groq API
 async function callGroqAPI(prompt: string, systemPrompt: string, wordCount?: number): Promise<string | null> {
   if (!GROQ_API_KEY) {
@@ -353,7 +424,7 @@ export async function generateBlog(options: {
   wordCount: number;
   keywords: string[];
   seoMode: boolean;
-}): Promise<string> {
+}): Promise<string[]> {
   const { topic, style, wordCount, keywords, seoMode } = options;
 
   const keywordsText = keywords.length > 0 ? `Target keywords: ${keywords.join(', ')}. ` : '';
@@ -393,52 +464,40 @@ KEY RULES:
 3. You MUST follow the exact format template provided - include all required sections in the specified order.
 4. The tone and style must be uniform across all sections - introduction, body content, examples, tips, FAQs, and conclusion all must use the ${style} style.`;
 
-  // Try Groq first (faster), then Hugging Face
-  let result: string | null = null;
-  let groqError: Error | null = null;
+  // Generate 3 variants
+  try {
+    const variants = await generateMultipleVariants(prompt, systemPrompt, wordCount, 3);
+    if (variants.length > 0) {
+      return variants;
+    }
+  } catch (error: any) {
+    console.error('Error generating multiple variants:', error);
+  }
   
+  // Fallback: try single generation
+  let result: string | null = null;
   try {
     result = await callGroqAPI(prompt, systemPrompt, wordCount);
   } catch (error: any) {
-    groqError = error;
     console.log('Groq API failed, trying Hugging Face fallback...');
   }
   
-  if (!result && !groqError) {
-    console.log('Groq API returned no result, trying Hugging Face fallback...');
+  if (!result) {
     result = await callHuggingFaceAPI(prompt, systemPrompt, wordCount);
-  }
-  
-  // Verify word count if result is close
-  if (result) {
-    const actualWordCount = result.split(/\s+/).length;
-    const difference = Math.abs(actualWordCount - wordCount);
-    const tolerance = Math.ceil(wordCount * 0.1); // 10% tolerance
-    
-    if (difference > tolerance) {
-      console.log(`Word count: requested ${wordCount}, got ${actualWordCount}, difference: ${difference}`);
-      // Try to adjust if way off (but don't fail if close)
-      if (difference > wordCount * 0.2) { // More than 20% off
-        console.warn(`Warning: Generated content has ${actualWordCount} words, requested ${wordCount}`);
-      }
-    }
   }
 
   if (!result) {
-    if (groqError) {
-      throw groqError;
-    }
-    throw new Error('Failed to generate blog. Please try again. If using Hugging Face, the model may need a moment to load.');
+    throw new Error('Failed to generate blog. Please try again.');
   }
 
-  return result;
+  return [result]; // Return as array for consistency
 }
 
 export async function rewriteBlog(content: string, options: {
   style?: string;
   tone?: string;
   improvements?: string[];
-}): Promise<string> {
+}): Promise<string[]> {
   const { style, tone, improvements = [] } = options;
 
   // Estimate word count from original content
@@ -470,6 +529,17 @@ Now rewrite the blog post following this exact format. Remember: Maintain approx
 
   const systemPrompt = `You are an expert blog editor who rewrites content to be clearer, more engaging, and better structured while maintaining the original information. You ALWAYS maintain approximately the same word count as the original content (${originalWordCount} words).`;
 
+  // Generate 3 variants
+  try {
+    const variants = await generateMultipleVariants(prompt, systemPrompt, originalWordCount, 3);
+    if (variants.length > 0) {
+      return variants;
+    }
+  } catch (error: any) {
+    console.error('Error generating rewrite variants:', error);
+  }
+  
+  // Fallback: single generation
   let result = await callGroqAPI(prompt, systemPrompt, originalWordCount);
   
   if (!result) {
@@ -480,7 +550,7 @@ Now rewrite the blog post following this exact format. Remember: Maintain approx
     throw new Error('Failed to rewrite blog. Please try again.');
   }
 
-  return result;
+  return [result];
 }
 
 export async function generateTopics(niche: string, count: number = 10): Promise<string[]> {
@@ -580,26 +650,9 @@ KEY RULES:
   // Final fallback
   console.log('Using final fallback topics');
   const fallbackTypes = [
-    'Complete Guide',
-    'Best Practices',
-    'Step-by-Step Tutorial',
-    'Ultimate Checklist',
-    'Beginner\'s Guide',
-    'Advanced Strategies',
-    'Case Studies',
-    'Comparison Guide',
-    'Top Tools Review',
-    'Trending Topics',
-    'Expert Tips',
-    'Common Mistakes',
-    'Quick Start Guide',
-    'Deep Dive Analysis',
-    'Pro Tips',
-    'How-to Guide',
-    'Essential Checklist',
-    'Industry Insights',
-    'Future Trends',
-    'Success Stories'
+    'Complete Guide', 'Best Practices', 'Step-by-Step Tutorial', 'Ultimate Checklist',
+    'Beginner\'s Guide', 'Advanced Strategies', 'Case Studies', 'Comparison Guide',
+    'Top Tools Review', 'Trending Topics', 'Expert Tips', 'Common Mistakes',
   ];
   
   return Array.from({ length: count }, (_, i) => 
@@ -708,26 +761,88 @@ Return the outline in this exact JSON format:
 
   const systemPrompt = 'You are an SEO content strategist who creates well-structured, SEO-optimized blog outlines. Return only valid JSON.';
 
-  let result = await callGroqAPI(prompt, systemPrompt);
+  // Generate 3 outline variants
+  const outlineVariants: Array<{ level: string; text: string; expanded: boolean; children?: any[] }> = [];
   
-  if (!result) {
-    result = await callHuggingFaceAPI(prompt, systemPrompt);
+  for (let i = 0; i < 3; i++) {
+    const variantPrompt = `${prompt}\n\nVARIANT ${i + 1}: Create ${i === 0 ? 'a comprehensive, detailed outline' : i === 1 ? 'an alternative structure with different sections' : 'a unique approach with varied headings'}.`;
+    
+    let result = await callGroqAPI(variantPrompt, systemPrompt);
+    
+    if (!result) {
+      result = await callHuggingFaceAPI(variantPrompt, systemPrompt);
+    }
+
+    if (result) {
+      try {
+        let cleaned = result.trim();
+        cleaned = cleaned.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
+        
+        const data = JSON.parse(cleaned);
+        
+        const outline: any = {
+          level: 'H1',
+          text: data.h1 || data.title || `${topic}: Complete Guide ${i + 1}`,
+          expanded: true,
+          children: (data.sections || []).map((section: any) => ({
+            level: 'H2',
+            text: section.h2 || section.title || section.text || 'Section',
+            expanded: true,
+            children: (section.h3 || []).map((h3: string | any) => ({
+              level: 'H3',
+              text: typeof h3 === 'string' ? h3 : (h3.text || h3.title || 'Subsection'),
+              expanded: false,
+            })),
+          })),
+        };
+        
+        outlineVariants.push(outline);
+      } catch (e) {
+        // Try text parsing
+        const lines = result.split('\n').filter(line => line.trim());
+        const outline: any = { level: 'H1', text: `${topic}: Variant ${i + 1}`, expanded: true, children: [] };
+        
+        let currentH2: any = null;
+        for (const line of lines) {
+          if (line.match(/^#\s+/)) {
+            outline.text = line.replace(/^#+\s+/, '').trim();
+          } else if (line.match(/^##\s+/)) {
+            if (currentH2) outline.children.push(currentH2);
+            currentH2 = { level: 'H2', text: line.replace(/^##+\s+/, '').trim(), expanded: true, children: [] };
+          } else if (line.match(/^###\s+/) && currentH2) {
+            currentH2.children.push({ level: 'H3', text: line.replace(/^###+\s+/, '').trim(), expanded: false });
+          }
+        }
+        if (currentH2) outline.children.push(currentH2);
+        
+        if (outline.children.length > 0) {
+          outlineVariants.push(outline);
+        }
+      }
+    }
+    
+    // Delay between requests
+    if (i < 2) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
   }
 
-  if (!result) {
-    // Fallback outline
-    return [{
-      level: 'H1',
-      text: `${topic}: Complete Guide`,
-      expanded: true,
-      children: [
-        { level: 'H2', text: `Understanding ${topic}`, expanded: true, children: [] },
-        { level: 'H2', text: `Benefits of ${topic}`, expanded: false },
-        { level: 'H2', text: `Best Practices`, expanded: false },
-        { level: 'H2', text: `Conclusion`, expanded: false },
-      ],
-    }];
+  if (outlineVariants.length > 0) {
+    return outlineVariants;
   }
+  
+  // Fallback outline
+  return [{
+    level: 'H1',
+    text: `${topic}: Complete Guide`,
+    expanded: true,
+    children: [
+      { level: 'H2', text: `Understanding ${topic}`, expanded: true, children: [] },
+      { level: 'H2', text: `Benefits of ${topic}`, expanded: false },
+      { level: 'H2', text: `Best Practices`, expanded: false },
+      { level: 'H2', text: `Conclusion`, expanded: false },
+    ],
+  }];
 
   // Try to parse JSON
   try {
@@ -788,7 +903,7 @@ Return the outline in this exact JSON format:
   }
 }
 
-export async function enhanceContent(content: string, enhancements: string[]): Promise<string> {
+export async function enhanceContent(content: string, enhancements: string[]): Promise<string[]> {
   const enhancementsText = enhancements.join(', ');
 
   const prompt = `Enhance and improve the following content by applying these enhancements: ${enhancementsText}

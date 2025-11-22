@@ -40,6 +40,8 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
   const [newKeyword, setNewKeyword] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [generatedVariants, setGeneratedVariants] = useState<string[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<number>(0);
   const [generatedContent, setGeneratedContent] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -89,7 +91,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
     setShowPreview(false);
     
     try {
-      const content = await generateBlog({
+      const variants = await generateBlog({
         topic: topic.trim(),
         style: selectedStyle,
         wordCount: 1500, // Default word count
@@ -97,7 +99,9 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
         seoMode: seoMode,
       });
       
-      setGeneratedContent(content);
+      setGeneratedVariants(variants);
+      setSelectedVariant(0);
+      setGeneratedContent(variants[0] || '');
       setShowPreview(true);
     } catch (err: any) {
       setError(err.message || 'Failed to generate blog. Please try again.');
@@ -252,11 +256,41 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
           </Card>
         )}
 
+        {/* Variant Selection */}
+        {showPreview && generatedVariants.length > 1 && (
+          <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+            <Label className="text-white mb-3 block">Select Variant ({generatedVariants.length} available)</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {generatedVariants.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setSelectedVariant(index);
+                    setGeneratedContent(generatedVariants[index]);
+                  }}
+                  className={`p-3 rounded-xl border transition-all text-sm ${
+                    selectedVariant === index
+                      ? 'bg-white text-black border-white'
+                      : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                  }`}
+                >
+                  Variant {index + 1}
+                </button>
+              ))}
+            </div>
+          </Card>
+        )}
+
         {/* Live Preview */}
         {showPreview && generatedContent && (
           <Card className="bg-white border-white/10 p-6 rounded-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-black font-semibold">Generated Blog</h2>
+              <div>
+                <h2 className="text-black font-semibold">Generated Blog</h2>
+                {generatedVariants.length > 1 && (
+                  <p className="text-black/60 text-sm">Variant {selectedVariant + 1} of {generatedVariants.length}</p>
+                )}
+              </div>
               <div className="flex gap-2">
                 <Button
                   onClick={() => {
@@ -264,7 +298,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `${topic.replace(/\s+/g, '-')}-blog.md`;
+                    a.download = `${topic.replace(/\s+/g, '-')}-blog-v${selectedVariant + 1}.md`;
                     a.click();
                     URL.revokeObjectURL(url);
                   }}
@@ -314,7 +348,13 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
 
             <Textarea
               value={generatedContent}
-              onChange={(e) => setGeneratedContent(e.target.value)}
+              onChange={(e) => {
+                setGeneratedContent(e.target.value);
+                // Update the variant in array
+                const updated = [...generatedVariants];
+                updated[selectedVariant] = e.target.value;
+                setGeneratedVariants(updated);
+              }}
               className="bg-white/5 border-white/10 text-black min-h-[500px] rounded-xl font-mono text-sm leading-relaxed"
               placeholder="Generated content will appear here..."
               readOnly={false}

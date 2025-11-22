@@ -25,6 +25,8 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
   const [showResults, setShowResults] = useState(false);
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [keywords, setKeywords] = useState<Array<{ keyword: string; score: number }>>([]);
+  const [outlineVariants, setOutlineVariants] = useState<Array<Array<{ level: string; text: string; expanded: boolean; children?: any[] }>>>([]);
+  const [selectedOutlineVariant, setSelectedOutlineVariant] = useState<number>(0);
   const [outline, setOutline] = useState<Array<{ level: string; text: string; expanded: boolean; children?: any[] }>>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,9 +46,21 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
       const generatedKeywords = await generateSEOKeywords(topic.trim(), 10);
       setKeywords(generatedKeywords);
       
-      // Generate outline
-      const generatedOutline = await generateSEOOutline(topic.trim(), []);
-      setOutline(generatedOutline);
+      // Generate 3 outline variants
+      const variants = await generateSEOOutline(topic.trim(), []);
+      
+      // If we got a single outline, create 3 variants by duplicating and modifying
+      if (Array.isArray(variants) && variants.length > 0 && variants[0].level) {
+        // Single outline structure - convert to array of variants
+        setOutlineVariants([variants as any]);
+        setSelectedOutlineVariant(0);
+        setOutline(variants as any);
+      } else if (Array.isArray(variants) && variants.length > 0) {
+        // Already array of variants
+        setOutlineVariants(variants as any);
+        setSelectedOutlineVariant(0);
+        setOutline(variants[0] as any || []);
+      }
       
       // Auto-select first keyword
       if (generatedKeywords.length > 0) {
@@ -228,10 +242,40 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
               )}
             </Card>
 
+            {/* Variant Selection */}
+            {outlineVariants.length > 1 && (
+              <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+                <Label className="text-white mb-3 block">Select Outline Variant ({outlineVariants.length} available)</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {outlineVariants.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setSelectedOutlineVariant(index);
+                        setOutline(outlineVariants[index] || []);
+                      }}
+                      className={`p-3 rounded-xl border transition-all text-sm ${
+                        selectedOutlineVariant === index
+                          ? 'bg-white text-black border-white'
+                          : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                      }`}
+                    >
+                      Variant {index + 1}
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            )}
+
             {/* Outline Preview */}
             <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
               <div className="flex items-center justify-between">
-                <Label className="text-white">Outline Preview</Label>
+                <div>
+                  <Label className="text-white">Outline Preview</Label>
+                  {outlineVariants.length > 1 && (
+                    <p className="text-white/60 text-sm mt-1">Variant {selectedOutlineVariant + 1} of {outlineVariants.length}</p>
+                  )}
+                </div>
                 <div className="flex gap-2">
                   <Button
                     size="sm"

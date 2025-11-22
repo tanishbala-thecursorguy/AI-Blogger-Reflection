@@ -73,6 +73,8 @@ const editorModes = [
 
 export function AIEditor({ onBack }: AIEditorProps) {
   const [content, setContent] = useState('');
+  const [enhancedVariants, setEnhancedVariants] = useState<string[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<number>(0);
   const [enhancedContent, setEnhancedContent] = useState('');
   const [selectedModes, setSelectedModes] = useState<string[]>([]);
   const [isEnhancing, setIsEnhancing] = useState(false);
@@ -94,9 +96,10 @@ export function AIEditor({ onBack }: AIEditorProps) {
     setEnhancedContent('');
     
     try {
-      const enhanced = await enhanceContent(content, selectedModes);
-      setEnhancedContent(enhanced);
-      setContent(enhanced);
+      const variants = await enhanceContent(content, selectedModes);
+      setEnhancedVariants(variants);
+      setSelectedVariant(0);
+      setEnhancedContent(variants[0] || '');
       setSelectedModes([]);
     } catch (err: any) {
       setError(err.message || 'Failed to enhance content. Please try again.');

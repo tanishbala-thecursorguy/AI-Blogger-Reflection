@@ -93,13 +93,15 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
     setRewrittenText('');
     
     try {
-      const content = await rewriteBlog(originalText, {
+      const variants = await rewriteBlog(originalText, {
         style: action === 'tone' ? selectedTone : undefined,
         tone: action === 'tone' ? selectedTone : selectedTone,
         improvements: improvements,
       });
       
-      setRewrittenText(content);
+      setRewrittenVariants(variants);
+      setSelectedVariant(0);
+      setRewrittenText(variants[0] || '');
     } catch (err: any) {
       setError(err.message || 'Failed to rewrite blog. Please try again.');
       console.error('Error rewriting blog:', err);
@@ -240,11 +242,41 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
           </Card>
         )}
 
+        {/* Variant Selection */}
+        {rewrittenVariants.length > 1 && (
+          <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+            <Label className="text-white mb-3 block">Select Rewritten Variant ({rewrittenVariants.length} available)</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {rewrittenVariants.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setSelectedVariant(index);
+                    setRewrittenText(rewrittenVariants[index]);
+                  }}
+                  className={`p-3 rounded-xl border transition-all text-sm ${
+                    selectedVariant === index
+                      ? 'bg-white text-black border-white'
+                      : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                  }`}
+                >
+                  Variant {index + 1}
+                </button>
+              ))}
+            </div>
+          </Card>
+        )}
+
         {/* Before/After Comparison */}
         {rewrittenText && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-white">Rewritten Content</Label>
+              <div>
+                <Label className="text-white">Rewritten Content</Label>
+                {rewrittenVariants.length > 1 && (
+                  <p className="text-white/60 text-sm mt-1">Variant {selectedVariant + 1} of {rewrittenVariants.length}</p>
+                )}
+              </div>
               <div className="flex gap-2">
                 <Button
                   onClick={() => {
@@ -252,7 +284,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'rewritten-blog.md';
+                    a.download = `rewritten-blog-v${selectedVariant + 1}.md`;
                     a.click();
                     URL.revokeObjectURL(url);
                   }}
