@@ -8,35 +8,71 @@ export interface ExportOptions {
 
 // Convert blog to newsletter format
 export function convertToNewsletter(content: string, title?: string): string {
-  // Extract main sections and format for email
-  const sections = content.split(/\n##\s+/);
   let newsletter = '';
   
+  // Email Subject
   if (title) {
     newsletter += `Subject: ${title}\n\n`;
+  } else {
+    newsletter += `Subject: Weekly Newsletter\n\n`;
   }
   
+  // Email Greeting
   newsletter += `Hi there!\n\n`;
-  newsletter += `I hope this email finds you well. I wanted to share something important with you today...\n\n`;
-  newsletter += `---\n\n`;
+  newsletter += `I hope this email finds you well. I wanted to share something important with you today.\n\n`;
   
-  sections.forEach((section, idx) => {
-    if (idx === 0) {
-      // Introduction
-      newsletter += section.replace(/^#+\s+/, '').replace(/\n/g, '\n') + '\n\n';
-    } else {
+  // Extract introduction (first paragraph before first heading)
+  const introMatch = content.match(/^#.+\n\n(.+?)(?=\n##|$)/s);
+  if (introMatch && introMatch[1]) {
+    const intro = introMatch[1].trim().substring(0, 400);
+    newsletter += `${intro}${intro.length >= 400 ? '...' : ''}\n\n`;
+  }
+  
+  newsletter += `---\n\n`;
+  newsletter += `📧 IN THIS EMAIL:\n\n`;
+  
+  // Extract all H2 headings as email sections
+  const headings = content.match(/^##\s+(.+)$/gm) || [];
+  
+  if (headings.length > 0) {
+    headings.forEach((heading, idx) => {
+      const cleanHeading = heading.replace(/^##\s+/, '').trim();
+      newsletter += `${idx + 1}. ${cleanHeading}\n`;
+    });
+    newsletter += `\n---\n\n`;
+    
+    // Add key sections with summaries
+    const sections = content.split(/\n##\s+/);
+    sections.slice(1, Math.min(4, sections.length)).forEach((section) => {
       const lines = section.split('\n');
-      const heading = lines[0];
-      const body = lines.slice(1).join('\n').trim();
+      const heading = lines[0].trim();
+      const body = lines.slice(1).join(' ').replace(/\s+/g, ' ').trim();
       
-      newsletter += `**${heading}**\n\n`;
-      newsletter += body.substring(0, 300) + (body.length > 300 ? '...' : '') + '\n\n';
-    }
-  });
+      if (heading && body) {
+        newsletter += `**${heading}**\n\n`;
+        // Take first 200 words of each section
+        const summary = body.split(' ').slice(0, 200).join(' ');
+        newsletter += `${summary}${body.split(' ').length > 200 ? '...' : ''}\n\n`;
+      }
+    });
+  } else {
+    // If no headings, just format the content
+    const formatted = content
+      .replace(/^#+\s+/gm, '')
+      .replace(/\n\n+/g, '\n\n')
+      .trim()
+      .substring(0, 2000);
+    newsletter += `${formatted}${content.length > 2000 ? '...' : ''}\n\n`;
+  }
   
   newsletter += `---\n\n`;
-  newsletter += `Want to read the full article? [Click here](link)\n\n`;
-  newsletter += `Best regards,\nYour Name`;
+  newsletter += `💡 WANT MORE?\n\n`;
+  newsletter += `Want to read the full article? [Click here to read more](your-link-here)\n\n`;
+  newsletter += `Have questions or feedback? Just hit reply - I read every email!\n\n`;
+  newsletter += `---\n\n`;
+  newsletter += `Best regards,\n[Your Name]\n`;
+  newsletter += `[Your Company/Website]\n\n`;
+  newsletter += `P.S. If you enjoyed this, please share it with someone who might benefit!`;
   
   return newsletter;
 }

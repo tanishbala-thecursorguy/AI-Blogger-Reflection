@@ -149,8 +149,11 @@ AI is revolutionizing content marketing. By adopting these strategies, you can s
       
       setExportedContent(result);
       
+      // For newsletter, twitter, linkedin, video - just show preview, don't auto-download
+      // User can copy or download manually
+      
       // Download or copy based on format
-      if (format === 'docx' || format === 'pdf' || format === 'gdoc') {
+      if (format === 'docx' || format === 'pdf' || format === 'gdoc' || format === 'html') {
         // For document formats, create a downloadable file
         const blob = new Blob([typeof result === 'string' ? result : result.join('\n\n---\n\n')], { 
           type: format === 'html' ? 'text/html' : 'text/plain' 
@@ -239,26 +242,49 @@ AI is revolutionizing content marketing. By adopting these strategies, you can s
             <div className="flex items-center justify-between">
               <h3 className="text-white">Exported Content ({currentFormat})</h3>
               <div className="flex gap-2">
-                <Button
-                  onClick={handleCopy}
-                  size="sm"
-                  variant="outline"
-                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-lg"
-                >
-                  <Copy className="w-4 h-4 mr-2" />
-                  Copy
-                </Button>
-                <Button
-                  onClick={() => {
-                    setExportedContent(null);
-                    setCurrentFormat(null);
-                  }}
-                  size="sm"
-                  variant="outline"
-                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-lg"
-                >
-                  Close
-                </Button>
+        <Button
+          onClick={handleCopy}
+          size="sm"
+          variant="outline"
+          className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-lg"
+        >
+          <Copy className="w-4 h-4 mr-2" />
+          Copy
+        </Button>
+        <Button
+          onClick={() => {
+            // Download as file
+            if (exportedContent) {
+              const text = typeof exportedContent === 'string' 
+                ? exportedContent 
+                : exportedContent.join('\n\n---\n\n');
+              const blob = new Blob([text], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `${blogTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${currentFormat || 'export'}.txt`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }
+          }}
+          size="sm"
+          variant="outline"
+          className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-lg"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Download
+        </Button>
+        <Button
+          onClick={() => {
+            setExportedContent(null);
+            setCurrentFormat(null);
+          }}
+          size="sm"
+          variant="outline"
+          className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-lg"
+        >
+          Close
+        </Button>
               </div>
             </div>
             <div className="bg-black/50 p-4 rounded-xl max-h-96 overflow-y-auto">
