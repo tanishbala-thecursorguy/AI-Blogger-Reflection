@@ -10,6 +10,7 @@ import {
   Sparkles,
   Lightbulb,
   Copy,
+  Download,
   Plus,
   X,
   Check,

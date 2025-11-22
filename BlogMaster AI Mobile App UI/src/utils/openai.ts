@@ -484,16 +484,33 @@ Now rewrite the blog post following this exact format. Remember: Maintain approx
 }
 
 export async function generateTopics(niche: string, count: number = 10): Promise<string[]> {
-  const prompt = `Generate ${count} engaging blog topic ideas for the niche: "${niche}"
+  const prompt = `Generate exactly ${count} engaging, SEO-friendly blog topic ideas for the niche: "${niche}"
 
-Requirements:
-- Topics should be SEO-friendly and keyword-rich
-- They should be actionable and valuable to readers
-- Include variety (how-to guides, listicles, comparisons, etc.)
-- Make topics specific and interesting
-- Return topics as a numbered list, one per line`;
+CRITICAL REQUIREMENTS:
+- Generate EXACTLY ${count} topics - no more, no less
+- Each topic should be SEO-friendly and keyword-rich
+- Topics should be actionable, valuable, and specific
+- Include variety: how-to guides, listicles, comparisons, tutorials, case studies, trends
+- Make topics specific, interesting, and searchable
+- Each topic should be 5-15 words long
+- Return topics as a numbered list (1., 2., 3., etc.), one per line
+- Do NOT include any additional text, explanations, or formatting - just the numbered list
 
-  const systemPrompt = 'You are an expert content strategist who generates engaging blog topic ideas.';
+Format example:
+1. How to Start [Topic] in 2024: Complete Beginner Guide
+2. Top 10 [Topic] Tools and Platforms for Success
+3. [Topic] vs [Related Topic]: Which is Better for You?
+
+Now generate exactly ${count} topics for "${niche}":`;
+
+  const systemPrompt = `You are an expert content strategist and SEO specialist who generates highly engaging, searchable blog topic ideas. 
+
+KEY RULES:
+1. Always generate the EXACT number of topics requested (${count} topics)
+2. Return only a numbered list, nothing else
+3. Each topic should be specific, actionable, and SEO-optimized
+4. Topics should vary in format (how-to, lists, comparisons, guides, etc.)
+5. Make topics compelling and valuable to readers`;
 
   let result = await callGroqAPI(prompt, systemPrompt);
   
@@ -503,30 +520,90 @@ Requirements:
 
   if (!result) {
     // Fallback: Generate simple topic ideas
+    console.log('API failed, using fallback topics');
     return Array.from({ length: count }, (_, i) => 
-      `${niche} - Topic ${i + 1}: Essential guide and best practices`
+      `How to Master ${niche}: Complete Guide for ${i + 1 === 1 ? 'Beginners' : i + 1 === 2 ? 'Professionals' : 'Experts'}`
     );
   }
 
   // Extract topics from the response
   const lines = result.split('\n').filter(line => {
     const trimmed = line.trim();
-    return trimmed && (/^\d+[\.\)]\s/.test(trimmed) || /^[-•]\s/.test(trimmed) || (trimmed.length > 10 && trimmed.length < 200));
+    // Match numbered lists (1., 2., 1) 2) etc.) or bullet points
+    return trimmed && (
+      /^\d+[\.\)]\s/.test(trimmed) || 
+      /^[-•*]\s/.test(trimmed) || 
+      (trimmed.length > 10 && trimmed.length < 200 && !trimmed.toLowerCase().includes('example'))
+    );
   });
   
-  const topics = lines.map(line => {
-    // Remove numbering/bullets and quotes
-    return line.replace(/^\d+[\.\)]\s*/, '').replace(/^[-•]\s*/, '').replace(/^"|"$/g, '').trim();
-  }).filter(topic => topic.length > 5 && topic.length < 200);
-  
-  // If we got good topics, return them
-  if (topics.length >= 3) {
-    return topics.slice(0, count);
+  let topics = lines.map(line => {
+    // Remove numbering, bullets, quotes, and extra formatting
+    let cleaned = line
+      .replace(/^\d+[\.\)]\s*/, '') // Remove "1. " or "1) "
+      .replace(/^[-•*]\s*/, '') // Remove bullets
+      .replace(/^["'`]|["'`]$/g, '') // Remove quotes
+      .replace(/^[\(\[]|[\)\]]$/g, '') // Remove parentheses/brackets
+      .trim();
+    
+    // Clean up any remaining formatting
+    cleaned = cleaned.replace(/^[:\-]\s*/, '').trim();
+    
+    return cleaned;
+  }).filter(topic => {
+    // Filter valid topics
+    const isTooShort = topic.length < 5;
+    const isTooLong = topic.length > 200;
+    const isInvalid = /^(example|note|tip|format|requirements)/i.test(topic);
+    const hasNumbers = /^\d+$/.test(topic); // Pure numbers
+    
+    return !isTooShort && !isTooLong && !isInvalid && !hasNumbers && topic.length > 0;
+  });
+
+  // Ensure we have at least some topics
+  if (topics.length === 0) {
+    console.log('No topics extracted, trying alternative parsing');
+    // Try alternative extraction
+    const altLines = result.split(/[\n\r]+/).filter(line => line.trim().length > 10);
+    topics = altLines.slice(0, count).map((line, idx) => {
+      const cleaned = line.trim().replace(/^[\d\-•*\)\.\(\[\]:]+\s*/, '');
+      return cleaned || `${niche} Topic ${idx + 1}`;
+    });
   }
   
-  // Fallback
+  // If we got good topics, return them (up to requested count)
+  if (topics.length > 0) {
+    const uniqueTopics = Array.from(new Set(topics)); // Remove duplicates
+    return uniqueTopics.slice(0, count);
+  }
+  
+  // Final fallback
+  console.log('Using final fallback topics');
+  const fallbackTypes = [
+    'Complete Guide',
+    'Best Practices',
+    'Step-by-Step Tutorial',
+    'Ultimate Checklist',
+    'Beginner\'s Guide',
+    'Advanced Strategies',
+    'Case Studies',
+    'Comparison Guide',
+    'Top Tools Review',
+    'Trending Topics',
+    'Expert Tips',
+    'Common Mistakes',
+    'Quick Start Guide',
+    'Deep Dive Analysis',
+    'Pro Tips',
+    'How-to Guide',
+    'Essential Checklist',
+    'Industry Insights',
+    'Future Trends',
+    'Success Stories'
+  ];
+  
   return Array.from({ length: count }, (_, i) => 
-    `${niche} - Topic ${i + 1}: Essential guide and tips`
+    `${niche}: ${fallbackTypes[i % fallbackTypes.length]}`
   );
 }
 
