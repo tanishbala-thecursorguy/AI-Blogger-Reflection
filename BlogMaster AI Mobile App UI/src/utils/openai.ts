@@ -509,23 +509,20 @@ export async function rewriteBlog(content: string, options: {
 
   const prompt = `Rewrite and improve the following blog post content:
 
-${content}
+${content.substring(0, 10000)}${content.length > 10000 ? '...' : ''}
 
 Requirements:
-- EXACT word count: ${originalWordCount} words (maintain the same length as the original)
-- You MUST write approximately ${originalWordCount} words to match the original content length
+- Write approximately ${originalWordCount} words (maintain similar length to the original)
+- You should aim for ${originalWordCount} words but it's okay if it's slightly different
 ${style ? `- Writing style: ${style}` : ''}
 ${tone ? `- Tone: ${tone}` : ''}
 ${improvementsText}
-- Follow the exact format provided below
 - Maintain all key information while improving clarity and structure
 - Make it more engaging and professional
-- Ensure SEO optimization
-- Keep the word count close to the original (${originalWordCount} words)
+- Ensure SEO optimization if applicable
+- Keep the word count similar to the original (around ${originalWordCount} words)
 
-${BLOG_FORMAT_INSTRUCTIONS}
-
-Now rewrite the blog post following this exact format. Remember: Maintain approximately ${originalWordCount} words to match the original content length.`;
+Now rewrite the blog post with these improvements.`;
 
   const systemPrompt = `You are an expert blog editor who rewrites content to be clearer, more engaging, and better structured while maintaining the original information. You ALWAYS maintain approximately the same word count as the original content (${originalWordCount} words).`;
 

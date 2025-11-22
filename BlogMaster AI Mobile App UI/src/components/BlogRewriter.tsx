@@ -56,6 +56,8 @@ const rewriteOptions = [
 
 export function BlogRewriter({ onBack }: BlogRewriterProps) {
   const [originalText, setOriginalText] = useState('');
+  const [rewrittenVariants, setRewrittenVariants] = useState<string[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<number>(0);
   const [rewrittenText, setRewrittenText] = useState('');
   const [selectedTone, setSelectedTone] = useState('Professional');
   const [selectedActions, setSelectedActions] = useState<string[]>([]);
