@@ -24,6 +24,8 @@ interface TopicGeneratorProps {
 export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
   const [niche, setNiche] = useState('');
   const [topicCount, setTopicCount] = useState(10);
+  const [topicSets, setTopicSets] = useState<string[][]>([]);
+  const [selectedTopicSet, setSelectedTopicSet] = useState<number>(0);
   const [topics, setTopics] = useState<string[]>([]);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -38,8 +40,21 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
     setSelectedTopics([]);
     
     try {
-      const generatedTopics = await generateTopics(niche.trim(), topicCount);
-      setTopics(generatedTopics);
+      // Generate multiple topic sets (3 variants with topicCount topics each)
+      const allTopics = await generateTopics(niche.trim(), topicCount);
+      
+      // Split into 3 sets
+      const topicsPerSet = Math.ceil(allTopics.length / 3);
+      const sets: string[][] = [];
+      for (let i = 0; i < 3; i++) {
+        const start = i * topicsPerSet;
+        const end = start + topicsPerSet;
+        sets.push(allTopics.slice(start, end));
+      }
+      
+      setTopicSets(sets.filter(set => set.length > 0));
+      setSelectedTopicSet(0);
+      setTopics(sets[0] || []);
     } catch (err: any) {
       setError(err.message || 'Failed to generate topics. Please try again.');
       console.error('Error generating topics:', err);
