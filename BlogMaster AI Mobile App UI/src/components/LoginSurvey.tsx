@@ -50,21 +50,33 @@ export function LoginSurvey({ email, userId, onComplete }: LoginSurveyProps) {
     }
     
     try {
-      // Update profile in Supabase
+      // Upsert profile in Supabase (create if doesn't exist, update if it does)
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: userId,
+          email: email,
           name: name.trim(),
           purpose: purpose,
-        })
-        .eq('id', userId);
+        }, {
+          onConflict: 'id'
+        });
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Profile upsert error:', updateError);
+        throw updateError;
+      }
       
       onComplete({ name: name.trim(), purpose });
     } catch (err: any) {
-      setError(err.message || 'Failed to save profile. Please try again.');
+      const errorMessage = err.message || 'Failed to save profile. Please try again.';
+      setError(errorMessage);
       console.error('Profile update error:', err);
+      
+      // If table doesn't exist, show helpful message
+      if (err.message?.includes('relation') || err.message?.includes('does not exist')) {
+        setError('Database tables not set up. Please run the SQL schema in Supabase Dashboard first.');
+      }
     }
   };
 
