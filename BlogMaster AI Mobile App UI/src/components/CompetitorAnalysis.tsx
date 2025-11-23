@@ -6,6 +6,7 @@ import { Card } from './ui/card';
 import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
 import { Textarea } from './ui/textarea';
+import ReactMarkdown from 'react-markdown';
 import {
   ArrowLeft,
   Search,
@@ -15,8 +16,11 @@ import {
   FileText,
   CheckCircle,
   Loader2,
+  Copy,
+  Download,
+  RefreshCw,
 } from 'lucide-react';
-import { analyzeCompetitor } from '../utils/openai';
+import { analyzeCompetitor, rewriteBlog } from '../utils/openai';
 
 interface CompetitorAnalysisProps {
   onBack: () => void;
@@ -25,6 +29,7 @@ interface CompetitorAnalysisProps {
 export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
   const [url, setUrl] = useState('');
   const [content, setContent] = useState('');
+  const [originalContent, setOriginalContent] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +43,10 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
     weakSections: Array<{ section: string; score: number }>;
     overallScore: number;
   } | null>(null);
+  const [isRewriting, setIsRewriting] = useState(false);
+  const [rewrittenVariants, setRewrittenVariants] = useState<string[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<number>(0);
+  const [showRewritten, setShowRewritten] = useState(false);
 
   const handleAnalyze = async () => {
     if (!url.trim() && !content.trim()) {
@@ -91,6 +100,9 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
         return;
       }
 
+      // Store original content for rewriting
+      setOriginalContent(contentToAnalyze);
+      
       // Analyze the content
       const result = await analyzeCompetitor(contentToAnalyze);
       setAnalysis(result);
@@ -100,6 +112,65 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
       console.error('Error analyzing competitor:', err);
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleRewrite = async () => {
+    if (!originalContent.trim()) {
+      setError('No content available to rewrite. Please analyze content first.');
+      return;
+    }
+
+    setIsRewriting(true);
+    setError(null);
+    setShowRewritten(false);
+    setRewrittenVariants([]);
+
+    try {
+      // Use content gaps to inform improvements
+      const improvements = analysis?.contentGaps || [];
+      const improvementText = improvements.length > 0 
+        ? `Focus on these improvements: ${improvements.slice(0, 3).join(', ')}. `
+        : '';
+
+      const variants = await rewriteBlog(originalContent, {
+        style: 'Professional',
+        tone: 'Authoritative',
+        improvements: ['Improve SEO', 'Improve Readability', 'Expand', ...improvements.slice(0, 2)],
+      });
+
+      if (variants && variants.length > 0) {
+        setRewrittenVariants(variants);
+        setSelectedVariant(0);
+        setShowRewritten(true);
+      } else {
+        setError('Failed to generate rewritten content. Please try again.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to rewrite content. Please try again.');
+      console.error('Error rewriting content:', err);
+    } finally {
+      setIsRewriting(false);
+    }
+  };
+
+  const handleCopyRewritten = () => {
+    if (rewrittenVariants[selectedVariant]) {
+      navigator.clipboard.writeText(rewrittenVariants[selectedVariant]);
+    }
+  };
+
+  const handleDownloadRewritten = () => {
+    if (rewrittenVariants[selectedVariant]) {
+      const blob = new Blob([rewrittenVariants[selectedVariant]], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `improved-competitor-content-${Date.now()}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
   };
 
@@ -320,13 +391,88 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
                 Generate Outranking Strategy
               </Button>
               <Button
+                onClick={handleRewrite}
+                disabled={isRewriting || !originalContent.trim()}
                 variant="outline"
-                className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 h-12 rounded-xl"
+                className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 h-12 rounded-xl disabled:opacity-50"
               >
-                <FileText className="w-5 h-5 mr-2" />
-                Rewrite Better Version
+                {isRewriting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Rewriting...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-5 h-5 mr-2" />
+                    Rewrite Better Version
+                  </>
+                )}
               </Button>
             </div>
+
+            {/* Rewritten Content */}
+            {showRewritten && rewrittenVariants.length > 0 && (
+              <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-white text-lg">Improved Version</Label>
+                  <div className="flex items-center gap-2">
+                    {rewrittenVariants.length > 1 && (
+                      <div className="flex items-center gap-2">
+                        {rewrittenVariants.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setSelectedVariant(idx)}
+                            className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                              selectedVariant === idx
+                                ? 'bg-white text-black'
+                                : 'bg-white/10 text-white hover:bg-white/20'
+                            }`}
+                          >
+                            {idx + 1}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleCopyRewritten}
+                      className="rounded-xl hover:bg-white/10"
+                    >
+                      <Copy className="w-5 h-5 text-white" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleDownloadRewritten}
+                      className="rounded-xl hover:bg-white/10"
+                    >
+                      <Download className="w-5 h-5 text-white" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="bg-black/50 border border-white/10 rounded-xl p-4 max-h-[600px] overflow-y-auto">
+                  <div className="text-white/90 whitespace-pre-wrap break-words prose prose-invert max-w-none">
+                    <ReactMarkdown>
+                      {rewrittenVariants[selectedVariant]}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+
+                {rewrittenVariants.length > 1 && (
+                  <Button
+                    variant="outline"
+                    onClick={handleRewrite}
+                    disabled={isRewriting}
+                    className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 h-12 rounded-xl"
+                  >
+                    <RefreshCw className="w-5 h-5 mr-2" />
+                    Generate New Variants
+                  </Button>
+                )}
+              </Card>
+            )}
           </>
         )}
 
