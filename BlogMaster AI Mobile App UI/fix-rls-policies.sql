@@ -1,12 +1,15 @@
 -- Fix RLS Policies for Profiles Table
--- Run this in Supabase SQL Editor to fix the "row-level security policy" error
+-- Run this ENTIRE script in Supabase SQL Editor to fix the "row-level security policy" error
 
--- Drop existing policies
+-- Step 1: Drop all existing policies on profiles table
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can upsert own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can manage own profile" ON public.profiles;
 
--- Recreate policies with better conditions for upserts
+-- Step 2: Recreate policies with proper conditions
+-- Allow users to view their own profile
 CREATE POLICY "Users can view own profile"
   ON public.profiles FOR SELECT
   USING (auth.uid() = id);
@@ -17,18 +20,14 @@ CREATE POLICY "Users can update own profile"
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
 
--- Allow users to insert their own profile (for upserts)
+-- Allow users to insert their own profile
 CREATE POLICY "Users can insert own profile"
   ON public.profiles FOR INSERT
   WITH CHECK (auth.uid() = id);
 
--- Also allow upsert operations
--- This policy allows the upsert to work by checking the user_id matches
-CREATE POLICY "Users can upsert own profile"
+-- Allow all operations for authenticated users on their own profile
+-- This covers any edge cases with upserts
+CREATE POLICY "Users can manage own profile"
   ON public.profiles FOR ALL
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
-
--- If the above doesn't work, temporarily disable RLS for testing:
--- ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
-
