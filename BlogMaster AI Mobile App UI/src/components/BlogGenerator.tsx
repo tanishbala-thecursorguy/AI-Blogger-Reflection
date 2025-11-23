@@ -44,6 +44,8 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
   const [selectedVariant, setSelectedVariant] = useState<number>(0);
   const [generatedContent, setGeneratedContent] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   // Load selected topics or SEO outline data from localStorage if available
   useEffect(() => {
@@ -296,6 +298,8 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                   onClick={() => {
                     // Save to localStorage for export menu
                     localStorage.setItem('lastGeneratedBlog', generatedContent);
+                    // Save blog automatically
+                    handleSaveBlog(generatedContent, false);
                     localStorage.setItem('lastBlogTitle', topic);
                     
                     const blob = new Blob([generatedContent], { type: 'text/markdown' });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Screen } from '../App';
@@ -30,15 +30,52 @@ const quickActions = [
   { icon: Search, label: 'Keyword Research', screen: 'keyword-research' as Screen },
 ];
 
-const recentBlogs: Array<{
-  id: number;
+interface Blog {
+  id: string;
   title: string;
+  content: string;
   date: string;
   status: string;
   words: number;
-}> = [];
+  topic?: string;
+  style?: string;
+}
 
 export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
+  const [recentBlogs, setRecentBlogs] = useState<Blog[]>([]);
+
+  useEffect(() => {
+    loadSavedBlogs();
+  }, []);
+
+  const loadSavedBlogs = () => {
+    try {
+      const savedBlogsStr = localStorage.getItem('savedBlogs');
+      if (savedBlogsStr) {
+        const blogs: Blog[] = JSON.parse(savedBlogsStr);
+        // Sort by date (most recent first) and take first 5
+        const sorted = blogs.sort((a, b) => {
+          const dateA = new Date(a.date).getTime();
+          const dateB = new Date(b.date).getTime();
+          return dateB - dateA;
+        });
+        setRecentBlogs(sorted.slice(0, 5));
+      }
+    } catch (err) {
+      console.error('Error loading saved blogs:', err);
+    }
+  };
+
+  // Calculate stats
+  const totalBlogs = recentBlogs.length;
+  const publishedBlogs = recentBlogs.filter(b => b.status === 'Published').length;
+  const thisWeekBlogs = recentBlogs.filter(blog => {
+    const blogDate = new Date(blog.date);
+    const today = new Date();
+    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    return blogDate >= weekAgo;
+  }).length;
+
   return (
     <div className="min-h-screen bg-black pb-20">
       {/* Header */}
@@ -62,15 +99,15 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
         <div className="grid grid-cols-3 gap-3">
           <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
             <div className="text-white/60 text-xs mb-1">Total Blogs</div>
-            <div className="text-white text-2xl">47</div>
+            <div className="text-white text-2xl">{totalBlogs}</div>
           </Card>
           <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
             <div className="text-white/60 text-xs mb-1">Published</div>
-            <div className="text-white text-2xl">32</div>
+            <div className="text-white text-2xl">{publishedBlogs}</div>
           </Card>
           <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
             <div className="text-white/60 text-xs mb-1">This Week</div>
-            <div className="text-white text-2xl">8</div>
+            <div className="text-white text-2xl">{thisWeekBlogs}</div>
           </Card>
         </div>
 
@@ -154,7 +191,11 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
                     </div>
 
                     <Button
-                      onClick={() => onNavigate('ai-editor')}
+                      onClick={() => {
+                        // Store blog content for editing
+                        localStorage.setItem('editingBlog', JSON.stringify(blog));
+                        onNavigate('blog-generator');
+                      }}
                       variant="ghost"
                       className="w-full h-9 bg-white/5 hover:bg-white/10 text-white rounded-xl"
                     >
