@@ -499,12 +499,8 @@ KEY RULES:
   let result = await callGroqAPI(prompt, systemPrompt);
   
   if (!result) {
-    result = await callHuggingFaceAPI(prompt, systemPrompt);
-  }
-
-  if (!result) {
     // Fallback: Generate simple topic ideas
-    console.log('API failed, using fallback topics');
+    console.log('Groq API failed, using fallback topics');
     return Array.from({ length: count }, (_, i) => 
       `How to Master ${niche}: Complete Guide for ${i + 1 === 1 ? 'Beginners' : i + 1 === 2 ? 'Professionals' : 'Experts'}`
     );
