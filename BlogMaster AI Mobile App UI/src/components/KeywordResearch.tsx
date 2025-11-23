@@ -12,6 +12,9 @@ import {
   Plus,
   Filter,
   Sparkles,
+  Copy,
+  Download,
+  Check,
 } from 'lucide-react';
 
 interface KeywordResearchProps {
@@ -70,6 +73,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [filter, setFilter] = useState<string>('all');
+  const [copiedKeyword, setCopiedKeyword] = useState<string | null>(null);
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
@@ -129,6 +133,43 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
       setSelectedKeywords(selectedKeywords.filter(k => k !== keyword));
     } else {
       setSelectedKeywords([...selectedKeywords, keyword]);
+    }
+  };
+
+  const handleCopyKeyword = (keyword: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(keyword);
+      setCopiedKeyword(keyword);
+      setTimeout(() => setCopiedKeyword(null), 2000);
+    }
+  };
+
+  const handleDownloadKeywords = () => {
+    if (selectedKeywords.length === 0) {
+      alert('Please select keywords first!');
+      return;
+    }
+
+    const text = selectedKeywords.join('\n');
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${searchTerm.replace(/[^a-z0-9]/gi, '-') || 'keywords'}-selected.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCopyAllSelected = () => {
+    if (selectedKeywords.length === 0) {
+      alert('Please select keywords first!');
+      return;
+    }
+
+    const text = selectedKeywords.join('\n');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      alert(`${selectedKeywords.length} keywords copied to clipboard!`);
     }
   };
 
@@ -196,18 +237,38 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
             <div className="pt-2 border-t border-white/10">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-white/60 text-sm">{selectedKeywords.length} selected</span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    // Save selected keywords to localStorage for blog generator
-                    localStorage.setItem('selectedKeywords', JSON.stringify(selectedKeywords));
-                    alert(`${selectedKeywords.length} keywords saved! They will be available when generating a blog.`);
-                  }}
-                  className="text-white hover:bg-white/10 rounded-lg h-8"
-                >
-                  Add to Blog
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleCopyAllSelected}
+                    className="text-white hover:bg-white/10 rounded-lg h-8"
+                  >
+                    <Copy className="w-4 h-4 mr-1" />
+                    Copy
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleDownloadKeywords}
+                    className="text-white hover:bg-white/10 rounded-lg h-8"
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    Download
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      // Save selected keywords to localStorage for blog generator
+                      localStorage.setItem('selectedKeywords', JSON.stringify(selectedKeywords));
+                      alert(`${selectedKeywords.length} keywords saved! They will be available when generating a blog.`);
+                    }}
+                    className="text-white hover:bg-white/10 rounded-lg h-8"
+                  >
+                    Add to Blog
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -341,17 +402,38 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
                         </Badge>
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => toggleKeyword(item.keyword)}
-                      className={`rounded-xl ${
-                        selectedKeywords.includes(item.keyword)
-                          ? 'bg-white text-black hover:bg-white/90'
-                          : 'bg-white/10 text-white hover:bg-white/20'
-                      }`}
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          handleCopyKeyword(item.keyword);
+                        }}
+                        className="bg-white/10 text-white hover:bg-white/20 rounded-xl"
+                        title="Copy keyword"
+                      >
+                        {copiedKeyword === item.keyword ? (
+                          <Check className="w-4 h-4 text-green-400" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => toggleKeyword(item.keyword)}
+                        className={`rounded-xl ${
+                          selectedKeywords.includes(item.keyword)
+                            ? 'bg-white text-black hover:bg-white/90'
+                            : 'bg-white/10 text-white hover:bg-white/20'
+                        }`}
+                        title={selectedKeywords.includes(item.keyword) ? 'Remove from selection' : 'Add to selection'}
+                      >
+                        {selectedKeywords.includes(item.keyword) ? (
+                          <Check className="w-4 h-4" />
+                        ) : (
+                          <Plus className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
 
                   {/* LSI Keywords */}
