@@ -658,32 +658,45 @@ KEY RULES:
 }
 
 export async function generateSEOKeywords(topic: string, count: number = 10): Promise<Array<{ keyword: string; score: number; lsi?: string[] }>> {
-  const prompt = `Generate ${count} SEO-friendly keyword suggestions for the topic: "${topic}"
+  const prompt = `You are an SEO keyword research expert. Generate EXACTLY ${count} highly relevant, searchable keywords for the topic: "${topic}"
 
 CRITICAL REQUIREMENTS:
-- Generate EXACTLY ${count} highly relevant keywords
-- Include a mix of short-tail (1-2 words) and long-tail (3-5 words) keywords
-- Keywords should be searchable and have strong SEO potential
-- For each keyword, also suggest 3-5 LSI (Latent Semantic Indexing) keywords that are semantically related
-- Return as a JSON array with "keyword", "score" (0-100), and "lsi" (array of related keywords) fields
+1. ALL keywords MUST be directly related to "${topic}" - no generic words like "json", "word", "score", etc.
+2. Generate EXACTLY ${count} keywords that people would actually search for about "${topic}"
+3. Include a mix of:
+   - Short-tail keywords (1-2 words): broad, high-volume terms
+   - Long-tail keywords (3-5 words): specific, targeted phrases
+4. Each keyword should be something a real person would type into Google when searching about "${topic}"
+5. For each keyword, provide 3-5 LSI (semantically related) keywords
 
-Example format:
+IMPORTANT: Focus ONLY on keywords that are specifically about "${topic}". Do NOT include generic technical terms or unrelated words.
+
+Return ONLY valid JSON array in this exact format (no additional text, no explanations):
 [
   {
-    "keyword": "example keyword",
+    "keyword": "specific keyword about ${topic}",
     "score": 95,
-    "lsi": ["related term 1", "related term 2", "synonym phrase"]
+    "lsi": ["related term 1", "related term 2", "related term 3"]
   },
   {
-    "keyword": "another keyword",
+    "keyword": "another specific keyword about ${topic}",
     "score": 88,
     "lsi": ["related term 1", "related term 2", "related term 3"]
   }
 ]
 
-Now generate exactly ${count} keywords for "${topic}" with their LSI terms:`;
+Now generate exactly ${count} relevant keywords specifically about "${topic}":`;
 
-  const systemPrompt = 'You are an expert SEO specialist who generates highly relevant, searchable keywords with LSI (semantically related) terms for content optimization. Always return valid JSON array format.';
+  const systemPrompt = `You are a professional SEO keyword research specialist. Your task is to generate highly relevant, searchable keywords that are SPECIFICALLY related to the given topic.
+
+RULES:
+1. Only generate keywords that are directly related to the topic
+2. Think about what real users would search for on Google
+3. Include both broad and specific keywords
+4. Provide LSI (semantically related) terms for each keyword
+5. Return ONLY valid JSON array - no markdown, no explanations, just the JSON array
+
+CRITICAL: Never include generic words or unrelated terms. Every keyword must be about the given topic.`;
 
   // Try Groq first, then Hugging Face
   let result = await callGroqAPI(prompt, systemPrompt);
