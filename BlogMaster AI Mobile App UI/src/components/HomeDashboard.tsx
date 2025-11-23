@@ -5,7 +5,7 @@ import { Screen } from '../App';
 import { supabase } from '../lib/supabase';
 import {
   FileText,
-  Lightbulb,
+  ImageIcon,
   ListTree,
   RefreshCw,
   Target,
@@ -24,7 +24,7 @@ interface HomeDashboardProps {
 
 const quickActions = [
   { icon: FileText, label: 'Generate Blog', screen: 'blog-generator' as Screen },
-  { icon: Lightbulb, label: 'Topic Ideas', screen: 'tasks' as Screen },
+  { icon: ImageIcon, label: 'Image Generation', screen: 'image-generator' as Screen },
   { icon: ListTree, label: 'SEO Outline', screen: 'seo-outline' as Screen },
   { icon: RefreshCw, label: 'Rewrite Blog', screen: 'blog-rewriter' as Screen },
   { icon: Target, label: 'Competitor Analysis', screen: 'competitor-analysis' as Screen },
