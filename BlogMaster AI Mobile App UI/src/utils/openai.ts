@@ -714,45 +714,125 @@ CRITICAL: Never include generic words or unrelated terms. Every keyword must be 
     }));
   }
 
+  // Helper function to check if keyword is relevant
+  const isKeywordRelevant = (keyword: string): boolean => {
+    const kw = keyword.toLowerCase().trim();
+    const topicLower = topic.toLowerCase();
+    const topicWords = topicLower.split(' ').filter(w => w.length > 2);
+    
+    // Generic words to exclude
+    const genericWords = ['json', 'word', 'score', 'keyword', 'example', 'format', 'array', 'object', 'string', 'number', 'value', 'field', 'data', 'item', 's for', 'for the', 'the topic'];
+    const isGeneric = genericWords.some(gw => kw === gw || kw.includes(` ${gw} `) || kw.startsWith(`${gw} `) || kw.endsWith(` ${gw}`));
+    
+    // Must be related to topic
+    const isRelated = topicWords.some(tw => kw.includes(tw)) || kw.includes(topicLower) || topicLower.includes(kw);
+    
+    // Valid length
+    const isValidLength = kw.length > 3 && kw.length < 60;
+    
+    // Should not be just numbers or single letters
+    const isNotGeneric = !/^(s|json|word|score|\d+)$/i.test(kw);
+    
+    return !isGeneric && isValidLength && isNotGeneric && (isRelated || kw.length > 15);
+  };
+
   // Try to parse JSON
   try {
     let cleaned = result.trim();
+    // Remove markdown code blocks
     cleaned = cleaned.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
+    // Extract JSON array from text
+    const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      cleaned = jsonMatch[0];
+    }
     
     const keywords = JSON.parse(cleaned);
     if (Array.isArray(keywords) && keywords.length > 0) {
-      return keywords.slice(0, count).map((item: any) => ({
-        keyword: item.keyword || item.key || String(item),
-        score: typeof item.score === 'number' ? item.score : Math.floor(95 - Math.random() * 20),
-        lsi: Array.isArray(item.lsi) ? item.lsi.slice(0, 5) : (item.related || []).slice(0, 5) || [],
-      }));
+      // Filter and map valid keywords
+      const validKeywords = keywords
+        .map((item: any) => {
+          const keyword = String(item.keyword || item.key || item || '').trim();
+          if (!keyword || !isKeywordRelevant(keyword)) return null;
+          
+          return {
+            keyword: keyword,
+            score: typeof item.score === 'number' ? item.score : Math.floor(95 - Math.random() * 20),
+            lsi: Array.isArray(item.lsi) 
+              ? item.lsi.slice(0, 5).filter((l: string) => l && typeof l === 'string' && l.trim().length > 2)
+              : (Array.isArray(item.related) ? item.related.slice(0, 5) : []) || [],
+          };
+        })
+        .filter((kw): kw is { keyword: string; score: number; lsi: string[] } => kw !== null);
+      
+      if (validKeywords.length > 0) {
+        return validKeywords.slice(0, count);
+      }
     }
   } catch (e) {
     console.error('Error parsing keywords JSON:', e);
+    console.log('Raw API response:', result);
   }
 
-  // Fallback: Extract keywords from text and generate basic LSI
+  // Fallback: Extract keywords from text more carefully
+  const topicLower = topic.toLowerCase();
+  const topicWords = topicLower.split(' ').filter(w => w.length > 2);
+  const genericWords = ['json', 'word', 'score', 'keyword', 'example', 'format', 'array', 'object', 's for', 'for the'];
+  
   const lines = result.split('\n').filter(line => {
-    const trimmed = line.trim();
-    return trimmed && (trimmed.includes('keyword') || (trimmed.length > 5 && trimmed.length < 100 && !trimmed.includes('Example')));
+    const trimmed = line.trim().toLowerCase();
+    if (trimmed.length < 5 || trimmed.length > 80) return false;
+    if (trimmed.includes('example') || trimmed.includes('format') || trimmed.includes('critical') || trimmed.includes('requirements')) return false;
+    
+    // Check if line contains topic-related words
+    const hasTopicWord = topicWords.some(tw => trimmed.includes(tw)) || trimmed.includes(topicLower);
+    const hasGeneric = genericWords.some(gw => trimmed === gw || trimmed.includes(` ${gw} `));
+    
+    return hasTopicWord && !hasGeneric;
   });
 
-  return lines.slice(0, count).map((line, idx) => {
-    const match = line.match(/(?:keyword|key|word)[:"]?\s*["']?([^"',:]+)["']?/i);
-    const keyword = match ? match[1].trim() : line.replace(/[^\w\s-]/g, '').trim();
-    const scoreMatch = line.match(/score[:]?\s*(\d+)/i);
-    const score = scoreMatch ? parseInt(scoreMatch[1]) : (95 - idx * 5);
+  // Extract keywords from lines
+  const extractedKeywords: string[] = [];
+  for (const line of lines) {
+    // Try JSON format extraction
+    const jsonMatch = line.match(/"keyword"\s*:\s*"([^"]+)"/i);
+    if (jsonMatch) {
+      const kw = jsonMatch[1].trim();
+      if (isKeywordRelevant(kw)) extractedKeywords.push(kw);
+      continue;
+    }
     
-    // Generate basic LSI keywords
+    // Try quoted string
+    const quoteMatch = line.match(/"([^"]{4,50})"/);
+    if (quoteMatch) {
+      const kw = quoteMatch[1].trim();
+      if (isKeywordRelevant(kw)) extractedKeywords.push(kw);
+      continue;
+    }
+    
+    // Extract from line content
+    let keyword = line.replace(/[^\w\s-]/g, ' ').trim();
+    keyword = keyword.split(/\s+/).slice(0, 5).join(' ');
+    if (isKeywordRelevant(keyword)) extractedKeywords.push(keyword);
+    
+    if (extractedKeywords.length >= count) break;
+  }
+
+  // Generate LSI terms for extracted keywords
+  return extractedKeywords.slice(0, count).map((keyword, idx) => {
     const words = keyword.split(' ');
-    const lsiTerms = words.length > 1 
-      ? [`${words[0]} guide`, `${words.join(' ')} tips`, `${topic} ${words[words.length - 1]}`]
-      : [`${keyword} guide`, `${keyword} tips`, `${keyword} examples`];
+    const topicWordsArray = topic.split(' ').slice(0, 2);
+    const lsiTerms = [
+      `${keyword} guide`,
+      `${keyword} tips`,
+      ...topicWordsArray.map(tw => `${keyword} ${tw}`),
+      `${keyword} examples`,
+    ].filter(t => t.length < 50 && isKeywordRelevant(t.split(' ')[0] || t)).slice(0, 5);
     
     return {
-      keyword: keyword || `${topic} keyword ${idx + 1}`,
-      score: Math.max(50, Math.min(100, score)),
-      lsi: lsiTerms.slice(0, 3),
+      keyword: keyword,
+      score: Math.max(50, Math.min(100, 95 - idx * 5)),
+      lsi: lsiTerms.length > 0 ? lsiTerms : [`${keyword} guide`, `${keyword} tips`, `${keyword} strategies`],
     };
   });
 }
