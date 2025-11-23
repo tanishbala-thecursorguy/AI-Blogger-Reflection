@@ -657,23 +657,35 @@ KEY RULES:
   );
 }
 
-export async function generateSEOKeywords(topic: string, count: number = 10): Promise<Array<{ keyword: string; score: number }>> {
+export async function generateSEOKeywords(topic: string, count: number = 10): Promise<Array<{ keyword: string; score: number; lsi?: string[] }>> {
   const prompt = `Generate ${count} SEO-friendly keyword suggestions for the topic: "${topic}"
 
-Requirements:
-- Keywords should be highly relevant to the topic
-- Include a mix of short-tail and long-tail keywords
-- Keywords should be searchable and have SEO potential
-- Return keywords with SEO relevance scores (0-100)
+CRITICAL REQUIREMENTS:
+- Generate EXACTLY ${count} highly relevant keywords
+- Include a mix of short-tail (1-2 words) and long-tail (3-5 words) keywords
+- Keywords should be searchable and have strong SEO potential
+- For each keyword, also suggest 3-5 LSI (Latent Semantic Indexing) keywords that are semantically related
+- Return as a JSON array with "keyword", "score" (0-100), and "lsi" (array of related keywords) fields
 
-Return the response as a JSON array of objects with "keyword" and "score" fields. Example format:
+Example format:
 [
-  {"keyword": "example keyword", "score": 95},
-  {"keyword": "another keyword", "score": 88}
-]`;
+  {
+    "keyword": "example keyword",
+    "score": 95,
+    "lsi": ["related term 1", "related term 2", "synonym phrase"]
+  },
+  {
+    "keyword": "another keyword",
+    "score": 88,
+    "lsi": ["related term 1", "related term 2", "related term 3"]
+  }
+]
 
-  const systemPrompt = 'You are an SEO expert who generates highly relevant, searchable keywords for content topics. Return only valid JSON array.';
+Now generate exactly ${count} keywords for "${topic}" with their LSI terms:`;
 
+  const systemPrompt = 'You are an expert SEO specialist who generates highly relevant, searchable keywords with LSI (semantically related) terms for content optimization. Always return valid JSON array format.';
+
+  // Try Groq first, then Hugging Face
   let result = await callGroqAPI(prompt, systemPrompt);
   
   if (!result) {
@@ -681,16 +693,16 @@ Return the response as a JSON array of objects with "keyword" and "score" fields
   }
 
   if (!result) {
-    // Fallback keywords
+    // Fallback keywords with basic LSI
     return Array.from({ length: count }, (_, i) => ({
-      keyword: `${topic} ${i + 1}`,
+      keyword: `${topic} ${i + 1 === 1 ? 'guide' : i + 1 === 2 ? 'tips' : i + 1 === 3 ? 'strategy' : 'best practices'}`,
       score: 85 - (i * 5),
+      lsi: [`${topic} techniques`, `${topic} methods`, `${topic} examples`],
     }));
   }
 
   // Try to parse JSON
   try {
-    // Clean up the response - remove markdown code blocks if present
     let cleaned = result.trim();
     cleaned = cleaned.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
     
@@ -699,28 +711,35 @@ Return the response as a JSON array of objects with "keyword" and "score" fields
       return keywords.slice(0, count).map((item: any) => ({
         keyword: item.keyword || item.key || String(item),
         score: typeof item.score === 'number' ? item.score : Math.floor(95 - Math.random() * 20),
+        lsi: Array.isArray(item.lsi) ? item.lsi.slice(0, 5) : (item.related || []).slice(0, 5) || [],
       }));
     }
   } catch (e) {
     console.error('Error parsing keywords JSON:', e);
   }
 
-  // Fallback: Extract keywords from text
+  // Fallback: Extract keywords from text and generate basic LSI
   const lines = result.split('\n').filter(line => {
     const trimmed = line.trim();
-    return trimmed && (trimmed.includes('keyword') || trimmed.length > 5 && trimmed.length < 100);
+    return trimmed && (trimmed.includes('keyword') || (trimmed.length > 5 && trimmed.length < 100 && !trimmed.includes('Example')));
   });
 
   return lines.slice(0, count).map((line, idx) => {
-    // Try to extract keyword and score
     const match = line.match(/(?:keyword|key|word)[:"]?\s*["']?([^"',:]+)["']?/i);
     const keyword = match ? match[1].trim() : line.replace(/[^\w\s-]/g, '').trim();
     const scoreMatch = line.match(/score[:]?\s*(\d+)/i);
     const score = scoreMatch ? parseInt(scoreMatch[1]) : (95 - idx * 5);
     
+    // Generate basic LSI keywords
+    const words = keyword.split(' ');
+    const lsiTerms = words.length > 1 
+      ? [`${words[0]} guide`, `${words.join(' ')} tips`, `${topic} ${words[words.length - 1]}`]
+      : [`${keyword} guide`, `${keyword} tips`, `${keyword} examples`];
+    
     return {
       keyword: keyword || `${topic} keyword ${idx + 1}`,
       score: Math.max(50, Math.min(100, score)),
+      lsi: lsiTerms.slice(0, 3),
     };
   });
 }
