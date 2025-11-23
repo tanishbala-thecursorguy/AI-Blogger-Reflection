@@ -1,15 +1,13 @@
-// Using free APIs - Groq (fast and free, but requires API key)
-// Fallback to Hugging Face Inference API (free, no API key required)
-// Optional: Set VITE_GROQ_API_KEY for faster Groq API (get free at https://console.groq.com/)
-// Optional: Set VITE_HUGGINGFACE_API_KEY for higher HF rate limits
-// OpenAI API key for image generation only (DALL-E) - Set VITE_OPENAI_API_KEY in .env.local
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
+// API Configuration:
+// - Groq API (FREE): Used for all text generation (blogs, rewriting, SEO, etc.)
+//   Set VITE_GROQ_API_KEY in .env.local (get free at https://console.groq.com/)
+// - OpenAI API: Used ONLY for image generation (DALL-E)
+//   Set VITE_OPENAI_API_KEY in .env.local
 
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
-const HUGGINGFACE_API_KEY = import.meta.env.VITE_HUGGINGFACE_API_KEY || '';
 
 const GROQ_MODEL = 'llama-3.1-8b-instant'; // Fast and free
-const HF_MODEL = 'mistralai/Mistral-7B-Instruct-v0.2'; // Fast and doesn't need loading
 
 const BLOG_FORMAT_INSTRUCTIONS = `
 # Title (H1)
@@ -167,13 +165,8 @@ async function generateMultipleVariants(
     try {
       const variantPrompt = `${basePrompt}\n\nVARIANT ${i + 1} INSTRUCTION: ${variantInstructions[i] || 'Generate a unique variant.'}`;
       
-      // Try Groq first
+      // Use Groq API only
       let result = await callGroqAPI(variantPrompt, systemPrompt, wordCount);
-      
-      if (!result) {
-        // Fallback to Hugging Face
-        result = await callHuggingFaceAPI(variantPrompt, systemPrompt, wordCount);
-      }
       
       if (result) {
         variants.push(result);
@@ -194,9 +187,6 @@ async function generateMultipleVariants(
     // Try once more without variant instructions
     try {
       let result = await callGroqAPI(basePrompt, systemPrompt, wordCount);
-      if (!result) {
-        result = await callHuggingFaceAPI(basePrompt, systemPrompt, wordCount);
-      }
       if (result) {
         variants.push(result);
         // Duplicate to have at least 2 variants
@@ -211,7 +201,7 @@ async function generateMultipleVariants(
   
   // Ensure we have at least one variant
   if (variants.length === 0) {
-    throw new Error('Failed to generate any variants. Please try again.');
+    throw new Error('Failed to generate any variants. Please check your Groq API key and try again.');
   }
   
   return variants;
@@ -220,8 +210,7 @@ async function generateMultipleVariants(
 // Helper function to call Groq API
 async function callGroqAPI(prompt: string, systemPrompt: string, wordCount?: number): Promise<string | null> {
   if (!GROQ_API_KEY) {
-    console.log('Groq API key not found, skipping Groq API call');
-    return null;
+    throw new Error('Groq API key is required. Please set VITE_GROQ_API_KEY in your .env.local file. Get a free API key at https://console.groq.com/');
   }
   
   const maxTokens = wordCount ? calculateMaxTokens(wordCount) : 4000;
@@ -275,8 +264,9 @@ async function callGroqAPI(prompt: string, systemPrompt: string, wordCount?: num
   return null;
 }
 
-// Helper function to call Hugging Face API
-async function callHuggingFaceAPI(prompt: string, systemPrompt: string, wordCount?: number): Promise<string | null> {
+// NOTE: Hugging Face API removed - using Groq API only for all text generation
+// This function is kept for reference but should not be used
+async function callHuggingFaceAPI_DEPRECATED(prompt: string, systemPrompt: string, wordCount?: number): Promise<string | null> {
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -490,31 +480,18 @@ KEY RULES:
     console.error('Error generating multiple variants:', error);
   }
   
-  // Fallback: try single generation
+  // Fallback: try single generation with Groq only
   let result: string | null = null;
-  let lastError: string | null = null;
   
   try {
     result = await callGroqAPI(prompt, systemPrompt, wordCount);
   } catch (error: any) {
-    console.log('Groq API failed:', error?.message || error);
-    lastError = error?.message || 'Groq API failed';
-  }
-  
-  if (!result) {
-    try {
-      result = await callHuggingFaceAPI(prompt, systemPrompt, wordCount);
-    } catch (error: any) {
-      console.log('Hugging Face API failed:', error?.message || error);
-      lastError = error?.message || 'Hugging Face API failed';
-    }
+    console.error('Groq API failed:', error?.message || error);
+    throw new Error(`Failed to generate blog: ${error?.message || 'Groq API error'}. Please check your Groq API key.`);
   }
 
   if (!result) {
-    const errorMsg = lastError 
-      ? `Failed to generate blog: ${lastError}. Please check your API keys or try again.`
-      : 'Failed to generate blog. Please check your API keys or try again.';
-    throw new Error(errorMsg);
+    throw new Error('Failed to generate blog. Please check your Groq API key and try again.');
   }
 
   return [result]; // Return as array for consistency
@@ -729,10 +706,11 @@ CRITICAL: Never include generic words or unrelated terms. Every keyword must be 
   let result = await callGroqAPI(prompt, systemPrompt);
   
   if (!result) {
-    result = await callHuggingFaceAPI(prompt, systemPrompt);
+    throw new Error('Failed to generate keywords. Please check your Groq API key and try again.');
   }
-
-  if (!result) {
+  
+  // If result is empty, use fallback
+  if (!result || result.trim().length === 0) {
     // Fallback keywords with basic LSI
     return Array.from({ length: count }, (_, i) => ({
       keyword: `${topic} ${i + 1 === 1 ? 'guide' : i + 1 === 2 ? 'tips' : i + 1 === 3 ? 'strategy' : 'best practices'}`,
@@ -965,10 +943,6 @@ Return the outline in this exact JSON format:
     
     let result = await callGroqAPI(variantPrompt, systemPrompt);
     
-    if (!result) {
-      result = await callHuggingFaceAPI(variantPrompt, systemPrompt);
-    }
-
     if (result) {
       try {
         let cleaned = result.trim();
