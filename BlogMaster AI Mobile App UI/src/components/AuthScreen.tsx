@@ -48,16 +48,24 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
 
         if (signUpError) throw signUpError;
         if (data.user) {
-          // Create profile
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: data.user.id,
-              email: email.trim(),
-              name: username.trim() || email.split('@')[0],
-            });
+          // Profile will be created automatically by trigger, but try to ensure it exists
+          try {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .insert({
+                id: data.user.id,
+                email: email.trim(),
+                name: username.trim() || email.split('@')[0],
+              }).select();
 
-          if (profileError) console.error('Profile creation error:', profileError);
+            if (profileError && !profileError.message.includes('duplicate')) {
+              console.error('Profile creation error:', profileError);
+            }
+          } catch (profileErr) {
+            // Ignore if profile already exists (created by trigger)
+            console.log('Profile may already exist:', profileErr);
+          }
+          
           onComplete(data.user.email || email, data.user.id);
         }
       }

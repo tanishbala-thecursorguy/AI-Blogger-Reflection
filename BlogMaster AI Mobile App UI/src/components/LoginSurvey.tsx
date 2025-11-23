@@ -50,20 +50,41 @@ export function LoginSurvey({ email, userId, onComplete }: LoginSurveyProps) {
     }
     
     try {
-      // Upsert profile in Supabase (create if doesn't exist, update if it does)
-      const { error: updateError } = await supabase
+      // First try to update existing profile
+      const { data: existing, error: checkError } = await supabase
         .from('profiles')
-        .upsert({
-          id: userId,
-          email: email,
-          name: name.trim(),
-          purpose: purpose,
-        }, {
-          onConflict: 'id'
-        });
+        .select('id')
+        .eq('id', userId)
+        .single();
+
+      let updateError;
+
+      if (existing) {
+        // Update existing profile
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            name: name.trim(),
+            purpose: purpose,
+            email: email,
+          })
+          .eq('id', userId);
+        updateError = error;
+      } else {
+        // Insert new profile
+        const { error } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            email: email,
+            name: name.trim(),
+            purpose: purpose,
+          });
+        updateError = error;
+      }
 
       if (updateError) {
-        console.error('Profile upsert error:', updateError);
+        console.error('Profile save error:', updateError);
         throw updateError;
       }
       
@@ -76,6 +97,8 @@ export function LoginSurvey({ email, userId, onComplete }: LoginSurveyProps) {
       // If table doesn't exist, show helpful message
       if (err.message?.includes('relation') || err.message?.includes('does not exist')) {
         setError('Database tables not set up. Please run the SQL schema in Supabase Dashboard first.');
+      } else if (err.message?.includes('row-level security')) {
+        setError('RLS Policy Error: Please run the fix-rls-policies.sql script in Supabase SQL Editor.');
       }
     }
   };
