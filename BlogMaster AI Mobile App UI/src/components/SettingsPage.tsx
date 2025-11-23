@@ -24,14 +24,43 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ onBack, onLogout, onNavigate }: SettingsPageProps) {
+  // Load user profile from localStorage
   const [name, setName] = useState(() => {
-    const saved = localStorage.getItem('userName') || 'Sarah Johnson';
-    return saved;
+    try {
+      const profile = localStorage.getItem('userProfile');
+      const userAuth = localStorage.getItem('userAuth');
+      if (profile) {
+        const profileData = JSON.parse(profile);
+        if (profileData.name) return profileData.name;
+      }
+      if (userAuth) {
+        const authData = JSON.parse(userAuth);
+        if (authData.name) return authData.name;
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    }
+    return 'User';
   });
+
   const [email, setEmail] = useState(() => {
-    const saved = localStorage.getItem('userEmail') || 'sarah@example.com';
-    return saved;
+    try {
+      const profile = localStorage.getItem('userProfile');
+      const userAuth = localStorage.getItem('userAuth');
+      if (profile) {
+        const profileData = JSON.parse(profile);
+        if (profileData.email) return profileData.email;
+      }
+      if (userAuth) {
+        const authData = JSON.parse(userAuth);
+        if (authData.email) return authData.email;
+      }
+    } catch (error) {
+      console.error('Error loading email:', error);
+    }
+    return '';
   });
+
   const [defaultTone, setDefaultTone] = useState(() => {
     const saved = localStorage.getItem('defaultTone') || 'Professional';
     return saved;
@@ -40,13 +69,23 @@ export function SettingsPage({ onBack, onLogout, onNavigate }: SettingsPageProps
   // Auto-save name, email, and tone to localStorage
   useEffect(() => {
     if (name) {
-      localStorage.setItem('userName', name);
+      // Update both userProfile and userAuth
+      const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      const userAuth = JSON.parse(localStorage.getItem('userAuth') || '{}');
+      
+      localStorage.setItem('userProfile', JSON.stringify({ ...profile, name }));
+      localStorage.setItem('userAuth', JSON.stringify({ ...userAuth, name }));
     }
   }, [name]);
 
   useEffect(() => {
     if (email) {
-      localStorage.setItem('userEmail', email);
+      // Update both userProfile and userAuth
+      const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      const userAuth = JSON.parse(localStorage.getItem('userAuth') || '{}');
+      
+      localStorage.setItem('userProfile', JSON.stringify({ ...profile, email }));
+      localStorage.setItem('userAuth', JSON.stringify({ ...userAuth, email }));
     }
   }, [email]);
 

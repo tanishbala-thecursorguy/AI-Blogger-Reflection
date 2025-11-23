@@ -1,0 +1,157 @@
+import React, { useState } from 'react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Card } from './ui/card';
+import { Textarea } from './ui/textarea';
+import { User, Target, ArrowRight } from 'lucide-react';
+
+interface LoginSurveyProps {
+  email: string;
+  onComplete: (data: { name: string; purpose: string }) => void;
+}
+
+const purposeOptions = [
+  'Personal Blogging',
+  'Business Content Marketing',
+  'SEO Optimization',
+  'Content Writing Services',
+  'Academic Writing',
+  'Social Media Content',
+  'Other',
+];
+
+export function LoginSurvey({ email, onComplete }: LoginSurveyProps) {
+  const [name, setName] = useState('');
+  const [selectedPurpose, setSelectedPurpose] = useState<string>('');
+  const [customPurpose, setCustomPurpose] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+    
+    if (!selectedPurpose) {
+      setError('Please select your purpose');
+      return;
+    }
+    
+    const purpose = selectedPurpose === 'Other' ? customPurpose.trim() : selectedPurpose;
+    
+    if (!purpose) {
+      setError('Please specify your purpose');
+      return;
+    }
+    
+    // Save profile data
+    const profileData = {
+      name: name.trim(),
+      email: email,
+      purpose: purpose,
+      completedSurvey: true,
+      surveyCompletedAt: Date.now(),
+    };
+    
+    // Update user auth with profile data
+    const userAuth = JSON.parse(localStorage.getItem('userAuth') || '{}');
+    localStorage.setItem('userAuth', JSON.stringify({ ...userAuth, ...profileData }));
+    
+    // Save profile separately
+    localStorage.setItem('userProfile', JSON.stringify(profileData));
+    
+    onComplete({ name: name.trim(), purpose });
+  };
+
+  return (
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-white text-2xl mb-2">Welcome to BlogMaster AI!</h1>
+          <p className="text-white/60">Let's get to know you better</p>
+        </div>
+
+        {/* Survey Card */}
+        <Card className="bg-white/5 border-white/10 p-6 rounded-3xl backdrop-blur-sm">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Name Input */}
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-white/80">
+                What's your name?
+              </Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Enter your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="pl-11 bg-white/10 border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Purpose Selection */}
+            <div className="space-y-3">
+              <Label className="text-white/80">What's your purpose here?</Label>
+              <div className="grid grid-cols-2 gap-3">
+                {purposeOptions.map((purpose) => (
+                  <button
+                    key={purpose}
+                    type="button"
+                    onClick={() => setSelectedPurpose(purpose)}
+                    className={`p-4 rounded-xl border text-left transition-all ${
+                      selectedPurpose === purpose
+                        ? 'bg-white text-black border-white'
+                        : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                    }`}
+                  >
+                    <Target className={`w-5 h-5 mb-2 ${selectedPurpose === purpose ? 'text-black' : 'text-white/60'}`} />
+                    <div className={`text-sm font-medium ${selectedPurpose === purpose ? 'text-black' : 'text-white'}`}>
+                      {purpose}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Custom Purpose Input */}
+              {selectedPurpose === 'Other' && (
+                <div className="mt-3">
+                  <Textarea
+                    placeholder="Please specify your purpose..."
+                    value={customPurpose}
+                    onChange={(e) => setCustomPurpose(e.target.value)}
+                    className="bg-white/10 border-white/10 text-white placeholder:text-white/40 min-h-[100px] rounded-xl resize-none"
+                    required={selectedPurpose === 'Other'}
+                  />
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl p-3">
+                {error}
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl"
+            >
+              Continue
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
+}
+

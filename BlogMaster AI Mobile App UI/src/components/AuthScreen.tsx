@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Separator } from './ui/separator';
-import { Mail, Lock, User, Chrome, Apple } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
 
 interface AuthScreenProps {
-  onComplete: () => void;
+  onComplete: (email: string) => void;
 }
 
 export function AuthScreen({ onComplete }: AuthScreenProps) {
@@ -17,7 +16,19 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onComplete();
+    
+    // Save login state to localStorage
+    const userData = {
+      email: email,
+      username: username || email.split('@')[0],
+      isLoggedIn: true,
+      loginTime: Date.now(),
+    };
+    
+    localStorage.setItem('userAuth', JSON.stringify(userData));
+    
+    // Call onComplete with email
+    onComplete(email);
   };
 
   return (
@@ -102,38 +113,12 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl"
+              disabled={!email.trim() || !password.trim()}
+              className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50"
             >
               {isLogin ? 'Log In' : 'Sign Up'}
             </Button>
           </form>
-
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <Separator className="flex-1 bg-white/10" />
-            <span className="text-white/40 text-sm">or</span>
-            <Separator className="flex-1 bg-white/10" />
-          </div>
-
-          {/* Social Login */}
-          <div className="space-y-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-12 rounded-xl bg-white/5 border-white/10 text-white hover:bg-white/10"
-            >
-              <Chrome className="w-5 h-5 mr-2" />
-              Continue with Google
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-12 rounded-xl bg-white/5 border-white/10 text-white hover:bg-white/10"
-            >
-              <Apple className="w-5 h-5 mr-2" />
-              Continue with Apple
-            </Button>
-          </div>
         </div>
 
         {/* Toggle Login/Sign Up */}
