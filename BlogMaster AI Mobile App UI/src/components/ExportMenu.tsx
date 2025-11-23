@@ -174,7 +174,7 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
               </div>
             </div>
             <div className="bg-black/50 p-4 rounded-xl max-h-[600px] overflow-y-auto overflow-x-hidden">
-              <pre className="text-white/80 text-sm whitespace-pre-wrap break-words font-mono leading-relaxed max-w-full overflow-wrap-anywhere">
+              <pre className="text-white/80 text-sm whitespace-pre-wrap break-words font-mono leading-relaxed max-w-full overflow-wrap-anywhere word-break-break-all" style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}>
                 {videoScript}
               </pre>
             </div>
