@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -10,7 +10,10 @@ import {
   Download,
   RefreshCw,
   Image as ImageIcon,
+  Loader2,
+  Copy,
 } from 'lucide-react';
+import { generateImage } from '../utils/openai';
 
 interface ImageGeneratorProps {
   onBack: () => void;
@@ -18,31 +21,108 @@ interface ImageGeneratorProps {
 
 export function ImageGenerator({ onBack }: ImageGeneratorProps) {
   const [prompt, setPrompt] = useState('');
-  const [selectedStyle, setSelectedStyle] = useState('minimal');
+  const [selectedStyle, setSelectedStyle] = useState('photographic');
+  const [selectedSize, setSelectedSize] = useState<'1024x1024' | '1792x1024' | '1024x1792'>('1024x1024');
+  const [selectedQuality, setSelectedQuality] = useState<'standard' | 'hd'>('standard');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState('');
+  const [revisedPrompt, setRevisedPrompt] = useState('');
   const [altText, setAltText] = useState('');
   const [caption, setCaption] = useState('');
   const [filename, setFilename] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const styles = [
     { id: 'minimal', label: 'Minimal', description: 'Clean, simple design' },
     { id: 'stock-photo', label: 'Stock Photo', description: 'Realistic photography' },
+    { id: 'photographic', label: 'Photographic', description: 'Professional photography' },
     { id: 'illustration', label: 'Illustration', description: 'Artistic drawings' },
     { id: 'abstract', label: 'Abstract', description: 'Modern geometric shapes' },
   ];
 
+  const sizes = [
+    { id: '1024x1024' as const, label: 'Square (1024×1024)', description: 'Perfect for social media' },
+    { id: '1792x1024' as const, label: 'Landscape (1792×1024)', description: 'Wide format, great for headers' },
+    { id: '1024x1792' as const, label: 'Portrait (1024×1792)', description: 'Tall format, mobile-friendly' },
+  ];
+
   const handleGenerate = async () => {
+    if (!prompt.trim()) {
+      setError('Please enter an image prompt');
+      return;
+    }
+
     setIsGenerating(true);
-    
-    // Simulate generation
-    setTimeout(() => {
-      setGeneratedImage('https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80');
-      setAltText('AI-powered content marketing strategy visualization');
-      setCaption('Modern AI tools transforming content marketing workflows');
-      setFilename('ai-content-marketing-featured-image.jpg');
+    setError(null);
+    setGeneratedImage('');
+    setRevisedPrompt('');
+    setAltText('');
+    setCaption('');
+    setFilename('');
+
+    try {
+      const result = await generateImage(prompt.trim(), {
+        style: selectedStyle,
+        size: selectedSize,
+        quality: selectedQuality,
+      });
+
+      setGeneratedImage(result.url);
+      if (result.revisedPrompt) {
+        setRevisedPrompt(result.revisedPrompt);
+        // Auto-generate alt text and caption from revised prompt
+        setAltText(result.revisedPrompt.substring(0, 125));
+        setCaption(result.revisedPrompt.substring(0, 100));
+        // Generate SEO-friendly filename
+        const filenameBase = prompt
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .substring(0, 50);
+        setFilename(`${filenameBase}.jpg`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate image. Please try again.');
+      console.error('Error generating image:', err);
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!generatedImage) return;
+
+    try {
+      const response = await fetch(generatedImage);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'generated-image.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading image:', err);
+      setError('Failed to download image');
+    }
+  };
+
+  const handleCopyImage = async () => {
+    if (!generatedImage) return;
+
+    try {
+      const response = await fetch(generatedImage);
+      const blob = await response.blob();
+      await navigator.clipboard.write([
+        new ClipboardItem({ [blob.type]: blob })
+      ]);
+    } catch (err) {
+      console.error('Error copying image:', err);
+      // Fallback: copy URL
+      navigator.clipboard.writeText(generatedImage);
+    }
   };
 
   return (
@@ -88,11 +168,12 @@ export function ImageGenerator({ onBack }: ImageGeneratorProps) {
               <button
                 key={style.id}
                 onClick={() => setSelectedStyle(style.id)}
+                disabled={isGenerating}
                 className={`p-4 rounded-xl border text-left transition-all ${
                   selectedStyle === style.id
                     ? 'bg-white text-black border-white'
                     : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
-                }`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <div className={selectedStyle === style.id ? 'text-black' : 'text-white'}>
                   {style.label}
@@ -105,16 +186,87 @@ export function ImageGenerator({ onBack }: ImageGeneratorProps) {
           </div>
         </Card>
 
+        {/* Size Selection */}
+        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+          <Label className="text-white">Image Size</Label>
+          <div className="grid grid-cols-1 gap-3">
+            {sizes.map((size) => (
+              <button
+                key={size.id}
+                onClick={() => setSelectedSize(size.id)}
+                disabled={isGenerating}
+                className={`p-4 rounded-xl border text-left transition-all ${
+                  selectedSize === size.id
+                    ? 'bg-white text-black border-white'
+                    : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                <div className={selectedSize === size.id ? 'text-black font-medium' : 'text-white font-medium'}>
+                  {size.label}
+                </div>
+                <div className={`text-xs mt-1 ${selectedSize === size.id ? 'text-black/60' : 'text-white/60'}`}>
+                  {size.description}
+                </div>
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        {/* Quality Selection */}
+        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+          <Label className="text-white">Image Quality</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setSelectedQuality('standard')}
+              disabled={isGenerating}
+              className={`p-4 rounded-xl border text-left transition-all ${
+                selectedQuality === 'standard'
+                  ? 'bg-white text-black border-white'
+                  : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <div className={selectedQuality === 'standard' ? 'text-black font-medium' : 'text-white font-medium'}>
+                Standard
+              </div>
+              <div className={`text-xs mt-1 ${selectedQuality === 'standard' ? 'text-black/60' : 'text-white/60'}`}>
+                Faster generation
+              </div>
+            </button>
+            <button
+              onClick={() => setSelectedQuality('hd')}
+              disabled={isGenerating}
+              className={`p-4 rounded-xl border text-left transition-all ${
+                selectedQuality === 'hd'
+                  ? 'bg-white text-black border-white'
+                  : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <div className={selectedQuality === 'hd' ? 'text-black font-medium' : 'text-white font-medium'}>
+                HD
+              </div>
+              <div className={`text-xs mt-1 ${selectedQuality === 'hd' ? 'text-black/60' : 'text-white/60'}`}>
+                Higher quality
+              </div>
+            </button>
+          </div>
+        </Card>
+
+        {error && (
+          <Card className="bg-red-500/10 border-red-500/20 p-4 rounded-xl">
+            <p className="text-red-400 text-sm">{error}</p>
+          </Card>
+        )}
+
         {/* Generate Button */}
         <Button
           onClick={handleGenerate}
-          disabled={!prompt || isGenerating}
+          disabled={!prompt.trim() || isGenerating}
           className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50"
         >
           {isGenerating ? (
             <>
-              <Sparkles className="w-5 h-5 mr-2 animate-spin" />
-              Generating...
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Generating Image...
             </>
           ) : (
             <>
@@ -134,15 +286,26 @@ export function ImageGenerator({ onBack }: ImageGeneratorProps) {
                   <Button
                     size="sm"
                     variant="ghost"
+                    onClick={handleCopyImage}
+                    className="text-white hover:bg-white/10 rounded-lg"
+                    title="Copy image"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
                     onClick={handleGenerate}
+                    disabled={isGenerating}
                     className="text-white hover:bg-white/10 rounded-lg"
                   >
-                    <RefreshCw className="w-4 h-4 mr-2" />
+                    <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
                     Regenerate
                   </Button>
                   <Button
                     size="sm"
                     variant="ghost"
+                    onClick={handleDownload}
                     className="text-white hover:bg-white/10 rounded-lg"
                   >
                     <Download className="w-4 h-4 mr-2" />
@@ -150,6 +313,13 @@ export function ImageGenerator({ onBack }: ImageGeneratorProps) {
                   </Button>
                 </div>
               </div>
+
+              {revisedPrompt && (
+                <div className="bg-white/5 rounded-lg p-3">
+                  <p className="text-white/60 text-xs mb-1">Revised Prompt:</p>
+                  <p className="text-white/80 text-sm">{revisedPrompt}</p>
+                </div>
+              )}
               
               <div className="aspect-video rounded-xl overflow-hidden bg-white/10">
                 <img

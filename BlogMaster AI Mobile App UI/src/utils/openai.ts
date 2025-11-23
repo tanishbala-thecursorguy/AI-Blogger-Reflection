@@ -2,6 +2,8 @@
 // Fallback to Hugging Face Inference API (free, no API key required)
 // Optional: Set VITE_GROQ_API_KEY for faster Groq API (get free at https://console.groq.com/)
 // Optional: Set VITE_HUGGINGFACE_API_KEY for higher HF rate limits
+// OpenAI API key for image generation only (DALL-E) - Set VITE_OPENAI_API_KEY in .env.local
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
 const HUGGINGFACE_API_KEY = import.meta.env.VITE_HUGGINGFACE_API_KEY || '';
@@ -1012,64 +1014,6 @@ Return the outline in this exact JSON format:
       { level: 'H2', text: `Conclusion`, expanded: false },
     ],
   }];
-
-  // Try to parse JSON
-  try {
-    let cleaned = result.trim();
-    cleaned = cleaned.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
-    
-    const data = JSON.parse(cleaned);
-    
-    // Convert to outline format
-    const outline: any[] = [{
-      level: 'H1',
-      text: data.h1 || data.title || `${topic}: Complete Guide`,
-      expanded: true,
-      children: (data.sections || []).map((section: any) => ({
-        level: 'H2',
-        text: section.h2 || section.title || section.text || 'Section',
-        expanded: true,
-        children: (section.h3 || []).map((h3: string | any) => ({
-          level: 'H3',
-          text: typeof h3 === 'string' ? h3 : (h3.text || h3.title || 'Subsection'),
-          expanded: false,
-        })),
-      })),
-    }];
-
-    return outline;
-  } catch (e) {
-    console.error('Error parsing outline JSON:', e);
-    
-    // Fallback: Try to extract headings from text
-    const lines = result.split('\n').filter(line => line.trim());
-    const outline: any[] = [{ level: 'H1', text: topic, expanded: true, children: [] }];
-    
-    let currentH2: any = null;
-    for (const line of lines) {
-      if (line.match(/^#\s+/)) { // H1
-        outline[0].text = line.replace(/^#+\s+/, '').trim();
-      } else if (line.match(/^##\s+/)) { // H2
-        if (currentH2) outline[0].children.push(currentH2);
-        currentH2 = { level: 'H2', text: line.replace(/^##+\s+/, '').trim(), expanded: true, children: [] };
-      } else if (line.match(/^###\s+/) && currentH2) { // H3
-        currentH2.children.push({ level: 'H3', text: line.replace(/^###+\s+/, '').trim(), expanded: false });
-      }
-    }
-    if (currentH2) outline[0].children.push(currentH2);
-    
-    return outline.length > 0 && outline[0].children.length > 0 ? outline : [{
-      level: 'H1',
-      text: `${topic}: Complete Guide`,
-      expanded: true,
-      children: [
-        { level: 'H2', text: `Introduction to ${topic}`, expanded: true, children: [] },
-        { level: 'H2', text: `Benefits`, expanded: true, children: [] },
-        { level: 'H2', text: `Best Practices`, expanded: true, children: [] },
-        { level: 'H2', text: `Conclusion`, expanded: true, children: [] },
-      ],
-    }];
-  }
 }
 
 export async function enhanceContent(content: string, enhancements: string[]): Promise<string[]> {
@@ -1105,7 +1049,17 @@ Now enhance the content following this exact format:`;
     throw new Error('Failed to enhance content. Please try again.');
   }
 
-  return result;
+  // Generate multiple variants
+  try {
+    const variants = await generateMultipleVariants(prompt, systemPrompt, originalWordCount, 3);
+    if (variants.length > 0) {
+      return variants;
+    }
+  } catch (error: any) {
+    console.error('Error generating enhance variants:', error);
+  }
+
+  return [result];
 }
 
 export async function analyzeCompetitor(content: string): Promise<{
@@ -1267,5 +1221,64 @@ Important:
       ],
       overallScore: 75,
     };
+  }
+}
+
+export async function generateImage(prompt: string, options: {
+  style?: string;
+  size?: '1024x1024' | '1792x1024' | '1024x1792';
+  quality?: 'standard' | 'hd';
+}): Promise<{
+  url: string;
+  revisedPrompt?: string;
+}> {
+  const { style = 'photographic', size = '1024x1024', quality = 'standard' } = options;
+
+  if (!OPENAI_API_KEY) {
+    throw new Error('OpenAI API key is required for image generation. Please set VITE_OPENAI_API_KEY in your environment variables.');
+  }
+
+  // Enhance prompt with style
+  const stylePrompts: { [key: string]: string } = {
+    minimal: 'minimalist, clean, simple design, black and white, modern',
+    'stock-photo': 'professional photography, realistic, high quality, natural lighting',
+    illustration: 'artistic illustration, hand-drawn style, creative, colorful',
+    abstract: 'abstract art, geometric shapes, modern, contemporary, vibrant colors',
+    photographic: 'professional photography, realistic, high quality',
+  };
+
+  const stylePrompt = stylePrompts[style] || stylePrompts.photographic;
+  const enhancedPrompt = `${prompt}, ${stylePrompt}, high quality, detailed`;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt: enhancedPrompt,
+        n: 1,
+        size: size,
+        quality: quality,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to generate image');
+    }
+
+    const data = await response.json();
+    
+    return {
+      url: data.data[0].url,
+      revisedPrompt: data.data[0].revised_prompt,
+    };
+  } catch (error: any) {
+    console.error('Error generating image:', error);
+    throw new Error(error.message || 'Failed to generate image. Please try again.');
   }
 }
