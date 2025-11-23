@@ -130,7 +130,7 @@ export function InternalLinking({ onBack }: InternalLinkingProps) {
             </div>
             <Button
               onClick={() => setUploaded(true)}
-              className="bg-white text-black hover:bg-white/90 h-11 rounded-xl px-8"
+              className="bg-white text-black hover:bg-black h-11 rounded-xl px-8"
             >
               Upload Blog List
             </Button>
@@ -245,7 +245,7 @@ export function InternalLinking({ onBack }: InternalLinkingProps) {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              <Button className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl">
+              <Button className="w-full bg-white text-black hover:bg-black h-12 rounded-xl">
                 Apply {links.filter(l => l.enabled).length} Internal Links
               </Button>
               <Button

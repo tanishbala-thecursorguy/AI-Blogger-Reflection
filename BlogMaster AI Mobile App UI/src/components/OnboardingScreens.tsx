@@ -94,7 +94,7 @@ export function OnboardingScreens({ onComplete }: OnboardingScreensProps) {
               className={`h-1.5 rounded-full transition-all ${
                 index === currentIndex
                   ? 'w-8 bg-white'
-                  : 'w-1.5 bg-black hover:bg-white/40'
+                  : 'w-1.5 bg-black hover:bg-black'
               }`}
             />
           ))}
@@ -103,7 +103,7 @@ export function OnboardingScreens({ onComplete }: OnboardingScreensProps) {
         {/* Action Button */}
         <Button
           onClick={handleNext}
-          className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-full"
+          className="w-full bg-white text-black hover:bg-black h-12 rounded-full"
         >
           {currentIndex === screens.length - 1 ? 'Get Started' : 'Continue'}
           <ChevronRight className="w-5 h-5 ml-2" />

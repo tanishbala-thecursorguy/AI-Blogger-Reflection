@@ -309,7 +309,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
         <Button
           onClick={handleGenerate}
           disabled={!topic || isGenerating}
-          className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50"
+          className="w-full bg-white text-black hover:bg-black h-12 rounded-xl disabled:opacity-50"
         >
           {isGenerating ? (
             <>

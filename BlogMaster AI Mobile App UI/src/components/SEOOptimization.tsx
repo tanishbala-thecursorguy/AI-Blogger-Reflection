@@ -230,7 +230,7 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
         </Card>
 
         {/* Fix All Button */}
-        <Button className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl">
+        <Button className="w-full bg-white text-black hover:bg-black h-12 rounded-xl">
           <Sparkles className="w-5 h-5 mr-2" />
           Fix All Issues Automatically
         </Button>

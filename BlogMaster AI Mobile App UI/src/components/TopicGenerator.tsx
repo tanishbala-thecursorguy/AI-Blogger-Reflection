@@ -130,7 +130,7 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
         <Button
           onClick={handleGenerate}
           disabled={!niche.trim() || isGenerating}
-          className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50"
+          className="w-full bg-white text-black hover:bg-black h-12 rounded-xl disabled:opacity-50"
         >
           {isGenerating ? (
             <>
@@ -206,7 +206,7 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
             {selectedTopics.length > 0 && (
               <Button
                 onClick={handleUseTopics}
-                className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl"
+                className="w-full bg-white text-black hover:bg-black h-12 rounded-xl"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
                 Generate Blogs from Selected Topics

@@ -143,7 +143,7 @@ export function LoginSurvey({ email, onComplete }: LoginSurveyProps) {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl"
+              className="w-full bg-white text-black hover:bg-black h-12 rounded-xl"
             >
               Continue
               <ArrowRight className="w-5 h-5 ml-2" />

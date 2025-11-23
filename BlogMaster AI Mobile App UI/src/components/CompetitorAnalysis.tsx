@@ -229,7 +229,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
           <Button
             onClick={handleAnalyze}
             disabled={(!url.trim() && !content.trim()) || isAnalyzing}
-            className="w-full bg-white text-black hover:bg-white/90 rounded-xl h-12 disabled:opacity-50"
+            className="w-full bg-white text-black hover:bg-black rounded-xl h-12 disabled:opacity-50"
           >
             {isAnalyzing ? (
               <>
@@ -386,7 +386,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              <Button className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl">
+              <Button className="w-full bg-white text-black hover:bg-black h-12 rounded-xl">
                 <Target className="w-5 h-5 mr-2" />
                 Generate Outranking Strategy
               </Button>

@@ -212,7 +212,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
               <p className="text-white/60 text-sm mb-4">No blogs yet. Start creating your first blog!</p>
               <Button
                 onClick={() => onNavigate('blog-generator')}
-                className="bg-white text-black hover:bg-white/90 rounded-xl"
+                className="bg-white text-black hover:bg-black rounded-xl"
               >
                 Create Your First Blog
               </Button>
@@ -226,7 +226,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
         <Button
           onClick={() => onNavigate('tasks')}
           size="lg"
-          className="w-14 h-14 rounded-full bg-white text-black hover:bg-white/90 shadow-2xl"
+          className="w-14 h-14 rounded-full bg-white text-black hover:bg-black shadow-2xl"
         >
           <Plus className="w-6 h-6" />
         </Button>

@@ -261,7 +261,7 @@ export function ImageGenerator({ onBack }: ImageGeneratorProps) {
         <Button
           onClick={handleGenerate}
           disabled={!prompt.trim() || isGenerating}
-          className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50"
+          className="w-full bg-white text-black hover:bg-black h-12 rounded-xl disabled:opacity-50"
         >
           {isGenerating ? (
             <>
@@ -394,7 +394,7 @@ export function ImageGenerator({ onBack }: ImageGeneratorProps) {
             </Card>
 
             {/* Save Button */}
-            <Button className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl">
+            <Button className="w-full bg-white text-black hover:bg-black h-12 rounded-xl">
               Add to Blog Post
             </Button>
           </>

@@ -223,7 +223,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
               onClick={handleSearch}
               disabled={isGenerating || !searchTerm.trim()}
               size="icon"
-              className="bg-white text-black hover:bg-white/90 rounded-xl w-12 h-12 flex-shrink-0 disabled:opacity-50"
+              className="bg-white text-black hover:bg-black rounded-xl w-12 h-12 flex-shrink-0 disabled:opacity-50"
             >
               {isGenerating ? (
                 <Sparkles className="w-5 h-5 animate-spin" />
@@ -422,7 +422,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
                         onClick={() => toggleKeyword(item.keyword)}
                         className={`rounded-xl ${
                           selectedKeywords.includes(item.keyword)
-                            ? 'bg-white text-black hover:bg-white/90'
+                            ? 'bg-white text-black hover:bg-black'
                             : 'bg-black text-white hover:bg-black'
                         }`}
                         title={selectedKeywords.includes(item.keyword) ? 'Remove from selection' : 'Add to selection'}

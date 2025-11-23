@@ -175,7 +175,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
           <Button
             onClick={handleGenerate}
             disabled={!topic.trim() || isGenerating}
-            className="w-full bg-white text-black hover:bg-white/90 h-11 rounded-xl disabled:opacity-50"
+            className="w-full bg-white text-black hover:bg-black h-11 rounded-xl disabled:opacity-50"
           >
             {isGenerating ? (
               <>
@@ -327,7 +327,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
                   }
                 }}
                 disabled={outline.length === 0}
-                className="flex-1 bg-white text-black hover:bg-white/90 h-11 rounded-xl disabled:opacity-50"
+                className="flex-1 bg-white text-black hover:bg-black h-11 rounded-xl disabled:opacity-50"
               >
                 Generate Blog
               </Button>

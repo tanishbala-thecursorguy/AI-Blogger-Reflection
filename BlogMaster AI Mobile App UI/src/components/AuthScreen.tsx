@@ -114,7 +114,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
             <Button
               type="submit"
               disabled={!email.trim() || !password.trim()}
-              className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50"
+              className="w-full bg-white text-black hover:bg-black h-12 rounded-xl disabled:opacity-50"
             >
               {isLogin ? 'Log In' : 'Sign Up'}
             </Button>

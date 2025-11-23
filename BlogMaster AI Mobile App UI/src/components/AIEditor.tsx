@@ -204,7 +204,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
           <Button
             onClick={handleApplyEnhancements}
             disabled={!content.trim() || isEnhancing}
-            className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50"
+            className="w-full bg-white text-black hover:bg-black h-12 rounded-xl disabled:opacity-50"
           >
             {isEnhancing ? (
               <>
@@ -313,7 +313,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
               alert('Content saved successfully!');
             }}
             disabled={!content.trim()}
-            className="flex-1 bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50"
+            className="flex-1 bg-white text-black hover:bg-black h-12 rounded-xl disabled:opacity-50"
           >
             Save Changes
           </Button>

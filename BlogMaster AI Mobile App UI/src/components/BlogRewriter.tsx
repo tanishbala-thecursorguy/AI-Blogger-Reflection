@@ -183,7 +183,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
             <Button
               onClick={() => handleRewrite()}
               disabled={!originalText || isRewriting}
-              className="w-full bg-white text-black hover:bg-white/90 h-11 rounded-xl disabled:opacity-50"
+              className="w-full bg-white text-black hover:bg-black h-11 rounded-xl disabled:opacity-50"
             >
               {isRewriting ? (
                 <>
@@ -221,7 +221,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
           <Button
             onClick={() => handleRewrite('tone')}
             disabled={!originalText || isRewriting}
-            className="w-full bg-white text-black hover:bg-white/90 h-11 rounded-xl disabled:opacity-50"
+            className="w-full bg-white text-black hover:bg-black h-11 rounded-xl disabled:opacity-50"
           >
             {isRewriting ? (
               <>
@@ -363,7 +363,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
                   setRewrittenText('');
                   setSelectedActions([]);
                 }}
-                className="flex-1 bg-white text-black hover:bg-white/90 h-11 rounded-xl"
+                className="flex-1 bg-white text-black hover:bg-black h-11 rounded-xl"
               >
                 Use This Version
               </Button>
