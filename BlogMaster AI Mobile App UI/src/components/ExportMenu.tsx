@@ -173,8 +173,16 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
                 </Button>
               </div>
             </div>
-            <div className="bg-black/50 p-4 rounded-xl max-h-[600px] overflow-y-auto overflow-x-hidden">
-              <pre className="text-white/80 text-sm whitespace-pre-wrap break-words font-mono leading-relaxed max-w-full overflow-wrap-anywhere word-break-break-all" style={{ wordBreak: 'break-all', overflowWrap: 'anywhere' }}>
+            <div className="bg-black/50 p-4 rounded-xl max-h-[600px] overflow-y-auto overflow-x-hidden w-full">
+              <pre 
+                className="text-white/80 text-sm whitespace-pre-wrap break-words font-mono leading-relaxed w-full"
+                style={{ 
+                  wordBreak: 'break-all', 
+                  overflowWrap: 'break-word',
+                  maxWidth: '100%',
+                  whiteSpace: 'pre-wrap'
+                }}
+              >
                 {videoScript}
               </pre>
             </div>
