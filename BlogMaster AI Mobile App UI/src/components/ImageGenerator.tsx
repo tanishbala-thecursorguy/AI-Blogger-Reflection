@@ -23,7 +23,7 @@ export function ImageGenerator({ onBack }: ImageGeneratorProps) {
   const [prompt, setPrompt] = useState('');
   const [selectedStyle, setSelectedStyle] = useState('photographic');
   const [selectedSize, setSelectedSize] = useState<'1024x1024' | '1792x1024' | '1024x1792'>('1024x1024');
-  const [selectedQuality, setSelectedQuality] = useState<'standard' | 'hd'>('standard');
+  const [selectedQuality, setSelectedQuality] = useState<'standard' | 'hd'>('hd'); // Default to HD for better quality
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState('');
   const [revisedPrompt, setRevisedPrompt] = useState('');
@@ -33,9 +33,9 @@ export function ImageGenerator({ onBack }: ImageGeneratorProps) {
   const [error, setError] = useState<string | null>(null);
 
   const styles = [
-    { id: 'minimal', label: 'Minimal', description: 'Clean, simple design' },
-    { id: 'stock-photo', label: 'Stock Photo', description: 'Realistic photography' },
-    { id: 'photographic', label: 'Photographic', description: 'Professional photography' },
+    { id: 'photographic', label: 'Photographic', description: 'Ultra-realistic photos' },
+    { id: 'stock-photo', label: 'Stock Photo', description: 'Professional stock photos' },
+    { id: 'minimal', label: 'Minimal', description: 'Clean realistic photos' },
     { id: 'illustration', label: 'Illustration', description: 'Artistic drawings' },
     { id: 'abstract', label: 'Abstract', description: 'Modern geometric shapes' },
   ];

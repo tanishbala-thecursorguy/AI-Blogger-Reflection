@@ -1134,17 +1134,18 @@ export async function generateImage(prompt: string, options: {
     throw new Error('OpenAI API key is required for image generation. Please set VITE_OPENAI_API_KEY in your environment variables.');
   }
 
-  // Enhance prompt with style
+  // Enhance prompt with style - prioritize realistic photography
   const stylePrompts: { [key: string]: string } = {
-    minimal: 'minimalist, clean, simple design, black and white, modern',
-    'stock-photo': 'professional photography, realistic, high quality, natural lighting',
+    minimal: 'professional photography, realistic, natural lighting, minimal composition, high detail, 8k resolution',
+    'stock-photo': 'professional stock photography, ultra-realistic, natural lighting, high detail, 8k resolution, photorealistic, DSLR camera quality',
     illustration: 'artistic illustration, hand-drawn style, creative, colorful',
     abstract: 'abstract art, geometric shapes, modern, contemporary, vibrant colors',
-    photographic: 'professional photography, realistic, high quality',
+    photographic: 'professional photography, ultra-realistic, photorealistic, natural lighting, high detail, 8k resolution, DSLR camera quality, sharp focus, professional composition',
   };
 
   const stylePrompt = stylePrompts[style] || stylePrompts.photographic;
-  const enhancedPrompt = `${prompt}, ${stylePrompt}, high quality, detailed`;
+  // Always add realistic photography keywords for better results
+  const enhancedPrompt = `${prompt}, ${stylePrompt}, ultra-realistic, photorealistic, high resolution, professional photography, natural lighting, sharp focus, no illustration, no cartoon, no digital art, real photo quality`;
 
   try {
     const response = await fetch('https://api.openai.com/v1/images/generations', {
@@ -1158,7 +1159,8 @@ export async function generateImage(prompt: string, options: {
         prompt: enhancedPrompt,
         n: 1,
         size: size,
-        quality: quality,
+        quality: 'hd', // Always use HD for best quality
+        style: 'natural', // Use natural style for realistic photos
       }),
     });
 
