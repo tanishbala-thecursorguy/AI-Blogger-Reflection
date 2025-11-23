@@ -453,7 +453,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
                 </div>
 
                 <div className="bg-black/50 border border-white/10 rounded-xl p-4 max-h-[600px] overflow-y-auto">
-                  <div className="text-white/90 whitespace-pre-wrap break-words prose prose-invert max-w-none">
+                  <div className="text-white whitespace-pre-wrap break-words prose prose-invert max-w-none [&>*]:text-white [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_h4]:text-white [&_h5]:text-white [&_h6]:text-white [&_p]:text-white [&_li]:text-white [&_strong]:text-white [&_em]:text-white [&_code]:text-white [&_pre]:text-white [&_blockquote]:text-white [&_a]:text-white">
                     <ReactMarkdown>
                       {rewrittenVariants[selectedVariant]}
                     </ReactMarkdown>
