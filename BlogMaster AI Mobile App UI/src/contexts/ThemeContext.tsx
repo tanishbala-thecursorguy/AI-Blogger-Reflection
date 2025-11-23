@@ -16,28 +16,26 @@ interface ThemeProviderProps {
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem('appTheme');
-    return (saved as Theme) || 'dark';
+    const initialTheme = (saved as Theme) || 'dark';
+    // Apply theme immediately on mount
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.remove('theme-dark', 'theme-bright', 'theme-blue', 'theme-pink', 'theme-stars');
+      document.documentElement.classList.add(`theme-${initialTheme}`);
+    }
+    return initialTheme;
   });
 
-  // Initialize theme on mount
   useEffect(() => {
     // Remove all theme classes
-    document.documentElement.classList.remove('theme-dark', 'theme-bright', 'theme-blue', 'theme-pink', 'theme-stars');
-    // Add current theme class
-    const initialTheme = (localStorage.getItem('appTheme') as Theme) || 'dark';
-    document.documentElement.classList.add(`theme-${initialTheme}`);
-    if (initialTheme !== theme) {
-      setThemeState(initialTheme);
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.remove('theme-dark', 'theme-bright', 'theme-blue', 'theme-pink', 'theme-stars');
+      // Add current theme class
+      document.documentElement.classList.add(`theme-${theme}`);
+      // Also set as attribute for CSS selector specificity
+      document.documentElement.setAttribute('data-theme', theme);
+      // Save to localStorage
+      localStorage.setItem('appTheme', theme);
     }
-  }, []);
-
-  useEffect(() => {
-    // Remove all theme classes
-    document.documentElement.classList.remove('theme-dark', 'theme-bright', 'theme-blue', 'theme-pink', 'theme-stars');
-    // Add current theme class
-    document.documentElement.classList.add(`theme-${theme}`);
-    // Save to localStorage
-    localStorage.setItem('appTheme', theme);
   }, [theme]);
 
   const setTheme = (newTheme: Theme) => {

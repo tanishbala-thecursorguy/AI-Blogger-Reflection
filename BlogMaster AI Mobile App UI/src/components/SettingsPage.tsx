@@ -159,7 +159,7 @@ export function SettingsPage({ onBack, onLogout, onNavigate }: SettingsPageProps
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="sticky top-0 bg-black border-b border-white/10 p-4 z-10">
+      <div className="sticky top-0 bg-background border-b border-border p-4 z-10">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"

@@ -81,8 +81,9 @@
 }
 
 /* Bright Theme */
-.theme-bright,
-html.theme-bright {
+html[data-theme="bright"],
+html.theme-bright,
+.theme-bright {
   --background: #ffffff;
   --foreground: #000000;
   --card: #f8f9fa;
@@ -120,8 +121,9 @@ html.theme-bright {
 }
 
 /* Blue Theme */
-.theme-blue,
-html.theme-blue {
+html[data-theme="blue"],
+html.theme-blue,
+.theme-blue {
   --background: #0a1929;
   --foreground: #e3f2fd;
   --card: #132f4c;
@@ -159,8 +161,9 @@ html.theme-blue {
 }
 
 /* Baby Pink Theme */
-.theme-pink,
-html.theme-pink {
+html[data-theme="pink"],
+html.theme-pink,
+.theme-pink {
   --background: #2d1b2e;
   --foreground: #fce4ec;
   --card: #3d2539;
@@ -198,8 +201,9 @@ html.theme-pink {
 }
 
 /* Stars Background Theme */
-.theme-stars,
-html.theme-stars {
+html[data-theme="stars"],
+html.theme-stars,
+.theme-stars {
   --background: #0a0e27;
   --foreground: #ffffff;
   --card: rgba(26, 32, 64, 0.8);
@@ -237,8 +241,9 @@ html.theme-stars {
 }
 
 /* Stars background pattern */
-.theme-stars,
-html.theme-stars {
+html[data-theme="stars"],
+html.theme-stars,
+.theme-stars {
   background-image: 
     radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
     radial-gradient(2px 2px at 60px 70px, rgba(255, 255, 255, 0.8), transparent),
