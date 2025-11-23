@@ -103,8 +103,13 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
       
       setGeneratedVariants(variants);
       setSelectedVariant(0);
-      setGeneratedContent(variants[0] || '');
+      const firstContent = variants[0] || '';
+      setGeneratedContent(firstContent);
       setShowPreview(true);
+      // Auto-save the first variant
+      if (firstContent) {
+        handleSaveBlog(firstContent, false);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to generate blog. Please try again.');
       console.error('Error generating blog:', err);
@@ -122,6 +127,74 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
 
   const removeKeyword = (keyword: string) => {
     setKeywords(keywords.filter(k => k !== keyword));
+  };
+
+  const extractTitle = (content: string): string => {
+    // Try to extract H1 title from markdown
+    const h1Match = content.match(/^#\s+(.+)$/m);
+    if (h1Match) {
+      return h1Match[1].trim();
+    }
+    // If no H1, use topic or first line
+    return topic.trim() || 'Untitled Blog';
+  };
+
+  const countWords = (content: string): number => {
+    return content.trim().split(/\s+/).filter(word => word.length > 0).length;
+  };
+
+  const handleSaveBlog = (content: string, showNotification: boolean = true) => {
+    try {
+      setIsSaving(true);
+      
+      // Get existing blogs
+      const existingBlogsStr = localStorage.getItem('savedBlogs');
+      const existingBlogs: Array<{
+        id: string;
+        title: string;
+        content: string;
+        date: string;
+        status: string;
+        words: number;
+        topic: string;
+        style: string;
+      }> = existingBlogsStr ? JSON.parse(existingBlogsStr) : [];
+
+      // Create new blog entry
+      const newBlog = {
+        id: Date.now().toString(),
+        title: extractTitle(content),
+        content: content,
+        date: new Date().toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric' 
+        }),
+        status: 'Draft',
+        words: countWords(content),
+        topic: topic.trim(),
+        style: selectedStyle,
+      };
+
+      // Add to beginning of array (most recent first)
+      const updatedBlogs = [newBlog, ...existingBlogs];
+      
+      // Keep only last 50 blogs
+      const trimmedBlogs = updatedBlogs.slice(0, 50);
+      
+      // Save to localStorage
+      localStorage.setItem('savedBlogs', JSON.stringify(trimmedBlogs));
+      
+      if (showNotification) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
+    } catch (err) {
+      console.error('Error saving blog:', err);
+      setError('Failed to save blog. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -331,25 +404,28 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                   Copy
                 </Button>
                 <Button
-                  onClick={() => {
-                    const templates = JSON.parse(localStorage.getItem('blogTemplates') || '[]');
-                    templates.push({
-                      id: Date.now(),
-                      name: topic,
-                      content: generatedContent,
-                      tone: selectedStyle,
-                      keywords: keywords,
-                      createdAt: new Date().toISOString(),
-                    });
-                    localStorage.setItem('blogTemplates', JSON.stringify(templates));
-                    alert('Blog saved successfully!');
-                  }}
+                  onClick={() => handleSaveBlog(generatedContent, true)}
+                  disabled={isSaving || saved}
                   size="sm"
                   variant="outline"
-                  className="rounded-lg border-black/20 text-black hover:bg-black/5"
+                  className="rounded-lg border-black/20 text-black hover:bg-black/5 disabled:opacity-50"
                 >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save
+                  {isSaving ? (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : saved ? (
+                    <>
+                      <Save className="w-4 h-4 mr-2 text-green-600" />
+                      Saved!
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
