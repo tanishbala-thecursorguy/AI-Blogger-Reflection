@@ -13,7 +13,6 @@ import {
   ArrowLeft,
   Target,
   Search,
-  Link2,
   BarChart3,
 } from 'lucide-react';
 
@@ -70,12 +69,6 @@ const tasks = [
     title: 'Keyword Research',
     description: 'Discover high-traffic keywords for your niche',
     screen: 'keyword-research' as Screen,
-  },
-  {
-    icon: Link2,
-    title: 'Internal Linking',
-    description: 'Optimize internal links across your content',
-    screen: 'internal-linking' as Screen,
   },
   {
     icon: BarChart3,
