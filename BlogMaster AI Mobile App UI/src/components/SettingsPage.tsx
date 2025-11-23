@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { Separator } from './ui/separator';
 import { Screen } from '../App';
+import { useTheme, type Theme } from '../contexts/ThemeContext';
 import {
   ArrowLeft,
   User,
@@ -15,6 +16,12 @@ import {
   GraduationCap,
   LogOut,
   ChevronRight,
+  Palette,
+  Moon,
+  Sun,
+  Droplet,
+  Heart,
+  Sparkles,
 } from 'lucide-react';
 
 interface SettingsPageProps {
@@ -23,7 +30,50 @@ interface SettingsPageProps {
   onNavigate: (screen: Screen) => void;
 }
 
+interface ThemeOptionProps {
+  theme: Theme;
+  label: string;
+  icon: React.ReactNode;
+  currentTheme: Theme;
+  onSelect: () => void;
+  className?: string;
+}
+
+function ThemeOption({ theme, label, icon, currentTheme, onSelect, className = '' }: ThemeOptionProps) {
+  const isActive = currentTheme === theme;
+  
+  const themeColors: Record<Theme, { bg: string; border: string; text: string }> = {
+    dark: { bg: 'bg-black', border: 'border-gray-700', text: 'text-white' },
+    bright: { bg: 'bg-white', border: 'border-gray-300', text: 'text-black' },
+    blue: { bg: 'bg-blue-900', border: 'border-blue-500', text: 'text-blue-100' },
+    pink: { bg: 'bg-pink-900', border: 'border-pink-400', text: 'text-pink-100' },
+    stars: { bg: 'bg-purple-950', border: 'border-yellow-400', text: 'text-yellow-200' },
+  };
+  
+  const colors = themeColors[theme];
+  
+  return (
+    <button
+      onClick={onSelect}
+      className={`p-4 rounded-xl border-2 transition-all text-left ${className} ${
+        isActive
+          ? `${colors.bg} ${colors.border} ${colors.text} ring-2 ring-offset-2 ring-offset-background ring-primary`
+          : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+      }`}
+    >
+      <div className="flex items-center gap-2 mb-1">
+        {icon}
+        <div className={`text-sm font-medium ${isActive ? colors.text : 'text-white'}`}>
+          {label}
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export function SettingsPage({ onBack, onLogout, onNavigate }: SettingsPageProps) {
+  const { theme, setTheme } = useTheme();
+  
   // Load user profile from localStorage
   const [name, setName] = useState(() => {
     try {
@@ -253,6 +303,53 @@ export function SettingsPage({ onBack, onLogout, onNavigate }: SettingsPageProps
                 className="data-[state=checked]:bg-white"
               />
             </div>
+          </div>
+        </Card>
+
+        {/* App Theme */}
+        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+          <div className="flex items-center gap-2">
+            <Palette className="w-5 h-5 text-white" />
+            <h2 className="text-white">App Theme</h2>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <ThemeOption
+              theme="dark"
+              label="Dark"
+              icon={<Moon className="w-5 h-5" />}
+              currentTheme={theme}
+              onSelect={() => setTheme('dark')}
+            />
+            <ThemeOption
+              theme="bright"
+              label="Bright"
+              icon={<Sun className="w-5 h-5" />}
+              currentTheme={theme}
+              onSelect={() => setTheme('bright')}
+            />
+            <ThemeOption
+              theme="blue"
+              label="Blue"
+              icon={<Droplet className="w-5 h-5" />}
+              currentTheme={theme}
+              onSelect={() => setTheme('blue')}
+            />
+            <ThemeOption
+              theme="pink"
+              label="Baby Pink"
+              icon={<Heart className="w-5 h-5" />}
+              currentTheme={theme}
+              onSelect={() => setTheme('pink')}
+            />
+            <ThemeOption
+              theme="stars"
+              label="Stars"
+              icon={<Sparkles className="w-5 h-5" />}
+              currentTheme={theme}
+              onSelect={() => setTheme('stars')}
+              className="col-span-2"
+            />
           </div>
         </Card>
 

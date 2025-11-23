@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { OnboardingScreens } from './components/OnboardingScreens';
 import { AuthScreen } from './components/AuthScreen';
 import { LoginSurvey } from './components/LoginSurvey';
@@ -117,15 +118,16 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {currentScreen === 'onboarding' && (
-        <OnboardingScreens 
-          onComplete={() => {
-            localStorage.setItem('onboardingCompleted', 'true');
-            navigate('auth');
-          }} 
-        />
-      )}
+    <ThemeProvider>
+      <div className="min-h-screen theme-base bg-background text-foreground">
+        {currentScreen === 'onboarding' && (
+          <OnboardingScreens 
+            onComplete={() => {
+              localStorage.setItem('onboardingCompleted', 'true');
+              navigate('auth');
+            }} 
+          />
+        )}
       {currentScreen === 'auth' && <AuthScreen onComplete={handleLogin} />}
       {currentScreen === 'login-survey' && (
         <LoginSurvey 
@@ -148,6 +150,7 @@ export default function App() {
       {currentScreen === 'export' && <ExportMenu onBack={() => navigate('home')} />}
       {currentScreen === 'settings' && <SettingsPage onBack={() => navigate('home')} onLogout={handleLogout} onNavigate={navigate} />}
       {currentScreen === 'templates-history' && <TemplatesHistory onBack={() => navigate('settings')} />}
-    </div>
+      </div>
+    </ThemeProvider>
   );
 }
