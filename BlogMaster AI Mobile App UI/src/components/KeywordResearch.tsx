@@ -194,7 +194,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </Button>
@@ -207,7 +207,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
 
       <div className="p-6 space-y-6 pb-20">
         {/* Search Bar */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -216,7 +216,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-11 bg-white/10 border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
+                className="pl-11 bg-black border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
               />
             </div>
             <Button
@@ -242,7 +242,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
                     size="sm"
                     variant="ghost"
                     onClick={handleCopyAllSelected}
-                    className="text-white hover:bg-white/10 rounded-lg h-8"
+                    className="text-white hover:bg-black rounded-lg h-8"
                   >
                     <Copy className="w-4 h-4 mr-1" />
                     Copy
@@ -251,7 +251,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
                     size="sm"
                     variant="ghost"
                     onClick={handleDownloadKeywords}
-                    className="text-white hover:bg-white/10 rounded-lg h-8"
+                    className="text-white hover:bg-black rounded-lg h-8"
                   >
                     <Download className="w-4 h-4 mr-1" />
                     Download
@@ -264,7 +264,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
                       localStorage.setItem('selectedKeywords', JSON.stringify(selectedKeywords));
                       alert(`${selectedKeywords.length} keywords saved! They will be available when generating a blog.`);
                     }}
-                    className="text-white hover:bg-white/10 rounded-lg h-8"
+                    className="text-white hover:bg-black rounded-lg h-8"
                   >
                     Add to Blog
                   </Button>
@@ -276,7 +276,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
 
         {/* Variant Selection */}
         {keywordSets.length > 1 && showResults && (
-          <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+          <Card className="bg-black border-white/10 p-4 rounded-2xl">
             <Label className="text-white mb-3 block">Select Keyword Set ({keywordSets.length} available)</Label>
             <div className="grid grid-cols-3 gap-2">
               {keywordSets.map((_, index) => (
@@ -290,7 +290,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
                   className={`p-3 rounded-xl border transition-all text-sm ${
                     selectedKeywordSet === index
                       ? 'bg-white text-black border-white'
-                      : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                      : 'bg-black text-white border-white/10 hover:bg-black'
                   }`}
                 >
                   Set {index + 1} ({keywordSets[index]?.length || 0} keywords)
@@ -310,7 +310,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
               className={`rounded-xl whitespace-nowrap ${
                 filter === 'all'
                   ? 'bg-white text-black border-white'
-                  : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                  : 'bg-black border-white/10 text-white hover:bg-black'
               }`}
             >
               <Filter className="w-4 h-4 mr-2" />
@@ -323,7 +323,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
               className={`rounded-xl whitespace-nowrap ${
                 filter === 'easy'
                   ? 'bg-white text-black border-white'
-                  : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                  : 'bg-black border-white/10 text-white hover:bg-black'
               }`}
             >
               Easy
@@ -335,7 +335,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
               className={`rounded-xl whitespace-nowrap ${
                 filter === 'medium'
                   ? 'bg-white text-black border-white'
-                  : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                  : 'bg-black border-white/10 text-white hover:bg-black'
               }`}
             >
               Medium
@@ -347,7 +347,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
               className={`rounded-xl whitespace-nowrap ${
                 filter === 'high-volume'
                   ? 'bg-white text-black border-white'
-                  : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                  : 'bg-black border-white/10 text-white hover:bg-black'
               }`}
             >
               High Volume
@@ -369,7 +369,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
               .map((item, idx) => (
               <Card
                 key={idx}
-                className="bg-white/5 border-white/10 p-4 rounded-2xl hover:bg-white/10 transition-colors"
+                className="bg-black border-white/10 p-4 rounded-2xl hover:bg-black transition-colors"
               >
                 <div className="space-y-3">
                   {/* Keyword Header */}
@@ -384,19 +384,19 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
                       <div className="flex flex-wrap gap-2">
                         <Badge
                           variant="outline"
-                          className="bg-white/10 border-white/20 text-white"
+                          className="bg-black border-white/20 text-white"
                         >
                           {item.volume} searches/mo
                         </Badge>
                         <Badge
                           variant="outline"
-                          className={`bg-white/10 border-white/20 ${getDifficultyColor(item.difficulty)}`}
+                          className={`bg-black border-white/20 ${getDifficultyColor(item.difficulty)}`}
                         >
                           {getDifficultyLabel(item.difficulty)} ({item.difficulty})
                         </Badge>
                         <Badge
                           variant="outline"
-                          className="bg-white/10 border-white/20 text-white/80"
+                          className="bg-black border-white/20 text-white/80"
                         >
                           {item.intent}
                         </Badge>
@@ -408,7 +408,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
                         onClick={() => {
                           handleCopyKeyword(item.keyword);
                         }}
-                        className="bg-white/10 text-white hover:bg-white/20 rounded-xl"
+                        className="bg-black text-white hover:bg-black rounded-xl"
                         title="Copy keyword"
                       >
                         {copiedKeyword === item.keyword ? (
@@ -423,7 +423,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
                         className={`rounded-xl ${
                           selectedKeywords.includes(item.keyword)
                             ? 'bg-white text-black hover:bg-white/90'
-                            : 'bg-white/10 text-white hover:bg-white/20'
+                            : 'bg-black text-white hover:bg-black'
                         }`}
                         title={selectedKeywords.includes(item.keyword) ? 'Remove from selection' : 'Add to selection'}
                       >
@@ -444,7 +444,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
                         {item.lsi.map((lsi, lsiIdx) => (
                           <span
                             key={lsiIdx}
-                            className="px-2.5 py-1 bg-white/10 text-white/80 rounded-lg text-xs"
+                            className="px-2.5 py-1 bg-black text-white/80 rounded-lg text-xs"
                           >
                             {lsi}
                           </span>
@@ -460,7 +460,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
 
         {/* Empty State */}
         {!showResults && (
-          <Card className="bg-white/5 border-white/10 p-12 rounded-2xl text-center">
+          <Card className="bg-black border-white/10 p-12 rounded-2xl text-center">
             <Search className="w-12 h-12 text-white/20 mx-auto mb-4" />
             <p className="text-white/60">
               Enter a seed keyword to discover related keywords, search volumes, and difficulty scores

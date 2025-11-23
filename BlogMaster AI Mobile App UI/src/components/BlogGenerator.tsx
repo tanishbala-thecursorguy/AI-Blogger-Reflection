@@ -207,7 +207,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
               variant="ghost"
               size="icon"
               onClick={onBack}
-              className="rounded-full hover:bg-white/10"
+              className="rounded-full hover:bg-black"
             >
               <ArrowLeft className="w-5 h-5 text-white" />
             </Button>
@@ -221,18 +221,18 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
 
       <div className="p-6 space-y-6 pb-20">
         {/* Topic Input */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <Label className="text-white">Blog Topic</Label>
           <Input
             placeholder="E.g., How to use AI for content marketing"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            className="bg-white/10 border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
+            className="bg-black border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
           />
         </Card>
 
         {/* Style Selector */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <Label className="text-white">Writing Style</Label>
           <div className="grid grid-cols-2 gap-2">
             {writingStyles.map((style) => (
@@ -242,7 +242,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                 className={`p-3 rounded-xl border transition-all ${
                   selectedStyle === style
                     ? 'bg-white text-black border-white'
-                    : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                    : 'bg-black text-white border-white/10 hover:bg-black'
                 }`}
               >
                 {style}
@@ -252,7 +252,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
         </Card>
 
         {/* Keywords */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <Label className="text-white">Target Keywords</Label>
           <div className="flex gap-2">
             <Input
@@ -260,12 +260,12 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
               value={newKeyword}
               onChange={(e) => setNewKeyword(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && addKeyword()}
-              className="bg-white/10 border-white/10 text-white placeholder:text-white/40 h-10 rounded-xl"
+              className="bg-black border-white/10 text-white placeholder:text-white/40 h-10 rounded-xl"
             />
             <Button
               onClick={addKeyword}
               size="icon"
-              className="bg-white/10 hover:bg-white/20 rounded-xl flex-shrink-0"
+              className="bg-black hover:bg-black rounded-xl flex-shrink-0"
             >
               <Plus className="w-5 h-5 text-white" />
             </Button>
@@ -274,7 +274,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
             {keywords.map((keyword) => (
               <div
                 key={keyword}
-                className="bg-white/10 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm"
+                className="bg-black text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm"
               >
                 {keyword}
                 <button
@@ -289,7 +289,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
         </Card>
 
         {/* SEO Mode Toggle */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl">
           <div className="flex items-center justify-between">
             <div>
               <Label className="text-white">SEO Mode</Label>
@@ -333,7 +333,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
 
         {/* Variant Selection */}
         {showPreview && generatedVariants.length > 1 && (
-          <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+          <Card className="bg-black border-white/10 p-4 rounded-2xl">
             <Label className="text-white mb-3 block">Select Variant ({generatedVariants.length} available)</Label>
             <div className="grid grid-cols-3 gap-2">
               {generatedVariants.map((_, index) => (
@@ -346,7 +346,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                   className={`p-3 rounded-xl border transition-all text-sm ${
                     selectedVariant === index
                       ? 'bg-white text-black border-white'
-                      : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                      : 'bg-black text-white border-white/10 hover:bg-black'
                   }`}
                 >
                   Variant {index + 1}
@@ -439,7 +439,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                 updated[selectedVariant] = e.target.value;
                 setGeneratedVariants(updated);
               }}
-              className="bg-white/5 border-white/10 text-black min-h-[500px] rounded-xl font-mono text-sm leading-relaxed"
+              className="bg-black border-white/10 text-black min-h-[500px] rounded-xl font-mono text-sm leading-relaxed"
               placeholder="Generated content will appear here..."
               readOnly={false}
             />

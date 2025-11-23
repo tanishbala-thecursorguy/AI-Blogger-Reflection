@@ -82,7 +82,7 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </Button>
@@ -95,13 +95,13 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
 
       <div className="p-6 space-y-6 pb-20">
         {/* Blog Input */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <Label className="text-white">Paste Your Blog Content</Label>
           <Textarea
             value={blogContent}
             onChange={(e) => setBlogContent(e.target.value)}
             placeholder="Copy and paste your blog content here..."
-            className="bg-white/10 border-white/10 text-white placeholder:text-white/40 min-h-[300px] rounded-xl resize-none"
+            className="bg-black border-white/10 text-white placeholder:text-white/40 min-h-[300px] rounded-xl resize-none"
           />
           <div className="flex items-center justify-between text-white/60 text-sm">
             <span>{blogContent ? `${blogContent.split(/\s+/).length} words` : 'No content yet'}</span>
@@ -110,7 +110,7 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
                 onClick={() => setBlogContent('')}
                 size="sm"
                 variant="ghost"
-                className="text-white/60 hover:text-white hover:bg-white/10 h-8 rounded-lg"
+                className="text-white/60 hover:text-white hover:bg-black h-8 rounded-lg"
               >
                 Clear
               </Button>
@@ -146,7 +146,7 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
 
         {/* Generated Video Script */}
         {videoScript && (
-          <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+          <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Video className="w-5 h-5 text-white" />
@@ -157,7 +157,7 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
                   onClick={handleCopy}
                   size="sm"
                   variant="outline"
-                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-lg"
+                  className="bg-black border-white/10 text-white hover:bg-black rounded-lg"
                 >
                   <Copy className="w-4 h-4 mr-2" />
                   Copy
@@ -166,7 +166,7 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
                   onClick={handleDownload}
                   size="sm"
                   variant="outline"
-                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-lg"
+                  className="bg-black border-white/10 text-white hover:bg-black rounded-lg"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download
@@ -191,7 +191,7 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
 
         {/* Empty State */}
         {!videoScript && !isGenerating && (
-          <Card className="bg-white/5 border-white/10 p-12 rounded-2xl text-center">
+          <Card className="bg-black border-white/10 p-12 rounded-2xl text-center">
             <Video className="w-12 h-12 text-white/20 mx-auto mb-4" />
             <p className="text-white/60">
               Paste your blog content above and click "Generate Video Script" to create an engaging video script with hooks, content, topics, ending, and jokes!

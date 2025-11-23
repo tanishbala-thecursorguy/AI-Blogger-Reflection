@@ -52,7 +52,7 @@ export function OnboardingScreens({ onComplete }: OnboardingScreensProps) {
   const Icon = currentScreen.icon;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-between p-6 relative">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-between p-6 relative">
       {/* Skip Button */}
       {currentIndex < screens.length - 1 && (
         <button
@@ -67,12 +67,12 @@ export function OnboardingScreens({ onComplete }: OnboardingScreensProps) {
       <div className="flex-1 flex flex-col items-center justify-center max-w-sm w-full">
         {/* Icon/Illustration */}
         <div className="mb-12 relative">
-          <div className="w-32 h-32 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+          <div className="w-32 h-32 rounded-full bg-black flex items-center justify-center border border-white/10">
             <Icon className="w-16 h-16 text-white" strokeWidth={1.5} />
           </div>
           {/* Decorative circles */}
-          <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-white/5 border border-white/10" />
-          <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/5 border border-white/10" />
+          <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-black border border-white/10" />
+          <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-black border border-white/10" />
         </div>
 
         {/* Text Content */}
@@ -94,7 +94,7 @@ export function OnboardingScreens({ onComplete }: OnboardingScreensProps) {
               className={`h-1.5 rounded-full transition-all ${
                 index === currentIndex
                   ? 'w-8 bg-white'
-                  : 'w-1.5 bg-white/20 hover:bg-white/40'
+                  : 'w-1.5 bg-black hover:bg-white/40'
               }`}
             />
           ))}

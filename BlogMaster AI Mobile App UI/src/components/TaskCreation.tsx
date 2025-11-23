@@ -94,7 +94,7 @@ export function TaskCreation({ onNavigate, onBack }: TaskCreationProps) {
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </Button>
@@ -113,10 +113,10 @@ export function TaskCreation({ onNavigate, onBack }: TaskCreationProps) {
             <Card
               key={index}
               onClick={() => onNavigate(task.screen)}
-              className="bg-white/5 border-white/10 p-5 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer"
+              className="bg-black border-white/10 p-5 rounded-2xl hover:bg-black transition-colors cursor-pointer"
             >
               <div className="flex items-start gap-4">
-                <div className="bg-white/10 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="bg-black w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Icon className="w-6 h-6 text-white" strokeWidth={1.5} />
                 </div>
                 <div className="flex-1">

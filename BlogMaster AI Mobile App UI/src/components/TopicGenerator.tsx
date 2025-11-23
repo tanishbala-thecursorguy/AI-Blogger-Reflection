@@ -89,7 +89,7 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </Button>
@@ -102,21 +102,21 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
 
       <div className="p-6 space-y-6 pb-20">
         {/* Niche Input */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <Label className="text-white">Your Niche</Label>
           <Input
             placeholder="E.g., AI content marketing, fitness, finance, etc."
             value={niche}
             onChange={(e) => setNiche(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleGenerate()}
-            className="bg-white/10 border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
+            className="bg-black border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
           />
           <div className="flex items-center gap-3">
             <Label className="text-white text-sm">Number of topics:</Label>
             <select
               value={topicCount}
               onChange={(e) => setTopicCount(Number(e.target.value))}
-              className="bg-white/10 border-white/10 text-white rounded-xl px-3 py-2 text-sm"
+              className="bg-black border-white/10 text-white rounded-xl px-3 py-2 text-sm"
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -154,7 +154,7 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
 
         {/* Generated Topics */}
         {topics.length > 0 && (
-          <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+          <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-white">Generated Topics</Label>
@@ -179,13 +179,13 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
                     className={`p-4 rounded-xl cursor-pointer transition-all ${
                       isSelected
                         ? 'bg-white text-black border-white'
-                        : 'bg-white/5 border-white/10 hover:bg-white/10 text-white'
+                        : 'bg-black border-white/10 hover:bg-black text-white'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          isSelected ? 'bg-black/10' : 'bg-white/10'
+                          isSelected ? 'bg-black/10' : 'bg-black'
                         }`}>
                           {isSelected ? (
                             <Check className={`w-4 h-4 ${isSelected ? 'text-black' : 'text-white'}`} />
@@ -223,7 +223,7 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
                 }}
                 variant="outline"
                 size="sm"
-                className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl"
+                className="flex-1 bg-black border-white/10 text-white hover:bg-black rounded-xl"
               >
                 <Copy className="w-4 h-4 mr-2" />
                 Copy All
@@ -243,7 +243,7 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
                 }}
                 variant="outline"
                 size="sm"
-                className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl"
+                className="flex-1 bg-black border-white/10 text-white hover:bg-black rounded-xl"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download
@@ -254,7 +254,7 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
 
         {/* Empty State */}
         {!topics.length && !isGenerating && !error && (
-          <Card className="bg-white/5 border-white/10 p-12 rounded-2xl text-center">
+          <Card className="bg-black border-white/10 p-12 rounded-2xl text-center">
             <Lightbulb className="w-12 h-12 text-white/20 mx-auto mb-4" />
             <p className="text-white/60">
               Enter your niche above to generate trending blog topic ideas

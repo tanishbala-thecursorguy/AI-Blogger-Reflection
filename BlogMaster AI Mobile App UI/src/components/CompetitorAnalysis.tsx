@@ -183,7 +183,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </Button>
@@ -196,7 +196,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
 
       <div className="p-6 space-y-6 pb-20">
         {/* URL Input */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
           <div className="space-y-3">
             <Label className="text-white">Competitor Blog URL (Optional)</Label>
             <Input
@@ -205,7 +205,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
               onChange={(e) => setUrl(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && !isAnalyzing && handleAnalyze()}
               disabled={isAnalyzing}
-              className="bg-white/10 border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
+              className="bg-black border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
             />
           </div>
 
@@ -216,7 +216,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               disabled={isAnalyzing}
-              className="bg-white/10 border-white/10 text-white placeholder:text-white/40 min-h-[200px] rounded-xl resize-none"
+              className="bg-black border-white/10 text-white placeholder:text-white/40 min-h-[200px] rounded-xl resize-none"
             />
           </div>
 
@@ -248,7 +248,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
         {showResults && analysis && (
           <>
             {/* Main Topic & Summary */}
-            <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+            <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
               <Label className="text-white">Main Topic</Label>
               <p className="text-white text-lg font-medium">{analysis.mainTopic}</p>
               <Label className="text-white">Summary</Label>
@@ -256,12 +256,12 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
             </Card>
 
             {/* Competitor Score */}
-            <Card className="bg-white/5 border-white/10 p-6 rounded-2xl space-y-4">
+            <Card className="bg-black border-white/10 p-6 rounded-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Overall Competitor Score</Label>
                 <span className="text-white text-2xl">{analysis.overallScore}/100</span>
               </div>
-              <Progress value={analysis.overallScore} className="h-2 bg-white/10" />
+              <Progress value={analysis.overallScore} className="h-2 bg-black" />
               <p className="text-white/60 text-sm">
                 {analysis.overallScore >= 80 
                   ? 'This article has strong SEO optimization but has content gaps you can exploit.'
@@ -273,14 +273,14 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 gap-3">
-              <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+              <Card className="bg-black border-white/10 p-4 rounded-2xl">
                 <div className="flex items-center gap-2 mb-2">
                   <FileText className="w-4 h-4 text-white/60" />
                   <span className="text-white/60 text-sm">Word Count</span>
                 </div>
                 <div className="text-white text-xl">{analysis.wordCount.toLocaleString()}</div>
               </Card>
-              <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+              <Card className="bg-black border-white/10 p-4 rounded-2xl">
                 <div className="flex items-center gap-2 mb-2">
                   <Target className="w-4 h-4 text-white/60" />
                   <span className="text-white/60 text-sm">Keywords Used</span>
@@ -290,33 +290,33 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
             </div>
 
             {/* Structure Map */}
-            <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+            <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-white" />
                 <Label className="text-white">Content Structure</Label>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-black rounded-xl">
                   <span className="text-white text-sm">H1 Tags</span>
-                  <Badge variant="outline" className="bg-white/10 border-white/20 text-white">
+                  <Badge variant="outline" className="bg-black border-white/20 text-white">
                     {analysis.structure.h1}
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-black rounded-xl">
                   <span className="text-white text-sm">H2 Tags</span>
-                  <Badge variant="outline" className="bg-white/10 border-white/20 text-white">
+                  <Badge variant="outline" className="bg-black border-white/20 text-white">
                     {analysis.structure.h2}
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-black rounded-xl">
                   <span className="text-white text-sm">H3 Tags</span>
-                  <Badge variant="outline" className="bg-white/10 border-white/20 text-white">
+                  <Badge variant="outline" className="bg-black border-white/20 text-white">
                     {analysis.structure.h3}
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-black rounded-xl">
                   <span className="text-white text-sm">Images</span>
-                  <Badge variant="outline" className="bg-white/10 border-white/20 text-white">
+                  <Badge variant="outline" className="bg-black border-white/20 text-white">
                     {analysis.structure.images}
                   </Badge>
                 </div>
@@ -324,7 +324,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
             </Card>
 
             {/* Missing Points */}
-            <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+            <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-green-400" />
                 <Label className="text-white">Content Gaps & Opportunities</Label>
@@ -333,7 +333,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
                 {analysis.contentGaps.map((gap, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start gap-3 p-3 bg-white/5 rounded-xl"
+                    className="flex items-start gap-3 p-3 bg-black rounded-xl"
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-2 flex-shrink-0" />
                     <span className="text-white/80 text-sm">{gap}</span>
@@ -343,7 +343,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
             </Card>
 
             {/* Weak Sections */}
-            <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+            <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-yellow-400" />
                 <Label className="text-white">Weak Sections to Target</Label>
@@ -352,20 +352,20 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
                 {analysis.weakSections.map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-white/5 rounded-xl space-y-2"
+                    className="p-3 bg-black rounded-xl space-y-2"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-white text-sm">{item.section}</span>
                       <span className="text-white/60 text-sm">{item.score}%</span>
                     </div>
-                    <Progress value={item.score} className="h-1.5 bg-white/10" />
+                    <Progress value={item.score} className="h-1.5 bg-black" />
                   </div>
                 ))}
               </div>
             </Card>
 
             {/* Keywords Used */}
-            <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+            <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
               <Label className="text-white">Keywords Detected</Label>
               <div className="flex flex-wrap gap-2">
                 {analysis.keywords.length > 0 ? (
@@ -373,7 +373,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
                     <Badge
                       key={idx}
                       variant="outline"
-                      className="bg-white/10 border-white/20 text-white"
+                      className="bg-black border-white/20 text-white"
                     >
                       {keyword}
                     </Badge>
@@ -394,7 +394,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
                 onClick={handleRewrite}
                 disabled={isRewriting || !originalContent.trim()}
                 variant="outline"
-                className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 h-12 rounded-xl disabled:opacity-50"
+                className="w-full bg-black border-white/10 text-white hover:bg-black h-12 rounded-xl disabled:opacity-50"
               >
                 {isRewriting ? (
                   <>
@@ -412,7 +412,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
 
             {/* Rewritten Content */}
             {showRewritten && rewrittenVariants.length > 0 && (
-              <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+              <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="text-white text-lg">Improved Version</Label>
                   <div className="flex items-center gap-2">
@@ -425,7 +425,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
                             className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
                               selectedVariant === idx
                                 ? 'bg-white text-black'
-                                : 'bg-white/10 text-white hover:bg-white/20'
+                                : 'bg-black text-white hover:bg-black'
                             }`}
                           >
                             {idx + 1}
@@ -437,7 +437,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
                       variant="ghost"
                       size="icon"
                       onClick={handleCopyRewritten}
-                      className="rounded-xl hover:bg-white/10"
+                      className="rounded-xl hover:bg-black"
                     >
                       <Copy className="w-5 h-5 text-white" />
                     </Button>
@@ -445,7 +445,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
                       variant="ghost"
                       size="icon"
                       onClick={handleDownloadRewritten}
-                      className="rounded-xl hover:bg-white/10"
+                      className="rounded-xl hover:bg-black"
                     >
                       <Download className="w-5 h-5 text-white" />
                     </Button>
@@ -465,7 +465,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
                     variant="outline"
                     onClick={handleRewrite}
                     disabled={isRewriting}
-                    className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 h-12 rounded-xl"
+                    className="w-full bg-black border-white/10 text-white hover:bg-black h-12 rounded-xl"
                   >
                     <RefreshCw className="w-5 h-5 mr-2" />
                     Generate New Variants
@@ -478,7 +478,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
 
         {/* Empty State */}
         {!showResults && (
-          <Card className="bg-white/5 border-white/10 p-12 rounded-2xl text-center">
+          <Card className="bg-black border-white/10 p-12 rounded-2xl text-center">
             <Target className="w-12 h-12 text-white/20 mx-auto mb-4" />
             <p className="text-white/60">
               Paste a competitor's blog URL to analyze their content strategy and find opportunities to outrank them

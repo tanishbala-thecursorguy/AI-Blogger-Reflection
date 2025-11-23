@@ -124,7 +124,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </Button>
@@ -137,12 +137,12 @@ export function AIEditor({ onBack }: AIEditorProps) {
 
       <div className="p-6 space-y-6 pb-20">
         {/* Content Editor */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <Label className="text-white">Your Content</Label>
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="bg-white/10 border-white/10 text-white placeholder:text-white/40 min-h-[200px] rounded-xl"
+            className="bg-black border-white/10 text-white placeholder:text-white/40 min-h-[200px] rounded-xl"
             placeholder="Paste your content here..."
           />
           <div className="flex items-center justify-between text-white/60 text-sm">
@@ -168,11 +168,11 @@ export function AIEditor({ onBack }: AIEditorProps) {
               return (
                 <Card
                   key={mode.label}
-                  className="bg-white/5 border-white/10 p-4 rounded-2xl"
+                  className="bg-black border-white/10 p-4 rounded-2xl"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-start gap-3 flex-1">
-                      <div className="bg-white/10 w-10 h-10 rounded-lg flex items-center justify-center">
+                      <div className="bg-black w-10 h-10 rounded-lg flex items-center justify-center">
                         <Icon className="w-5 h-5 text-white" strokeWidth={1.5} />
                       </div>
                       <div className="flex-1">
@@ -236,7 +236,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
                 setEnhancedContent(e.target.value);
                 setContent(e.target.value);
               }}
-              className="bg-white/5 border-white/10 text-black min-h-[300px] rounded-xl font-mono text-sm"
+              className="bg-black border-white/10 text-black min-h-[300px] rounded-xl font-mono text-sm"
             />
             <div className="flex gap-2">
               <Button
@@ -251,7 +251,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
                 }}
                 size="sm"
                 variant="outline"
-                className="bg-white/5 border-black/20 text-black hover:bg-black/5 rounded-lg"
+                className="bg-black border-black/20 text-black hover:bg-black/5 rounded-lg"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download
@@ -264,7 +264,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
                 }}
                 size="sm"
                 variant="outline"
-                className="bg-white/5 border-black/20 text-black hover:bg-black/5 rounded-lg"
+                className="bg-black border-black/20 text-black hover:bg-black/5 rounded-lg"
               >
                 <Copy className="w-4 h-4 mr-2" />
                 Copy
@@ -274,7 +274,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
         )}
 
         {/* Real-time Preview */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <div className="flex items-center justify-between">
             <Label className="text-white">Current Content</Label>
             <div className="flex items-center gap-2">
@@ -294,7 +294,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
           <Button
             onClick={handleReset}
             variant="outline"
-            className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 h-12 rounded-xl"
+            className="flex-1 bg-black border-white/10 text-white hover:bg-black h-12 rounded-xl"
           >
             Reset
           </Button>

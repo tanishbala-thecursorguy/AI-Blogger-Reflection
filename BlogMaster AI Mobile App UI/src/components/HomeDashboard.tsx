@@ -77,7 +77,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
   }).length;
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
+    <div className="min-h-screen bg-black pb-20">
       {/* Header */}
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
@@ -89,7 +89,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
             variant="ghost"
             size="icon"
             onClick={() => onNavigate('settings')}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <Settings className="w-6 h-6 text-white" />
           </Button>
@@ -97,15 +97,15 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+          <Card className="bg-black border-white/10 p-4 rounded-2xl">
             <div className="text-white/60 text-xs mb-1">Total Blogs</div>
             <div className="text-white text-2xl">{totalBlogs}</div>
           </Card>
-          <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+          <Card className="bg-black border-white/10 p-4 rounded-2xl">
             <div className="text-white/60 text-xs mb-1">Published</div>
             <div className="text-white text-2xl">{publishedBlogs}</div>
           </Card>
-          <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+          <Card className="bg-black border-white/10 p-4 rounded-2xl">
             <div className="text-white/60 text-xs mb-1">This Week</div>
             <div className="text-white text-2xl">{thisWeekBlogs}</div>
           </Card>
@@ -119,7 +119,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
               variant="ghost"
               size="sm"
               onClick={() => onNavigate('tasks')}
-              className="text-white/60 hover:text-white hover:bg-white/5 rounded-xl"
+              className="text-white/60 hover:text-white hover:bg-black rounded-xl"
             >
               View All
             </Button>
@@ -132,9 +132,9 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
                 <Card
                   key={index}
                   onClick={() => onNavigate(action.screen)}
-                  className="bg-white/5 border-white/10 p-5 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer"
+                  className="bg-black border-white/10 p-5 rounded-2xl hover:bg-black transition-colors cursor-pointer"
                 >
-                  <div className="bg-white/10 w-12 h-12 rounded-xl flex items-center justify-center mb-3">
+                  <div className="bg-black w-12 h-12 rounded-xl flex items-center justify-center mb-3">
                     <Icon className="w-6 h-6 text-white" strokeWidth={1.5} />
                   </div>
                   <div className="text-white text-sm">{action.label}</div>
@@ -151,7 +151,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white/60 hover:text-white hover:bg-white/5 rounded-full"
+              className="text-white/60 hover:text-white hover:bg-black rounded-full"
             >
               <MoreVertical className="w-5 h-5" />
             </Button>
@@ -162,7 +162,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
               {recentBlogs.map((blog) => (
                 <Card
                   key={blog.id}
-                  className="bg-white/5 border-white/10 p-4 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer"
+                  className="bg-black border-white/10 p-4 rounded-2xl hover:bg-black transition-colors cursor-pointer"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-3">
@@ -180,10 +180,10 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
                       <div
                         className={`px-2 py-1 rounded-lg text-xs ${
                           blog.status === 'Published'
-                            ? 'bg-white/10 text-white'
+                            ? 'bg-black text-white'
                             : blog.status === 'Draft'
-                            ? 'bg-white/5 text-white/60'
-                            : 'bg-white/10 text-white/80'
+                            ? 'bg-black text-white/60'
+                            : 'bg-black text-white/80'
                         }`}
                       >
                         {blog.status}
@@ -197,7 +197,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
                         onNavigate('blog-generator');
                       }}
                       variant="ghost"
-                      className="w-full h-9 bg-white/5 hover:bg-white/10 text-white rounded-xl"
+                      className="w-full h-9 bg-black hover:bg-black text-white rounded-xl"
                     >
                       <Edit className="w-4 h-4 mr-2" />
                       Continue Editing
@@ -207,7 +207,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
               ))}
             </div>
           ) : (
-            <Card className="bg-white/5 border-white/10 p-8 rounded-2xl text-center">
+            <Card className="bg-black border-white/10 p-8 rounded-2xl text-center">
               <FileText className="w-12 h-12 text-white/20 mx-auto mb-3" />
               <p className="text-white/60 text-sm mb-4">No blogs yet. Start creating your first blog!</p>
               <Button

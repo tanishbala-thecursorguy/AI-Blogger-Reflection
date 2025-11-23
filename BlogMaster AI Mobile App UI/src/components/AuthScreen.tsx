@@ -32,7 +32,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
@@ -43,7 +43,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
         </div>
 
         {/* Auth Card */}
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
+        <div className="bg-black border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email Input */}
             <div className="space-y-2">
@@ -58,7 +58,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
                   placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-11 bg-white/10 border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
+                  className="pl-11 bg-black border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
                 />
               </div>
             </div>
@@ -77,7 +77,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
                     placeholder="johndoe"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="pl-11 bg-white/10 border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
+                    className="pl-11 bg-black border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
                   />
                 </div>
               </div>
@@ -96,7 +96,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-11 bg-white/10 border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
+                  className="pl-11 bg-black border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
                 />
               </div>
             </div>

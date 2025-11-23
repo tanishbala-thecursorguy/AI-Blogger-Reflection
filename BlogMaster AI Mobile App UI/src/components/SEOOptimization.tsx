@@ -95,7 +95,7 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </Button>
@@ -108,7 +108,7 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
 
       <div className="p-6 space-y-6 pb-20">
         {/* Overall SEO Score */}
-        <Card className="bg-white/5 border-white/10 p-6 rounded-2xl">
+        <Card className="bg-black border-white/10 p-6 rounded-2xl">
           <div className="flex items-center justify-between mb-4">
             <Label className="text-white">SEO Score</Label>
             <div className={`text-4xl ${getScoreColor(overallScore)}`}>
@@ -116,7 +116,7 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
             </div>
           </div>
           <div className="relative">
-            <Progress value={overallScore} className="h-3 bg-white/10" />
+            <Progress value={overallScore} className="h-3 bg-black" />
           </div>
           <p className="text-white/60 text-sm mt-4">
             Good score! Fix the issues below to reach 90+
@@ -125,17 +125,17 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <Card className="bg-white/5 border-white/10 p-4 rounded-2xl text-center">
+          <Card className="bg-black border-white/10 p-4 rounded-2xl text-center">
             <CheckCircle className="w-6 h-6 text-green-400 mx-auto mb-2" />
             <div className="text-white text-xl mb-1">12</div>
             <div className="text-white/60 text-xs">Passed</div>
           </Card>
-          <Card className="bg-white/5 border-white/10 p-4 rounded-2xl text-center">
+          <Card className="bg-black border-white/10 p-4 rounded-2xl text-center">
             <AlertCircle className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
             <div className="text-white text-xl mb-1">4</div>
             <div className="text-white/60 text-xs">Warnings</div>
           </Card>
-          <Card className="bg-white/5 border-white/10 p-4 rounded-2xl text-center">
+          <Card className="bg-black border-white/10 p-4 rounded-2xl text-center">
             <XCircle className="w-6 h-6 text-red-400 mx-auto mb-2" />
             <div className="text-white text-xl mb-1">2</div>
             <div className="text-white/60 text-xs">Failed</div>
@@ -145,13 +145,13 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
         {/* SEO Checks by Category */}
         <div className="space-y-4">
           {seoChecks.map((category, idx) => (
-            <Card key={idx} className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+            <Card key={idx} className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
               <h2 className="text-white">{category.category}</h2>
               <div className="space-y-2">
                 {category.items.map((item, itemIdx) => (
                   <div
                     key={itemIdx}
-                    className="flex items-center justify-between p-3 bg-white/5 rounded-xl"
+                    className="flex items-center justify-between p-3 bg-black rounded-xl"
                   >
                     <div className="flex items-center gap-3 flex-1">
                       {getStatusIcon(item.status)}
@@ -168,7 +168,7 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
         </div>
 
         {/* Keyword Density */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
           <h2 className="text-white">Keyword Density</h2>
           <div className="space-y-3">
             {[
@@ -189,7 +189,7 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
                 </div>
                 <Progress 
                   value={item.density * 50} 
-                  className={`h-1.5 ${item.optimal ? 'bg-white/10' : 'bg-yellow-400/20'}`}
+                  className={`h-1.5 ${item.optimal ? 'bg-black' : 'bg-yellow-400/20'}`}
                 />
               </div>
             ))}
@@ -197,7 +197,7 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
         </Card>
 
         {/* Content Gap Suggestions */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-white" />
             <h2 className="text-white">Content Gap Suggestions</h2>
@@ -206,7 +206,7 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
             {contentGaps.map((gap, idx) => (
               <div
                 key={idx}
-                className="flex items-start gap-3 p-3 bg-white/5 rounded-xl"
+                className="flex items-start gap-3 p-3 bg-black rounded-xl"
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-2 flex-shrink-0" />
                 <span className="text-white/80 text-sm">{gap}</span>
@@ -216,14 +216,14 @@ export function SEOOptimization({ onBack }: SEOOptimizationProps) {
         </Card>
 
         {/* Passive Voice Indicator */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-white">Passive Voice Usage</h2>
             <Badge variant="outline" className="bg-red-400/10 border-red-400/20 text-red-400">
               High
             </Badge>
           </div>
-          <Progress value={65} className="h-2 bg-white/10" />
+          <Progress value={65} className="h-2 bg-black" />
           <p className="text-white/60 text-sm">
             15% of sentences use passive voice. Aim for less than 10% for better readability.
           </p>

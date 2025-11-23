@@ -67,7 +67,7 @@ export function LoginSurvey({ email, onComplete }: LoginSurveyProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -76,7 +76,7 @@ export function LoginSurvey({ email, onComplete }: LoginSurveyProps) {
         </div>
 
         {/* Survey Card */}
-        <Card className="bg-white/5 border-white/10 p-6 rounded-3xl backdrop-blur-sm">
+        <Card className="bg-black border-white/10 p-6 rounded-3xl backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Input */}
             <div className="space-y-2">
@@ -91,7 +91,7 @@ export function LoginSurvey({ email, onComplete }: LoginSurveyProps) {
                   placeholder="Enter your name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="pl-11 bg-white/10 border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
+                  className="pl-11 bg-black border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
                   required
                 />
               </div>
@@ -109,7 +109,7 @@ export function LoginSurvey({ email, onComplete }: LoginSurveyProps) {
                     className={`p-4 rounded-xl border text-left transition-all ${
                       selectedPurpose === purpose
                         ? 'bg-white text-black border-white'
-                        : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                        : 'bg-black text-white border-white/10 hover:bg-black'
                     }`}
                   >
                     <Target className={`w-5 h-5 mb-2 ${selectedPurpose === purpose ? 'text-black' : 'text-white/60'}`} />
@@ -127,7 +127,7 @@ export function LoginSurvey({ email, onComplete }: LoginSurveyProps) {
                     placeholder="Please specify your purpose..."
                     value={customPurpose}
                     onChange={(e) => setCustomPurpose(e.target.value)}
-                    className="bg-white/10 border-white/10 text-white placeholder:text-white/40 min-h-[100px] rounded-xl resize-none"
+                    className="bg-black border-white/10 text-white placeholder:text-white/40 min-h-[100px] rounded-xl resize-none"
                     required={selectedPurpose === 'Other'}
                   />
                 </div>

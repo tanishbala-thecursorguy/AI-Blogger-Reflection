@@ -107,8 +107,8 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
     return (
       <div>
         <div
-          className={`flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer ${
-            depth === 0 ? 'bg-white/5' : ''
+          className={`flex items-start gap-3 p-3 rounded-xl hover:bg-black cursor-pointer ${
+            depth === 0 ? 'bg-black' : ''
           }`}
           style={{ marginLeft: `${depth * 20}px` }}
           onClick={() => setExpanded(!expanded)}
@@ -124,7 +124,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-white/40 text-xs px-2 py-0.5 bg-white/5 rounded">
+              <span className="text-white/40 text-xs px-2 py-0.5 bg-black rounded">
                 {node.level}
               </span>
               <span className="text-white">{node.text}</span>
@@ -151,7 +151,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </Button>
@@ -164,13 +164,13 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
 
       <div className="p-6 space-y-6 pb-20">
         {/* Topic Input */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <Label className="text-white">Enter Topic</Label>
           <Input
             placeholder="E.g., AI for content marketing"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            className="bg-white/10 border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
+            className="bg-black border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
           />
           <Button
             onClick={handleGenerate}
@@ -200,7 +200,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
         {showResults && (
           <>
             {/* Keyword Suggestions */}
-            <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+            <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Keyword Suggestions</Label>
                 <span className="text-white/60 text-sm">{selectedKeywords.length} selected</span>
@@ -213,8 +213,8 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
                       onClick={() => toggleKeyword(item.keyword)}
                       className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
                         selectedKeywords.includes(item.keyword)
-                          ? 'bg-white/10 border-white/20'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10'
+                          ? 'bg-black border-white/20'
+                          : 'bg-black border-white/10 hover:bg-black'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -244,7 +244,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
 
             {/* Variant Selection */}
             {outlineVariants.length > 1 && (
-              <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+              <Card className="bg-black border-white/10 p-4 rounded-2xl">
                 <Label className="text-white mb-3 block">Select Outline Variant ({outlineVariants.length} available)</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {outlineVariants.map((_, index) => (
@@ -257,7 +257,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
                       className={`p-3 rounded-xl border transition-all text-sm ${
                         selectedOutlineVariant === index
                           ? 'bg-white text-black border-white'
-                          : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                          : 'bg-black text-white border-white/10 hover:bg-black'
                       }`}
                     >
                       Variant {index + 1}
@@ -268,7 +268,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
             )}
 
             {/* Outline Preview */}
-            <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+            <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-white">Outline Preview</Label>
@@ -282,7 +282,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
                     variant="ghost"
                     onClick={handleRegenerate}
                     disabled={isGenerating || !topic.trim()}
-                    className="text-white hover:bg-white/10 rounded-lg disabled:opacity-50"
+                    className="text-white hover:bg-black rounded-lg disabled:opacity-50"
                   >
                     <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
                     Regenerate
@@ -290,7 +290,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="text-white hover:bg-white/10 rounded-lg"
+                    className="text-white hover:bg-black rounded-lg"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Section
@@ -313,7 +313,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 h-11 rounded-xl"
+                className="flex-1 bg-black border-white/10 text-white hover:bg-black h-11 rounded-xl"
               >
                 Auto-Optimize
               </Button>

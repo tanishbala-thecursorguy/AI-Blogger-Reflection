@@ -51,7 +51,7 @@ export function TemplatesHistory({ onBack }: TemplatesHistoryProps) {
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </Button>
@@ -64,7 +64,7 @@ export function TemplatesHistory({ onBack }: TemplatesHistoryProps) {
 
       <div className="p-6 space-y-4 pb-20">
         {templates.length === 0 ? (
-          <Card className="bg-white/5 border-white/10 p-12 rounded-2xl text-center">
+          <Card className="bg-black border-white/10 p-12 rounded-2xl text-center">
             <FileText className="w-16 h-16 text-white/40 mx-auto mb-4" />
             <h3 className="text-white mb-2">No templates yet</h3>
             <p className="text-white/60 text-sm">
@@ -75,11 +75,11 @@ export function TemplatesHistory({ onBack }: TemplatesHistoryProps) {
           templates.map((template) => (
             <Card
               key={template.id}
-              className="bg-white/5 border-white/10 p-4 rounded-2xl"
+              className="bg-black border-white/10 p-4 rounded-2xl"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 flex-1">
-                  <div className="bg-white/10 w-10 h-10 rounded-lg flex items-center justify-center mt-1">
+                  <div className="bg-black w-10 h-10 rounded-lg flex items-center justify-center mt-1">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -101,7 +101,7 @@ export function TemplatesHistory({ onBack }: TemplatesHistoryProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => deleteTemplate(template.id)}
-                  className="rounded-full hover:bg-white/10 text-white/60 hover:text-red-400"
+                  className="rounded-full hover:bg-black text-white/60 hover:text-red-400"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

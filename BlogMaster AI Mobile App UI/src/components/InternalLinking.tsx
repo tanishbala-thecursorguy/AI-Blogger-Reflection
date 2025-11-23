@@ -104,7 +104,7 @@ export function InternalLinking({ onBack }: InternalLinkingProps) {
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </Button>
@@ -118,8 +118,8 @@ export function InternalLinking({ onBack }: InternalLinkingProps) {
       <div className="p-6 space-y-6 pb-20">
         {/* Upload Section */}
         {!uploaded ? (
-          <Card className="bg-white/5 border-white/10 p-8 rounded-2xl text-center space-y-4">
-            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto">
+          <Card className="bg-black border-white/10 p-8 rounded-2xl text-center space-y-4">
+            <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto">
               <Upload className="w-8 h-8 text-white" />
             </div>
             <div>
@@ -139,22 +139,22 @@ export function InternalLinking({ onBack }: InternalLinkingProps) {
           <>
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
-              <Card className="bg-white/5 border-white/10 p-4 rounded-2xl text-center">
+              <Card className="bg-black border-white/10 p-4 rounded-2xl text-center">
                 <div className="text-white text-2xl mb-1">{existingBlogs.length}</div>
                 <div className="text-white/60 text-xs">Total Blogs</div>
               </Card>
-              <Card className="bg-white/5 border-white/10 p-4 rounded-2xl text-center">
+              <Card className="bg-black border-white/10 p-4 rounded-2xl text-center">
                 <div className="text-white text-2xl mb-1">{links.filter(l => l.enabled).length}</div>
                 <div className="text-white/60 text-xs">Active Links</div>
               </Card>
-              <Card className="bg-white/5 border-white/10 p-4 rounded-2xl text-center">
+              <Card className="bg-black border-white/10 p-4 rounded-2xl text-center">
                 <div className="text-white text-2xl mb-1">{links.length}</div>
                 <div className="text-white/60 text-xs">Suggestions</div>
               </Card>
             </div>
 
             {/* Existing Blogs */}
-            <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+            <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
               <div className="flex items-center gap-2">
                 <Link2 className="w-5 h-5 text-white" />
                 <h2 className="text-white">Your Blog Library</h2>
@@ -163,7 +163,7 @@ export function InternalLinking({ onBack }: InternalLinkingProps) {
                 {existingBlogs.map((blog) => (
                   <div
                     key={blog.id}
-                    className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+                    className="p-3 bg-black rounded-xl hover:bg-black transition-colors"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
@@ -172,7 +172,7 @@ export function InternalLinking({ onBack }: InternalLinkingProps) {
                       </div>
                       <Badge
                         variant="outline"
-                        className={`${getRelevanceColor(blog.relevance)} bg-white/10 border-white/20 flex-shrink-0`}
+                        className={`${getRelevanceColor(blog.relevance)} bg-black border-white/20 flex-shrink-0`}
                       >
                         {blog.relevance}%
                       </Badge>
@@ -183,7 +183,7 @@ export function InternalLinking({ onBack }: InternalLinkingProps) {
             </Card>
 
             {/* Suggested Links */}
-            <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-4">
+            <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-white" />
@@ -202,7 +202,7 @@ export function InternalLinking({ onBack }: InternalLinkingProps) {
                   return (
                     <Card
                       key={index}
-                      className="bg-white/5 border-white/10 p-4 rounded-2xl"
+                      className="bg-black border-white/10 p-4 rounded-2xl"
                     >
                       <div className="space-y-3">
                         <div className="flex items-start justify-between gap-3">
@@ -210,7 +210,7 @@ export function InternalLinking({ onBack }: InternalLinkingProps) {
                             <div className="flex items-center gap-2 mb-2">
                               <Badge
                                 variant="outline"
-                                className={`${getRelevanceColor(link.relevance)} bg-white/10 border-white/20 text-xs`}
+                                className={`${getRelevanceColor(link.relevance)} bg-black border-white/20 text-xs`}
                               >
                                 {link.relevance}% match
                               </Badge>
@@ -250,7 +250,7 @@ export function InternalLinking({ onBack }: InternalLinkingProps) {
               </Button>
               <Button
                 variant="outline"
-                className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 h-11 rounded-xl"
+                className="w-full bg-black border-white/10 text-white hover:bg-black h-11 rounded-xl"
               >
                 Generate More Suggestions
               </Button>

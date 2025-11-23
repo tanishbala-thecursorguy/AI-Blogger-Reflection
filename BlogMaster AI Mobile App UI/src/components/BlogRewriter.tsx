@@ -121,7 +121,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="rounded-full hover:bg-white/10"
+            className="rounded-full hover:bg-black"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </Button>
@@ -134,12 +134,12 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
 
       <div className="p-6 space-y-6 pb-20">
         {/* Original Text Input */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <Label className="text-white">Original Text</Label>
           <Textarea
             value={originalText}
             onChange={(e) => setOriginalText(e.target.value)}
-            className="bg-white/10 border-white/10 text-white placeholder:text-white/40 min-h-[150px] rounded-xl resize-none"
+            className="bg-black border-white/10 text-white placeholder:text-white/40 min-h-[150px] rounded-xl resize-none"
             placeholder="Paste your text here to rewrite..."
           />
           <div className="text-white/60 text-sm">
@@ -161,12 +161,12 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
                   className={`p-4 rounded-2xl transition-colors cursor-pointer ${
                     isSelected
                       ? 'bg-white text-black border-white'
-                      : 'bg-white/5 border-white/10 hover:bg-white/10'
+                      : 'bg-black border-white/10 hover:bg-black'
                   }`}
                 >
                   <div className="space-y-2">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isSelected ? 'bg-black/10' : 'bg-white/10'
+                      isSelected ? 'bg-black/10' : 'bg-black'
                     }`}>
                       <Icon className={`w-5 h-5 ${isSelected ? 'text-black' : 'text-white'}`} strokeWidth={1.5} />
                     </div>
@@ -201,7 +201,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
         </div>
 
         {/* Tone Selector */}
-        <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-3">
+        <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <Label className="text-white">Rewrite in Chosen Tone</Label>
           <div className="grid grid-cols-2 gap-2">
             {toneOptions.map((tone) => (
@@ -211,7 +211,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
                 className={`p-3 rounded-xl border transition-all ${
                   selectedTone === tone
                     ? 'bg-white text-black border-white'
-                    : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                    : 'bg-black text-white border-white/10 hover:bg-black'
                 }`}
               >
                 {tone}
@@ -246,7 +246,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
 
         {/* Variant Selection */}
         {rewrittenVariants.length > 1 && (
-          <Card className="bg-white/5 border-white/10 p-4 rounded-2xl">
+          <Card className="bg-black border-white/10 p-4 rounded-2xl">
             <Label className="text-white mb-3 block">Select Rewritten Variant ({rewrittenVariants.length} available)</Label>
             <div className="grid grid-cols-3 gap-2">
               {rewrittenVariants.map((_, index) => (
@@ -259,7 +259,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
                   className={`p-3 rounded-xl border transition-all text-sm ${
                     selectedVariant === index
                       ? 'bg-white text-black border-white'
-                      : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
+                      : 'bg-black text-white border-white/10 hover:bg-black'
                   }`}
                 >
                   Variant {index + 1}
@@ -292,7 +292,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
                   }}
                   size="sm"
                   variant="outline"
-                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 h-9 rounded-xl"
+                  className="bg-black border-white/10 text-white hover:bg-black h-9 rounded-xl"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download
@@ -305,7 +305,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
                   }}
                   size="sm"
                   variant="outline"
-                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 h-9 rounded-xl"
+                  className="bg-black border-white/10 text-white hover:bg-black h-9 rounded-xl"
                 >
                   <Copy className="w-4 h-4 mr-2" />
                   Copy
@@ -314,7 +314,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
             </div>
             
             {/* Before */}
-            <Card className="bg-white/5 border-white/10 p-5 rounded-2xl space-y-2">
+            <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-white/60 text-sm">Original</span>
                 <span className="text-white/60 text-sm">
@@ -324,7 +324,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
               <Textarea
                 value={originalText}
                 onChange={(e) => setOriginalText(e.target.value)}
-                className="bg-white/5 border-white/10 text-white min-h-[150px] rounded-xl text-sm"
+                className="bg-black border-white/10 text-white min-h-[150px] rounded-xl text-sm"
                 readOnly
               />
             </Card>
@@ -340,7 +340,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
               <Textarea
                 value={rewrittenText}
                 onChange={(e) => setRewrittenText(e.target.value)}
-                className="bg-white/5 border-white/10 text-black min-h-[400px] rounded-xl font-mono text-sm"
+                className="bg-black border-white/10 text-black min-h-[400px] rounded-xl font-mono text-sm"
                 placeholder="Rewritten content will appear here..."
               />
             </Card>
@@ -353,7 +353,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
                   setSelectedActions([]);
                 }}
                 variant="outline"
-                className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10 h-11 rounded-xl"
+                className="flex-1 bg-black border-white/10 text-white hover:bg-black h-11 rounded-xl"
               >
                 Clear
               </Button>
@@ -373,7 +373,7 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
 
         {/* Empty State */}
         {!originalText && (
-          <Card className="bg-white/5 border-white/10 p-12 rounded-2xl text-center">
+          <Card className="bg-black border-white/10 p-12 rounded-2xl text-center">
             <RefreshCw className="w-12 h-12 text-white/20 mx-auto mb-4" />
             <p className="text-white/60">
               Paste your existing content above to rewrite it with different styles and optimizations
