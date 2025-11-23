@@ -49,58 +49,30 @@ export function LoginSurvey({ email, userId, onComplete }: LoginSurveyProps) {
       return;
     }
     
+    // Try to save to Supabase, but don't block if it fails
     try {
-      // First try to update existing profile
-      const { data: existing, error: checkError } = await supabase
+      const { error: updateError } = await supabase
         .from('profiles')
-        .select('id')
-        .eq('id', userId)
-        .single();
-
-      let updateError;
-
-      if (existing) {
-        // Update existing profile
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            name: name.trim(),
-            purpose: purpose,
-            email: email,
-          })
-          .eq('id', userId);
-        updateError = error;
-      } else {
-        // Insert new profile
-        const { error } = await supabase
-          .from('profiles')
-          .insert({
-            id: userId,
-            email: email,
-            name: name.trim(),
-            purpose: purpose,
-          });
-        updateError = error;
-      }
+        .upsert({
+          id: userId,
+          email: email,
+          name: name.trim(),
+          purpose: purpose,
+        }, {
+          onConflict: 'id'
+        });
 
       if (updateError) {
-        console.error('Profile save error:', updateError);
-        throw updateError;
+        console.error('Profile save error (non-blocking):', updateError);
+        // Don't throw - just log and continue
       }
-      
-      onComplete({ name: name.trim(), purpose });
     } catch (err: any) {
-      const errorMessage = err.message || 'Failed to save profile. Please try again.';
-      setError(errorMessage);
-      console.error('Profile update error:', err);
-      
-      // If table doesn't exist, show helpful message
-      if (err.message?.includes('relation') || err.message?.includes('does not exist')) {
-        setError('Database tables not set up. Please run the SQL schema in Supabase Dashboard first.');
-      } else if (err.message?.includes('row-level security')) {
-        setError('RLS Policy Error: Please run the fix-rls-policies.sql script in Supabase SQL Editor.');
-      }
+      // Silently fail - just log it
+      console.error('Profile save failed (non-blocking):', err);
     }
+    
+    // Always proceed regardless of save result
+    onComplete({ name: name.trim(), purpose });
   };
 
   return (
@@ -171,11 +143,11 @@ export function LoginSurvey({ email, userId, onComplete }: LoginSurveyProps) {
               )}
             </div>
 
-            {error && (
+            {error && error.includes('Please enter') || error.includes('Please select') || error.includes('Please specify') ? (
               <div className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl p-3">
                 {error}
               </div>
-            )}
+            ) : null}
 
             {/* Submit Button */}
             <Button
