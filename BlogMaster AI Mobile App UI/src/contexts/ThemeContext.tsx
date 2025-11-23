@@ -19,6 +19,18 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     return (saved as Theme) || 'dark';
   });
 
+  // Initialize theme on mount
+  useEffect(() => {
+    // Remove all theme classes
+    document.documentElement.classList.remove('theme-dark', 'theme-bright', 'theme-blue', 'theme-pink', 'theme-stars');
+    // Add current theme class
+    const initialTheme = (localStorage.getItem('appTheme') as Theme) || 'dark';
+    document.documentElement.classList.add(`theme-${initialTheme}`);
+    if (initialTheme !== theme) {
+      setThemeState(initialTheme);
+    }
+  }, []);
+
   useEffect(() => {
     // Remove all theme classes
     document.documentElement.classList.remove('theme-dark', 'theme-bright', 'theme-blue', 'theme-pink', 'theme-stars');
