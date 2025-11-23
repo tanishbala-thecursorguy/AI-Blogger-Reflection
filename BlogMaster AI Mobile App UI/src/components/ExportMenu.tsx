@@ -173,10 +173,10 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
                 </Button>
               </div>
             </div>
-            <div className="bg-black/50 p-4 rounded-xl max-h-[600px] overflow-y-auto">
-              <pre className="text-white/80 text-sm whitespace-pre-wrap font-mono leading-relaxed">
+            <div className="bg-black/50 p-4 rounded-xl max-h-[600px] overflow-y-auto overflow-x-hidden">
+              <div className="text-white/80 text-sm whitespace-pre-wrap break-words leading-relaxed font-sans max-w-full word-wrap break-all">
                 {videoScript}
-              </pre>
+              </div>
             </div>
           </Card>
         )}
