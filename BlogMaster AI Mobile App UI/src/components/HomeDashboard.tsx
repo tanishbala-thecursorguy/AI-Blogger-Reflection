@@ -30,36 +30,13 @@ const quickActions = [
   { icon: Search, label: 'Keyword Research', screen: 'keyword-research' as Screen },
 ];
 
-const recentBlogs = [
-  {
-    id: 1,
-    title: '10 AI Tools That Will Transform Your Content Marketing Strategy',
-    date: 'Nov 17, 2025',
-    status: 'Published',
-    words: 2450,
-  },
-  {
-    id: 2,
-    title: 'The Ultimate Guide to SEO Optimization in 2025',
-    date: 'Nov 16, 2025',
-    status: 'Draft',
-    words: 1820,
-  },
-  {
-    id: 3,
-    title: 'How to Create Engaging Social Media Content Using AI',
-    date: 'Nov 15, 2025',
-    status: 'Published',
-    words: 1650,
-  },
-  {
-    id: 4,
-    title: 'Understanding Google\'s Latest Algorithm Updates',
-    date: 'Nov 14, 2025',
-    status: 'In Progress',
-    words: 980,
-  },
-];
+const recentBlogs: Array<{
+  id: number;
+  title: string;
+  date: string;
+  status: string;
+  words: number;
+}> = [];
 
 export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
   return (
