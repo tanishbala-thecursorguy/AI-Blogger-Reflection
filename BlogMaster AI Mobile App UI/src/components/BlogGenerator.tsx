@@ -344,16 +344,16 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
           </Card>
         )}
 
-        {/* Live Preview */}
-        {showPreview && generatedContent && (
-          <Card className="bg-white border-white/10 p-6 rounded-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-black font-semibold">Generated Blog</h2>
-                {generatedVariants.length > 1 && (
-                  <p className="text-black/60 text-sm">Variant {selectedVariant + 1} of {generatedVariants.length}</p>
-                )}
-              </div>
+              {/* Live Preview */}
+              {showPreview && generatedContent && (
+                <Card className="bg-black border-white/10 p-6 rounded-2xl space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-white font-semibold">Generated Blog</h2>
+                      {generatedVariants.length > 1 && (
+                        <p className="text-white/60 text-sm">Variant {selectedVariant + 1} of {generatedVariants.length}</p>
+                      )}
+                    </div>
               <div className="flex gap-2">
                 <Button
                   onClick={() => {
