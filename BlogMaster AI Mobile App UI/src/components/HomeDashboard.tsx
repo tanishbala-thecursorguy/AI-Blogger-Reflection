@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Screen } from '../App';
+import { supabase } from '../lib/supabase';
 import {
   FileText,
   Lightbulb,

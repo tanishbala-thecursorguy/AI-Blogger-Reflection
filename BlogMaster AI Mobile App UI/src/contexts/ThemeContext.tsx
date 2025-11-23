@@ -1,49 +1,59 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-export type Theme = 'dark' | 'bright' | 'blue' | 'pink' | 'stars';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
+  darkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-interface ThemeProviderProps {
-  children: ReactNode;
+// Apply dark class to HTML element immediately (runs before React hydration)
+if (typeof window !== 'undefined') {
+  const saved = localStorage.getItem('darkMode');
+  const isDark = saved !== null ? saved === 'true' : true;
+  const root = document.documentElement;
+  
+  if (isDark) {
+    root.classList.add('dark');
+    root.style.colorScheme = 'dark';
+  } else {
+    root.classList.remove('dark');
+    root.style.colorScheme = 'light';
+  }
 }
 
-export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('appTheme');
-    const initialTheme = (saved as Theme) || 'dark';
-    // Apply theme immediately on mount
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.remove('theme-dark', 'theme-bright', 'theme-blue', 'theme-pink', 'theme-stars');
-      document.documentElement.classList.add(`theme-${initialTheme}`);
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [darkMode, setDarkMode] = useState(() => {
+    // Initialize from localStorage or default to true (dark mode)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('darkMode');
+      return saved !== null ? saved === 'true' : true;
     }
-    return initialTheme;
+    return true;
   });
 
   useEffect(() => {
-    // Remove all theme classes
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.remove('theme-dark', 'theme-bright', 'theme-blue', 'theme-pink', 'theme-stars');
-      // Add current theme class
-      document.documentElement.classList.add(`theme-${theme}`);
-      // Also set as attribute for CSS selector specificity
-      document.documentElement.setAttribute('data-theme', theme);
-      // Save to localStorage
-      localStorage.setItem('appTheme', theme);
+    const root = document.documentElement;
+    // Force update the class
+    root.classList.remove('dark');
+    if (darkMode) {
+      root.classList.add('dark');
+      root.style.colorScheme = 'dark';
+    } else {
+      root.style.colorScheme = 'light';
     }
-  }, [theme]);
+    localStorage.setItem('darkMode', String(darkMode));
+    
+    // Force a re-render by dispatching a custom event (for debugging)
+    window.dispatchEvent(new Event('darkModeChange'));
+  }, [darkMode]);
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
+  const toggleDarkMode = () => {
+    setDarkMode(prev => !prev);
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -56,3 +66,4 @@ export function useTheme() {
   }
   return context;
 }
+

@@ -7,6 +7,7 @@ import { Switch } from './ui/switch';
 import { Card } from './ui/card';
 import { Screen } from '../App';
 import { generateBlog } from '../utils/openai';
+import { supabase } from '../lib/supabase';
 import {
   ArrowLeft,
   Sparkles,
@@ -143,55 +144,42 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
     return content.trim().split(/\s+/).filter(word => word.length > 0).length;
   };
 
-  const handleSaveBlog = (content: string, showNotification: boolean = true) => {
+  const handleSaveBlog = async (content: string, showNotification: boolean = true) => {
     try {
       setIsSaving(true);
       
-      // Get existing blogs
-      const existingBlogsStr = localStorage.getItem('savedBlogs');
-      const existingBlogs: Array<{
-        id: string;
-        title: string;
-        content: string;
-        date: string;
-        status: string;
-        words: number;
-        topic: string;
-        style: string;
-      }> = existingBlogsStr ? JSON.parse(existingBlogsStr) : [];
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
 
-      // Create new blog entry
-      const newBlog = {
-        id: Date.now().toString(),
-        title: extractTitle(content),
-        content: content,
-        date: new Date().toLocaleDateString('en-US', { 
-          month: 'short', 
-          day: 'numeric', 
-          year: 'numeric' 
-        }),
-        status: 'Draft',
-        words: countWords(content),
-        topic: topic.trim(),
-        style: selectedStyle,
-      };
+      // Create new blog entry in Supabase
+      const { data, error } = await supabase
+        .from('blogs')
+        .insert({
+          user_id: user.id,
+          title: extractTitle(content),
+          content: content,
+          tone: selectedStyle,
+          keywords: keywords,
+          word_count: countWords(content),
+          status: 'Draft' as const,
+        })
+        .select()
+        .single();
 
-      // Add to beginning of array (most recent first)
-      const updatedBlogs = [newBlog, ...existingBlogs];
-      
-      // Keep only last 50 blogs
-      const trimmedBlogs = updatedBlogs.slice(0, 50);
-      
-      // Save to localStorage
-      localStorage.setItem('savedBlogs', JSON.stringify(trimmedBlogs));
+      if (error) throw error;
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
       
       if (showNotification) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        alert('Blog saved successfully!');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving blog:', err);
-      setError('Failed to save blog. Please try again.');
+      alert(err.message || 'Failed to save blog. Please try again.');
     } finally {
       setIsSaving(false);
     }

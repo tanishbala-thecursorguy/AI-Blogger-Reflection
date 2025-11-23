@@ -5,9 +5,11 @@ import { Label } from './ui/label';
 import { Card } from './ui/card';
 import { Textarea } from './ui/textarea';
 import { User, Target, ArrowRight } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface LoginSurveyProps {
   email: string;
+  userId: string;
   onComplete: (data: { name: string; purpose: string }) => void;
 }
 
@@ -21,13 +23,13 @@ const purposeOptions = [
   'Other',
 ];
 
-export function LoginSurvey({ email, onComplete }: LoginSurveyProps) {
+export function LoginSurvey({ email, userId, onComplete }: LoginSurveyProps) {
   const [name, setName] = useState('');
   const [selectedPurpose, setSelectedPurpose] = useState<string>('');
   const [customPurpose, setCustomPurpose] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name.trim()) {
@@ -47,23 +49,23 @@ export function LoginSurvey({ email, onComplete }: LoginSurveyProps) {
       return;
     }
     
-    // Save profile data
-    const profileData = {
-      name: name.trim(),
-      email: email,
-      purpose: purpose,
-      completedSurvey: true,
-      surveyCompletedAt: Date.now(),
-    };
-    
-    // Update user auth with profile data
-    const userAuth = JSON.parse(localStorage.getItem('userAuth') || '{}');
-    localStorage.setItem('userAuth', JSON.stringify({ ...userAuth, ...profileData }));
-    
-    // Save profile separately
-    localStorage.setItem('userProfile', JSON.stringify(profileData));
-    
-    onComplete({ name: name.trim(), purpose });
+    try {
+      // Update profile in Supabase
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          name: name.trim(),
+          purpose: purpose,
+        })
+        .eq('id', userId);
+
+      if (updateError) throw updateError;
+      
+      onComplete({ name: name.trim(), purpose });
+    } catch (err: any) {
+      setError(err.message || 'Failed to save profile. Please try again.');
+      console.error('Profile update error:', err);
+    }
   };
 
   return (

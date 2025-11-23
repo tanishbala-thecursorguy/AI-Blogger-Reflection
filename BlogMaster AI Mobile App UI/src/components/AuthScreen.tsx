@@ -3,9 +3,10 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Mail, Lock, User } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface AuthScreenProps {
-  onComplete: (email: string) => void;
+  onComplete: (email: string, userId: string) => void;
 }
 
 export function AuthScreen({ onComplete }: AuthScreenProps) {
@@ -13,22 +14,59 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Save login state to localStorage
-    const userData = {
-      email: email,
-      username: username || email.split('@')[0],
-      isLoggedIn: true,
-      loginTime: Date.now(),
-    };
-    
-    localStorage.setItem('userAuth', JSON.stringify(userData));
-    
-    // Call onComplete with email
-    onComplete(email);
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      if (isLogin) {
+        // Sign in
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password,
+        });
+
+        if (signInError) throw signInError;
+        if (data.user) {
+          onComplete(data.user.email || email, data.user.id);
+        }
+      } else {
+        // Sign up
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: email.trim(),
+          password: password,
+          options: {
+            data: {
+              name: username.trim() || email.split('@')[0],
+            },
+          },
+        });
+
+        if (signUpError) throw signUpError;
+        if (data.user) {
+          // Create profile
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: data.user.id,
+              email: email.trim(),
+              name: username.trim() || email.split('@')[0],
+            });
+
+          if (profileError) console.error('Profile creation error:', profileError);
+          onComplete(data.user.email || email, data.user.id);
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred. Please try again.');
+      console.error('Auth error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -110,13 +148,19 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
               </div>
             )}
 
+            {error && (
+              <div className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl p-3">
+                {error}
+              </div>
+            )}
+
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={!email.trim() || !password.trim()}
-              className="w-full bg-white text-black hover:bg-black h-12 rounded-xl disabled:opacity-50"
+              disabled={!email.trim() || !password.trim() || isLoading}
+              className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50"
             >
-              {isLogin ? 'Log In' : 'Sign Up'}
+              {isLoading ? 'Loading...' : isLogin ? 'Log In' : 'Sign Up'}
             </Button>
           </form>
         </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { Separator } from './ui/separator';
 import { Screen } from '../App';
+import { supabase } from '../lib/supabase';
 import {
   ArrowLeft,
   User,
@@ -24,69 +25,82 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ onBack, onLogout, onNavigate }: SettingsPageProps) {
-  // Load user profile from localStorage
-  const [name, setName] = useState(() => {
-    try {
-      const profile = localStorage.getItem('userProfile');
-      const userAuth = localStorage.getItem('userAuth');
-      if (profile) {
-        const profileData = JSON.parse(profile);
-        if (profileData.name) return profileData.name;
-      }
-      if (userAuth) {
-        const authData = JSON.parse(userAuth);
-        if (authData.name) return authData.name;
-      }
-    } catch (error) {
-      console.error('Error loading profile:', error);
-    }
-    return 'User';
-  });
+  const [name, setName] = useState('User');
+  const [email, setEmail] = useState('');
 
-  const [email, setEmail] = useState(() => {
-    try {
-      const profile = localStorage.getItem('userProfile');
-      const userAuth = localStorage.getItem('userAuth');
-      if (profile) {
-        const profileData = JSON.parse(profile);
-        if (profileData.email) return profileData.email;
+  // Load user profile from Supabase
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (error) throw error;
+
+        if (profile) {
+          setName(profile.name || 'User');
+          setEmail(profile.email || user.email || '');
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
       }
-      if (userAuth) {
-        const authData = JSON.parse(userAuth);
-        if (authData.email) return authData.email;
-      }
-    } catch (error) {
-      console.error('Error loading email:', error);
-    }
-    return '';
-  });
+    };
+
+    loadProfile();
+  }, []);
 
   const [defaultTone, setDefaultTone] = useState(() => {
     const saved = localStorage.getItem('defaultTone') || 'Professional';
     return saved;
   });
   
-  // Auto-save name, email, and tone to localStorage
+  // Auto-save name and email to Supabase
   useEffect(() => {
-    if (name) {
-      // Update both userProfile and userAuth
-      const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-      const userAuth = JSON.parse(localStorage.getItem('userAuth') || '{}');
-      
-      localStorage.setItem('userProfile', JSON.stringify({ ...profile, name }));
-      localStorage.setItem('userAuth', JSON.stringify({ ...userAuth, name }));
-    }
+    const saveProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !name) return;
+
+        const { error } = await supabase
+          .from('profiles')
+          .update({ name })
+          .eq('id', user.id);
+
+        if (error) console.error('Error saving name:', error);
+      } catch (error) {
+        console.error('Error in saveProfile:', error);
+      }
+    };
+
+    const timeoutId = setTimeout(saveProfile, 1000); // Debounce
+    return () => clearTimeout(timeoutId);
   }, [name]);
 
   useEffect(() => {
-    if (email) {
-      // Update both userProfile and userAuth
-      const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-      const userAuth = JSON.parse(localStorage.getItem('userAuth') || '{}');
-      
-      localStorage.setItem('userProfile', JSON.stringify({ ...profile, email }));
-      localStorage.setItem('userAuth', JSON.stringify({ ...userAuth, email }));
-    }
+    const saveEmail = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !email) return;
+
+        const { error } = await supabase
+          .from('profiles')
+          .update({ email })
+          .eq('id', user.id);
+
+        if (error) console.error('Error saving email:', error);
+      } catch (error) {
+        console.error('Error in saveEmail:', error);
+      }
+    };
+
+    const timeoutId = setTimeout(saveEmail, 1000); // Debounce
+    return () => clearTimeout(timeoutId);
   }, [email]);
 
   useEffect(() => {
