@@ -258,7 +258,7 @@ async function callGroqAPI(prompt: string, systemPrompt: string, wordCount?: num
         return content;
       }
     } else {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
       console.error('Groq API error:', response.status, errorData);
       // If rate limited or unauthorized, don't retry
       if (response.status === 401 || response.status === 429) {
@@ -304,6 +304,7 @@ async function callHuggingFaceAPI(prompt: string, systemPrompt: string, wordCoun
     if (!response.ok) {
       // If model is loading, wait and retry once
       if (response.status === 503) {
+        console.log('Hugging Face model is loading, waiting 15 seconds...');
         await new Promise(resolve => setTimeout(resolve, 15000));
         const retryResponse = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
           method: 'POST',
@@ -321,11 +322,19 @@ async function callHuggingFaceAPI(prompt: string, systemPrompt: string, wordCoun
         if (retryResponse.ok) {
           const retryData = await retryResponse.json();
           if (Array.isArray(retryData) && retryData[0]?.generated_text) {
-            return retryData[0].generated_text.trim();
+            let text = retryData[0].generated_text.trim();
+            text = text.replace(/\[INST\].*?\[\/INST\]\s*/s, '');
+            console.log('Hugging Face API: Successfully generated content after retry');
+            return text;
           }
+        } else {
+          const errorText = await retryResponse.text().catch(() => 'Unknown error');
+          throw new Error(`Hugging Face API error (${retryResponse.status}): ${errorText}`);
         }
+      } else {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Hugging Face API error (${response.status}): ${errorText}`);
       }
-      return null;
     }
 
     const data = await response.json();
@@ -335,13 +344,18 @@ async function callHuggingFaceAPI(prompt: string, systemPrompt: string, wordCoun
       let text = data[0].generated_text.trim();
       // Remove the instruction tags if present
       text = text.replace(/\[INST\].*?\[\/INST\]\s*/s, '');
+      console.log('Hugging Face API: Successfully generated content');
       return text;
     }
     
-    return null;
-  } catch (error) {
+    throw new Error('Hugging Face API returned unexpected format');
+  } catch (error: any) {
     console.error('Hugging Face API error:', error);
-    return null;
+    // Re-throw to propagate error
+    if (error.message?.includes('Hugging Face API error')) {
+      throw error;
+    }
+    throw new Error(error?.message || 'Hugging Face API request failed');
   }
 }
 
@@ -478,18 +492,29 @@ KEY RULES:
   
   // Fallback: try single generation
   let result: string | null = null;
+  let lastError: string | null = null;
+  
   try {
     result = await callGroqAPI(prompt, systemPrompt, wordCount);
   } catch (error: any) {
-    console.log('Groq API failed, trying Hugging Face fallback...');
+    console.log('Groq API failed:', error?.message || error);
+    lastError = error?.message || 'Groq API failed';
   }
   
   if (!result) {
-    result = await callHuggingFaceAPI(prompt, systemPrompt, wordCount);
+    try {
+      result = await callHuggingFaceAPI(prompt, systemPrompt, wordCount);
+    } catch (error: any) {
+      console.log('Hugging Face API failed:', error?.message || error);
+      lastError = error?.message || 'Hugging Face API failed';
+    }
   }
 
   if (!result) {
-    throw new Error('Failed to generate blog. Please try again.');
+    const errorMsg = lastError 
+      ? `Failed to generate blog: ${lastError}. Please check your API keys or try again.`
+      : 'Failed to generate blog. Please check your API keys or try again.';
+    throw new Error(errorMsg);
   }
 
   return [result]; // Return as array for consistency
