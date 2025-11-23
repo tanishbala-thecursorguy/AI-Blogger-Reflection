@@ -725,6 +725,66 @@ Return the response as a JSON array of objects with "keyword" and "score" fields
   });
 }
 
+export async function generateVideoScript(blogContent: string): Promise<string> {
+  const prompt = `Convert the following blog content into an engaging video script. The script must include:
+
+1. **HOOK (15-30 seconds)**: A captivating opening that grabs attention immediately
+2. **INTRODUCTION**: Brief intro of what the video is about
+3. **MAIN CONTENT**: Break down the blog into engaging video segments with clear topics
+4. **TRANSITIONS**: Smooth transitions between topics
+5. **JOKES/HUMOR**: Add 2-3 appropriate jokes or light-hearted moments throughout
+6. **ENDING/CALL-TO-ACTION**: Strong conclusion with clear call-to-action
+7. **VISUAL CUES**: Suggestions for visuals, on-screen text, or graphics
+
+Format the script with timestamps and clear sections. Make it conversational, engaging, and suitable for YouTube/TikTok/Instagram Reels.
+
+Blog Content:
+${blogContent.substring(0, 8000)}${blogContent.length > 8000 ? '...' : ''}
+
+Now create a complete video script following this format:
+[HOOK - 0:00-0:30]
+[Text to say]
+
+[INTRO - 0:30-0:45]
+[Text to say]
+
+[TOPIC 1 - 0:45-X:XX]
+[Text to say]
+[Visual: description]
+
+[TOPIC 2 - X:XX-X:XX]
+[Text to say]
+[Visual: description]
+
+...continue for all topics...
+
+[ENDING - X:XX-X:XX]
+[Text to say]
+[Call to action]
+
+Remember to:
+- Keep each segment concise and punchy
+- Add natural humor and jokes
+- Include engaging questions or hooks
+- Make it feel conversational, not robotic
+- Add visual suggestions where helpful`;
+
+  const systemPrompt = `You are an expert video script writer who creates engaging, conversational scripts for social media platforms. You excel at creating hooks, adding humor naturally, and structuring content for maximum engagement. Always include timestamps, visual cues, and make the script feel natural and fun.`;
+
+  // Try Groq first, then Hugging Face
+  let result = await callGroqAPI(prompt, systemPrompt);
+  
+  if (!result) {
+    result = await callHuggingFaceAPI(prompt, systemPrompt);
+  }
+
+  if (!result) {
+    throw new Error('Failed to generate video script. Please try again.');
+  }
+
+  return result;
+}
+
 export async function generateSEOOutline(
   topic: string,
   keywords: string[] = []
