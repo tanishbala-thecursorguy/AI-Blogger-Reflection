@@ -174,9 +174,9 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
               </div>
             </div>
             <div className="bg-black/50 p-4 rounded-xl max-h-[600px] overflow-y-auto overflow-x-hidden">
-              <div className="text-white/80 text-sm whitespace-pre-wrap break-words leading-relaxed font-sans max-w-full word-wrap break-all">
+              <pre className="text-white/80 text-sm whitespace-pre-wrap break-words font-mono leading-relaxed max-w-full overflow-wrap-anywhere">
                 {videoScript}
-              </div>
+              </pre>
             </div>
           </Card>
         )}
