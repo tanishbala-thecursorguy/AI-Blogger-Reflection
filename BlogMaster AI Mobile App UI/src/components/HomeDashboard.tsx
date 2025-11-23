@@ -49,18 +49,36 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
     loadSavedBlogs();
   }, []);
 
-  const loadSavedBlogs = () => {
+  const loadSavedBlogs = async () => {
     try {
-      const savedBlogsStr = localStorage.getItem('savedBlogs');
-      if (savedBlogsStr) {
-        const blogs: Blog[] = JSON.parse(savedBlogsStr);
-        // Sort by date (most recent first) and take first 5
-        const sorted = blogs.sort((a, b) => {
-          const dateA = new Date(a.date).getTime();
-          const dateB = new Date(b.date).getTime();
-          return dateB - dateA;
-        });
-        setRecentBlogs(sorted.slice(0, 5));
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: blogs, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+
+      if (blogs) {
+        const formattedBlogs: Blog[] = blogs.map(blog => ({
+          id: parseInt(blog.id) || Date.now(),
+          title: blog.title,
+          date: new Date(blog.created_at).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          }),
+          status: blog.status as 'Published' | 'Draft' | 'In Progress',
+          words: blog.word_count,
+          content: blog.content,
+          tone: blog.tone,
+          keywords: blog.keywords || [],
+        }));
+        setRecentBlogs(formattedBlogs);
       }
     } catch (err) {
       console.error('Error loading saved blogs:', err);
