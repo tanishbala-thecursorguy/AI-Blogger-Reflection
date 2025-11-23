@@ -373,7 +373,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                   }}
                   size="sm"
                   variant="outline"
-                  className="rounded-lg border-black/20 text-black hover:bg-black/5"
+                  className="rounded-lg border-white/20 text-white hover:bg-white/10"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download
@@ -386,7 +386,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                   }}
                   size="sm"
                   variant="outline"
-                  className="rounded-lg border-black/20 text-black hover:bg-black/5"
+                  className="rounded-lg border-white/20 text-white hover:bg-white/10"
                 >
                   <Share2 className="w-4 h-4 mr-2" />
                   Copy
@@ -396,7 +396,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                   disabled={isSaving || saved}
                   size="sm"
                   variant="outline"
-                  className="rounded-lg border-black/20 text-black hover:bg-black/5 disabled:opacity-50"
+                  className={`rounded-lg border-white/20 text-white hover:bg-white/10 disabled:opacity-50 ${saved ? 'bg-green-500 text-white border-green-500' : ''}`}
                 >
                   {isSaving ? (
                     <>
@@ -405,7 +405,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                     </>
                   ) : saved ? (
                     <>
-                      <Save className="w-4 h-4 mr-2 text-green-600" />
+                      <Save className="w-4 h-4 mr-2" />
                       Saved!
                     </>
                   ) : (
@@ -427,7 +427,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                 updated[selectedVariant] = e.target.value;
                 setGeneratedVariants(updated);
               }}
-              className="bg-black border-white/10 text-black min-h-[500px] rounded-xl font-mono text-sm leading-relaxed"
+              className="bg-black border-white/10 text-white placeholder:text-white/40 min-h-[500px] rounded-xl font-mono text-sm leading-relaxed"
               placeholder="Generated content will appear here..."
               readOnly={false}
             />
