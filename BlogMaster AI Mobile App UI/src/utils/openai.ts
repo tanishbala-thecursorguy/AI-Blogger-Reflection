@@ -265,89 +265,6 @@ async function callGroqAPI(prompt: string, systemPrompt: string, wordCount?: num
 }
 
 // NOTE: Hugging Face API removed - using Groq API only for all text generation
-// This function is kept for reference but should not be used
-async function callHuggingFaceAPI_DEPRECATED(prompt: string, systemPrompt: string, wordCount?: number): Promise<string | null> {
-  try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (HUGGINGFACE_API_KEY) {
-      headers['Authorization'] = `Bearer ${HUGGINGFACE_API_KEY}`;
-    }
-
-    const maxTokens = wordCount ? calculateMaxTokens(wordCount) : 4000;
-
-    const response = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        inputs: `<s>[INST] ${systemPrompt}\n\n${prompt} [/INST]`,
-        parameters: {
-          temperature: 0.7,
-          max_new_tokens: Math.min(maxTokens, 4096), // HF model limit
-          return_full_text: false,
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      // If model is loading, wait and retry once
-      if (response.status === 503) {
-        console.log('Hugging Face model is loading, waiting 15 seconds...');
-        await new Promise(resolve => setTimeout(resolve, 15000));
-        const retryResponse = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            inputs: `<s>[INST] ${systemPrompt}\n\n${prompt} [/INST]`,
-            parameters: {
-              temperature: 0.7,
-              max_new_tokens: Math.min(wordCount ? calculateMaxTokens(wordCount) : 4000, 4096),
-              return_full_text: false,
-            },
-          }),
-        });
-        
-        if (retryResponse.ok) {
-          const retryData = await retryResponse.json();
-          if (Array.isArray(retryData) && retryData[0]?.generated_text) {
-            let text = retryData[0].generated_text.trim();
-            text = text.replace(/\[INST\].*?\[\/INST\]\s*/s, '');
-            console.log('Hugging Face API: Successfully generated content after retry');
-            return text;
-          }
-        } else {
-          const errorText = await retryResponse.text().catch(() => 'Unknown error');
-          throw new Error(`Hugging Face API error (${retryResponse.status}): ${errorText}`);
-        }
-      } else {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        throw new Error(`Hugging Face API error (${response.status}): ${errorText}`);
-      }
-    }
-
-    const data = await response.json();
-    
-    if (Array.isArray(data) && data[0]?.generated_text) {
-      // Clean up the response
-      let text = data[0].generated_text.trim();
-      // Remove the instruction tags if present
-      text = text.replace(/\[INST\].*?\[\/INST\]\s*/s, '');
-      console.log('Hugging Face API: Successfully generated content');
-      return text;
-    }
-    
-    throw new Error('Hugging Face API returned unexpected format');
-  } catch (error: any) {
-    console.error('Hugging Face API error:', error);
-    // Re-throw to propagate error
-    if (error.message?.includes('Hugging Face API error')) {
-      throw error;
-    }
-    throw new Error(error?.message || 'Hugging Face API request failed');
-  }
-}
 
 // Helper function to get tone/style instructions based on writing style
 function getStyleInstructions(style: string): string {
@@ -544,11 +461,7 @@ Now rewrite the blog post with these improvements.`;
   let result = await callGroqAPI(prompt, systemPrompt, originalWordCount);
   
   if (!result) {
-    result = await callHuggingFaceAPI(prompt, systemPrompt, originalWordCount);
-  }
-
-  if (!result) {
-    throw new Error('Failed to rewrite blog. Please try again.');
+    throw new Error('Failed to rewrite blog. Please check your Groq API key and try again.');
   }
 
   return [result];
@@ -888,15 +801,11 @@ Remember to:
 
   const systemPrompt = `You are an expert video script writer who creates engaging, conversational scripts for social media platforms. You excel at creating hooks, adding humor naturally, and structuring content for maximum engagement. Always include timestamps, visual cues, and make the script feel natural and fun.`;
 
-  // Try Groq first, then Hugging Face
+  // Use Groq API only
   let result = await callGroqAPI(prompt, systemPrompt);
   
   if (!result) {
-    result = await callHuggingFaceAPI(prompt, systemPrompt);
-  }
-
-  if (!result) {
-    throw new Error('Failed to generate video script. Please try again.');
+    throw new Error('Failed to generate video script. Please check your Groq API key and try again.');
   }
 
   return result;
@@ -1041,11 +950,7 @@ Now enhance the content following this exact format:`;
   let result = await callGroqAPI(prompt, systemPrompt, originalWordCount);
   
   if (!result) {
-    result = await callHuggingFaceAPI(prompt, systemPrompt, originalWordCount);
-  }
-
-  if (!result) {
-    throw new Error('Failed to enhance content. Please try again.');
+    throw new Error('Failed to enhance content. Please check your Groq API key and try again.');
   }
 
   // Generate multiple variants
@@ -1123,11 +1028,7 @@ Important:
   let result = await callGroqAPI(prompt, systemPrompt, wordCount);
   
   if (!result) {
-    result = await callHuggingFaceAPI(prompt, systemPrompt, wordCount);
-  }
-
-  if (!result) {
-    throw new Error('Failed to analyze content. Please try again.');
+    throw new Error('Failed to analyze content. Please check your Groq API key and try again.');
   }
 
   // Try to parse JSON response
