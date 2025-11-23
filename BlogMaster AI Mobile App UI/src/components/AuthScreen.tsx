@@ -32,7 +32,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm">
         {/* Logo/Brand */}
         <div className="text-center mb-8">

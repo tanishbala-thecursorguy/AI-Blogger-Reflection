@@ -157,7 +157,7 @@ export function SettingsPage({ onBack, onLogout, onNavigate }: SettingsPageProps
   const toneOptions = ['Professional', 'Casual', 'Friendly', 'Authoritative', 'Conversational'];
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <div className="sticky top-0 bg-black border-b border-white/10 p-4 z-10">
         <div className="flex items-center gap-3">

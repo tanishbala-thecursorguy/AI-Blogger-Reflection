@@ -52,7 +52,7 @@ export function OnboardingScreens({ onComplete }: OnboardingScreensProps) {
   const Icon = currentScreen.icon;
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-between p-6 relative">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-between p-6 relative">
       {/* Skip Button */}
       {currentIndex < screens.length - 1 && (
         <button

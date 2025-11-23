@@ -77,7 +77,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
   }).length;
 
   return (
-    <div className="min-h-screen bg-black pb-20">
+    <div className="min-h-screen bg-background text-foreground pb-20">
       {/* Header */}
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">

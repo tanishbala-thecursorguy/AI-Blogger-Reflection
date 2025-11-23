@@ -81,7 +81,8 @@
 }
 
 /* Bright Theme */
-.theme-bright {
+.theme-bright,
+html.theme-bright {
   --background: #ffffff;
   --foreground: #000000;
   --card: #f8f9fa;
@@ -119,7 +120,8 @@
 }
 
 /* Blue Theme */
-.theme-blue {
+.theme-blue,
+html.theme-blue {
   --background: #0a1929;
   --foreground: #e3f2fd;
   --card: #132f4c;
@@ -157,7 +159,8 @@
 }
 
 /* Baby Pink Theme */
-.theme-pink {
+.theme-pink,
+html.theme-pink {
   --background: #2d1b2e;
   --foreground: #fce4ec;
   --card: #3d2539;
@@ -195,7 +198,8 @@
 }
 
 /* Stars Background Theme */
-.theme-stars {
+.theme-stars,
+html.theme-stars {
   --background: #0a0e27;
   --foreground: #ffffff;
   --card: rgba(26, 32, 64, 0.8);
@@ -233,7 +237,8 @@
 }
 
 /* Stars background pattern */
-.theme-stars {
+.theme-stars,
+html.theme-stars {
   background-image: 
     radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
     radial-gradient(2px 2px at 60px 70px, rgba(255, 255, 255, 0.8), transparent),
@@ -295,12 +300,19 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
   /* Theme base class */
   .theme-base {
+    @apply bg-background text-foreground;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
