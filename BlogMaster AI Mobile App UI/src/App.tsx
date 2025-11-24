@@ -200,6 +200,11 @@ export default function App() {
           onComplete={handleSurveyComplete} 
         />
       )}
+      {currentScreen === 'login-survey' && !userId && (
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <p className="text-white">Loading...</p>
+        </div>
+      )}
       {currentScreen === 'home' && <HomeDashboard userName={userName} onNavigate={navigate} />}
       {currentScreen === 'tasks' && <TaskCreation onNavigate={navigate} onBack={() => navigate('home')} />}
       {currentScreen === 'blog-generator' && <BlogGenerator onBack={() => navigate('home')} onNavigate={navigate} />}
