@@ -64,31 +64,66 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
       // If URL is provided, try to fetch content (with CORS proxy)
       if (url.trim() && !contentToAnalyze) {
         try {
+          // Validate URL format
+          try {
+            new URL(url.trim());
+          } catch (urlError) {
+            throw new Error('Please enter a valid URL (e.g., https://example.com/article)');
+          }
+
           // Try using a CORS proxy to fetch the content
-          const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-          const response = await fetch(proxyUrl);
+          const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url.trim())}`;
           
-          if (response.ok) {
-            const html = await response.text();
-            // Simple HTML to text extraction
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            
-            // Remove script and style elements
-            const scripts = doc.querySelectorAll('script, style, nav, header, footer');
-            scripts.forEach(el => el.remove());
-            
-            // Get text content
-            contentToAnalyze = doc.body.innerText || doc.body.textContent || '';
-            
-            if (!contentToAnalyze || contentToAnalyze.trim().length < 100) {
-              throw new Error('Could not extract sufficient content from URL. Please paste the content directly.');
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+          
+          const response = await fetch(proxyUrl, {
+            signal: controller.signal,
+            headers: {
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             }
-          } else {
-            throw new Error('Could not fetch content from URL. Please paste the content directly.');
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            throw new Error(`Failed to fetch content (HTTP ${response.status}). Please copy and paste the content directly.`);
+          }
+          
+          const html = await response.text();
+          
+          if (!html || html.trim().length < 200) {
+            throw new Error('The URL did not return sufficient content. Please paste the content directly.');
+          }
+          
+          // Simple HTML to text extraction
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          
+          // Remove script and style elements
+          const scripts = doc.querySelectorAll('script, style, nav, header, footer, aside, .ad, .advertisement');
+          scripts.forEach(el => el.remove());
+          
+          // Try to find main content area
+          const mainContent = doc.querySelector('main, article, .content, .post-content, .entry-content') || doc.body;
+          
+          // Get text content
+          contentToAnalyze = mainContent.innerText || mainContent.textContent || '';
+          
+          // Clean up extra whitespace
+          contentToAnalyze = contentToAnalyze.replace(/\s+/g, ' ').trim();
+          
+          if (!contentToAnalyze || contentToAnalyze.length < 100) {
+            throw new Error('Could not extract sufficient content from this URL. Please copy and paste the article content directly into the text area.');
           }
         } catch (fetchError: any) {
-          setError(fetchError.message || 'Could not fetch content from URL. Please paste the content directly.');
+          if (fetchError.name === 'AbortError') {
+            setError('Request timed out. The website may be slow or unreachable. Please paste the content directly.');
+          } else if (fetchError.message) {
+            setError(fetchError.message);
+          } else {
+            setError('Could not fetch content from this URL. Please copy and paste the article content directly into the text area below.');
+          }
           setIsAnalyzing(false);
           return;
         }
