@@ -41,20 +41,15 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
     
     try {
       // Generate multiple topic sets (3 variants with topicCount topics each)
-      const allTopics = await generateTopics(niche.trim(), topicCount);
+      const topicSets = await generateTopics(niche.trim(), topicCount);
       
-      // Split into 3 sets
-      const topicsPerSet = Math.ceil(allTopics.length / 3);
-      const sets: string[][] = [];
-      for (let i = 0; i < 3; i++) {
-        const start = i * topicsPerSet;
-        const end = start + topicsPerSet;
-        sets.push(allTopics.slice(start, end));
+      if (topicSets.length > 0) {
+        setTopicSets(topicSets);
+        setSelectedTopicSet(0);
+        setTopics(topicSets[0] || []);
+      } else {
+        throw new Error('No topics were generated. Please try again.');
       }
-      
-      setTopicSets(sets.filter(set => set.length > 0));
-      setSelectedTopicSet(0);
-      setTopics(sets[0] || []);
     } catch (err: any) {
       setError(err.message || 'Failed to generate topics. Please try again.');
       console.error('Error generating topics:', err);
@@ -152,6 +147,32 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
           </Card>
         )}
 
+        {/* Variant Selection */}
+        {topicSets.length > 1 && (
+          <Card className="bg-black border-white/10 p-4 rounded-2xl">
+            <Label className="text-white mb-3 block">Select Topic Set ({topicSets.length} available)</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {topicSets.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setSelectedTopicSet(index);
+                    setTopics(topicSets[index] || []);
+                    setSelectedTopics([]); // Clear selection when switching variants
+                  }}
+                  className={`p-3 rounded-xl border transition-all text-sm ${
+                    selectedTopicSet === index
+                      ? 'bg-white text-black border-white'
+                      : 'bg-black text-white border-white/10 hover:bg-black'
+                  }`}
+                >
+                  Set {index + 1}
+                </button>
+              ))}
+            </div>
+          </Card>
+        )}
+
         {/* Generated Topics */}
         {topics.length > 0 && (
           <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
@@ -160,6 +181,9 @@ export function TopicGenerator({ onBack, onNavigate }: TopicGeneratorProps) {
                 <Label className="text-white">Generated Topics</Label>
                 <p className="text-white/60 text-sm mt-1">
                   Select topics to use for blog generation
+                  {topicSets.length > 1 && (
+                    <span className="ml-2">(Set {selectedTopicSet + 1} of {topicSets.length})</span>
+                  )}
                 </p>
               </div>
               {selectedTopics.length > 0 && (

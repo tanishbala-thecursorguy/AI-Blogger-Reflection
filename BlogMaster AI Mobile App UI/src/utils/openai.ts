@@ -172,21 +172,59 @@ ${content.substring(0, 3000)}`;
 }
 
 // Generate topics
-export async function generateTopics(niche: string): Promise<string[][]> {
+export async function generateTopics(niche: string, topicCount: number = 10): Promise<string[][]> {
   const systemPrompt = `You are a content strategist. Generate engaging blog topic ideas.`;
   
-  const prompt = `Generate 10 trending blog topic ideas for the niche: "${niche}". 
-Return the topics as a simple list, one per line. Make them specific and actionable.`;
+  const prompt = `Generate ${topicCount} trending blog topic ideas for the niche: "${niche}". 
+Return the topics as a simple list, one per line. Make them specific, actionable, and diverse.
+Each topic should be a complete, engaging title that would work well for a blog post.
+Format: Just list the topics, one per line, numbered (1., 2., 3., etc.).`;
 
-  const result = await callGroqAPI(prompt, systemPrompt, 1000);
-  const topics = result.split('\n').filter(t => t.trim()).slice(0, 10);
+  // Generate 3 variants using generateMultipleVariants
+  const variants = await generateMultipleVariants(prompt, systemPrompt, 3, 1500);
   
-  // Return 3 variants of topic sets
-  return [
-    topics,
-    topics.slice(0, 8),
-    topics.slice(2, 10),
-  ];
+  // Parse each variant into an array of topics
+  const topicSets: string[][] = [];
+  
+  for (const variant of variants) {
+    // Extract topics from the response
+    const lines = variant.split('\n').filter(line => line.trim());
+    const topics: string[] = [];
+    
+    for (const line of lines) {
+      // Remove numbering (1., 2., etc.) and quotes
+      const cleaned = line
+        .replace(/^\d+[\.\)]\s*/, '') // Remove "1. " or "1) "
+        .replace(/^[-•*]\s*/, '') // Remove bullet points
+        .replace(/^["']|["']$/g, '') // Remove quotes
+        .trim();
+      
+      if (cleaned && cleaned.length > 10) { // Only add if it's a substantial topic
+        topics.push(cleaned);
+      }
+    }
+    
+    // Limit to requested count
+    if (topics.length > 0) {
+      topicSets.push(topics.slice(0, topicCount));
+    }
+  }
+  
+  // If we got less than 3 variants, duplicate the first one
+  while (topicSets.length < 3 && topicSets.length > 0) {
+    topicSets.push([...topicSets[0]]);
+  }
+  
+  // If no topics were parsed, create a fallback
+  if (topicSets.length === 0) {
+    topicSets.push([
+      `Top ${topicCount} ${niche} Trends for 2024`,
+      `How to Master ${niche}: A Complete Guide`,
+      `${niche} Best Practices: What You Need to Know`,
+    ]);
+  }
+  
+  return topicSets;
 }
 
 // Enhance content
