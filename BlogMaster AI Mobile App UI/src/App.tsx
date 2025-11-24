@@ -94,6 +94,7 @@ export default function App() {
           if (onboardingCompleted === 'true') {
             setCurrentScreen('login-survey');
           } else {
+            // Always show onboarding first time
             setCurrentScreen('onboarding');
           }
         }
@@ -202,6 +203,20 @@ export default function App() {
     setUserName('User');
     setCurrentScreen('login-survey');
   };
+
+  // Ensure we always have a screen to show
+  if (!currentScreen) {
+    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+    if (onboardingCompleted === 'true') {
+      if (!userId) {
+        const tempId = getOrCreateTempUserId();
+        setUserId(tempId);
+      }
+      setCurrentScreen('login-survey');
+    } else {
+      setCurrentScreen('onboarding');
+    }
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
