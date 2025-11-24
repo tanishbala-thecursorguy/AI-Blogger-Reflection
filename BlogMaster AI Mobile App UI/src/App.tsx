@@ -239,9 +239,10 @@ export default function App() {
     }
   }, [currentScreen, userId]);
 
-  return (
-    <div className="min-h-screen bg-black text-white">
-      {currentScreen === 'onboarding' && (
+  // Always ensure we render something
+  const renderContent = () => {
+    if (currentScreen === 'onboarding') {
+      return (
         <OnboardingScreens 
           onComplete={() => {
             localStorage.setItem('onboardingCompleted', 'true');
@@ -253,19 +254,45 @@ export default function App() {
             navigate('login-survey');
           }} 
         />
-      )}
-      {currentScreen === 'login-survey' && userId && (
-        <LoginSurvey 
-          email={userEmail}
-          userId={userId}
-          onComplete={handleSurveyComplete} 
-        />
-      )}
-      {currentScreen === 'login-survey' && !userId && (
-        <div className="min-h-screen bg-black flex items-center justify-center">
-          <p className="text-white">Loading...</p>
-        </div>
-      )}
+      );
+    }
+    
+    if (currentScreen === 'login-survey') {
+      if (userId) {
+        return (
+          <LoginSurvey 
+            email={userEmail}
+            userId={userId}
+            onComplete={handleSurveyComplete} 
+          />
+        );
+      } else {
+        return (
+          <div className="min-h-screen bg-black flex items-center justify-center">
+            <p className="text-white">Loading...</p>
+          </div>
+        );
+      }
+    }
+    
+    // Fallback - show onboarding if screen is somehow invalid
+    return (
+      <OnboardingScreens 
+        onComplete={() => {
+          localStorage.setItem('onboardingCompleted', 'true');
+          if (!userId) {
+            const tempId = getOrCreateTempUserId();
+            setUserId(tempId);
+          }
+          navigate('login-survey');
+        }} 
+      />
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {renderContent()}
       {currentScreen === 'home' && <HomeDashboard userName={userName} onNavigate={navigate} />}
       {currentScreen === 'tasks' && <TaskCreation onNavigate={navigate} onBack={() => navigate('home')} />}
       {currentScreen === 'blog-generator' && <BlogGenerator onBack={() => navigate('home')} onNavigate={navigate} />}
