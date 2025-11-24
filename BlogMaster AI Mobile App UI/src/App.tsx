@@ -40,10 +40,29 @@ export type Screen =
   | 'templates-history';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('onboarding');
+  // Initialize screen based on localStorage immediately
+  const getInitialScreen = (): Screen => {
+    if (typeof window === 'undefined') return 'onboarding';
+    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+    return onboardingCompleted === 'true' ? 'login-survey' : 'onboarding';
+  };
+
+  const [currentScreen, setCurrentScreen] = useState<Screen>(getInitialScreen());
   const [userName, setUserName] = useState('User');
   const [userEmail, setUserEmail] = useState('');
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+    if (onboardingCompleted === 'true') {
+      let tempId = localStorage.getItem('tempUserId');
+      if (!tempId) {
+        tempId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('tempUserId', tempId);
+      }
+      return tempId;
+    }
+    return null;
+  });
 
   // Generate or get temporary user ID from localStorage
   const getOrCreateTempUserId = () => {
