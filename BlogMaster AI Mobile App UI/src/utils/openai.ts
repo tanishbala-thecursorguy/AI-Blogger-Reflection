@@ -1,11 +1,13 @@
 // AI Content Generation using Groq API (Free)
 // OpenAI API is only used for image generation
 
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
+// Access Vite environment variables
+const env = (import.meta as any).env || {};
+const GROQ_API_KEY = env.VITE_GROQ_API_KEY || '';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.1-8b-instant';
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
+const OPENAI_API_KEY = env.VITE_OPENAI_API_KEY || '';
 
 // Blog format instructions
 const BLOG_FORMAT_INSTRUCTIONS = `
