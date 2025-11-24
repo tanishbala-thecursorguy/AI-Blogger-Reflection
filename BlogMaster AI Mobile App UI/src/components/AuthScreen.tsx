@@ -30,43 +30,73 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
           password: password,
         });
 
-        if (signInError) throw signInError;
+        if (signInError) {
+          // Better error messages
+          if (signInError.message.includes('Invalid login credentials')) {
+            throw new Error('Invalid email or password. Please check your credentials and try again.');
+          } else if (signInError.message.includes('Email not confirmed')) {
+            throw new Error('Please check your email and confirm your account before signing in.');
+          } else {
+            throw signInError;
+          }
+        }
+        
         if (data.user) {
           onComplete(data.user.email || email, data.user.id);
         }
       } else {
-        // Sign up
+        // Sign up - disable email confirmation check temporarily
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: email.trim(),
           password: password,
           options: {
+            emailRedirectTo: window.location.origin,
             data: {
               name: username.trim() || email.split('@')[0],
             },
           },
         });
 
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          if (signUpError.message.includes('already registered')) {
+            throw new Error('This email is already registered. Please sign in instead.');
+          } else {
+            throw signUpError;
+          }
+        }
+        
         if (data.user) {
-          // Profile will be created automatically by trigger, but try to ensure it exists
+          // If email confirmation is required but user is logged in anyway, proceed
+          // Profile will be created automatically by trigger
           try {
+            // Wait a bit for trigger to create profile
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
             const { error: profileError } = await supabase
               .from('profiles')
-              .insert({
+              .upsert({
                 id: data.user.id,
                 email: email.trim(),
                 name: username.trim() || email.split('@')[0],
-              }).select();
+              }, {
+                onConflict: 'id'
+              });
 
-            if (profileError && !profileError.message.includes('duplicate')) {
+            if (profileError && !profileError.message.includes('duplicate') && !profileError.message.includes('profiles')) {
               console.error('Profile creation error:', profileError);
             }
           } catch (profileErr) {
-            // Ignore if profile already exists (created by trigger)
-            console.log('Profile may already exist:', profileErr);
+            console.log('Profile handling:', profileErr);
           }
           
-          onComplete(data.user.email || email, data.user.id);
+          // Check if user needs email confirmation
+          if (data.session) {
+            // User is logged in immediately (email confirmation disabled)
+            onComplete(data.user.email || email, data.user.id);
+          } else {
+            // Email confirmation required
+            throw new Error('Please check your email to confirm your account before signing in.');
+          }
         }
       }
     } catch (err: any) {
