@@ -55,16 +55,6 @@ export default function App() {
     return tempId;
   };
 
-  // Generate or get temporary user ID from localStorage
-  const getOrCreateTempUserId = () => {
-    let tempId = localStorage.getItem('tempUserId');
-    if (!tempId) {
-      tempId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('tempUserId', tempId);
-    }
-    return tempId;
-  };
-
   // Check for existing Supabase session on mount
   useEffect(() => {
     const checkSession = async () => {
@@ -205,10 +195,12 @@ export default function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setUserId(null);
+    // On logout, use temp ID and go to survey
+    const tempId = getOrCreateTempUserId();
+    setUserId(tempId);
     setUserEmail('');
     setUserName('User');
-    setCurrentScreen('auth');
+    setCurrentScreen('login-survey');
   };
 
   return (
