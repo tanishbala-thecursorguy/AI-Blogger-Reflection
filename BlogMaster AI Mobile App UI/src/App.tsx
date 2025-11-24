@@ -55,6 +55,16 @@ export default function App() {
     return tempId;
   };
 
+  // Generate or get temporary user ID from localStorage
+  const getOrCreateTempUserId = () => {
+    let tempId = localStorage.getItem('tempUserId');
+    if (!tempId) {
+      tempId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('tempUserId', tempId);
+    }
+    return tempId;
+  };
+
   // Check for existing Supabase session on mount
   useEffect(() => {
     const checkSession = async () => {
