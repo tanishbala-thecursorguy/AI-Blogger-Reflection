@@ -204,19 +204,21 @@ export default function App() {
     setCurrentScreen('login-survey');
   };
 
-  // Ensure we always have a screen to show
-  if (!currentScreen) {
-    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-    if (onboardingCompleted === 'true') {
-      if (!userId) {
-        const tempId = getOrCreateTempUserId();
-        setUserId(tempId);
+  // Ensure screen is always set - fallback if somehow it's null
+  useEffect(() => {
+    if (!currentScreen || currentScreen === null) {
+      const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+      if (onboardingCompleted === 'true') {
+        if (!userId) {
+          const tempId = getOrCreateTempUserId();
+          setUserId(tempId);
+        }
+        setCurrentScreen('login-survey');
+      } else {
+        setCurrentScreen('onboarding');
       }
-      setCurrentScreen('login-survey');
-    } else {
-      setCurrentScreen('onboarding');
     }
-  }
+  }, [currentScreen, userId]);
 
   return (
     <div className="min-h-screen bg-black text-white">
