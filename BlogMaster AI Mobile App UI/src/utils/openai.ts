@@ -35,11 +35,21 @@ You must generate content in this EXACT format:
 
 // Helper function to call Groq API
 async function callGroqAPI(prompt: string, systemPrompt: string = '', maxTokens: number = 4000) {
+  console.log('🔵 callGroqAPI called', { 
+    hasApiKey: !!GROQ_API_KEY, 
+    apiKeyLength: GROQ_API_KEY?.length || 0,
+    promptLength: prompt.length,
+    maxTokens,
+  });
+  
   if (!GROQ_API_KEY) {
+    console.error('❌ No Groq API key found!');
     throw new Error('Groq API key is required. Please set VITE_GROQ_API_KEY in your .env.local file and restart the dev server.');
   }
 
   try {
+    console.log('📡 Sending request to Groq API...', { url: GROQ_API_URL, model: GROQ_MODEL });
+    
     const response = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
@@ -56,6 +66,8 @@ async function callGroqAPI(prompt: string, systemPrompt: string = '', maxTokens:
         temperature: 0.7,
       }),
     });
+    
+    console.log('📥 Response received', { status: response.status, statusText: response.statusText });
 
     if (!response.ok) {
       const errorText = await response.text();

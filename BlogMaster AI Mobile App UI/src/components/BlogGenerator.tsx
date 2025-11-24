@@ -87,13 +87,27 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
   }, []);
 
   const handleGenerate = async () => {
-    if (!topic.trim()) return;
+    console.log('Generate button clicked!', { topic, topicTrimmed: topic.trim() });
+    
+    if (!topic.trim()) {
+      console.warn('Topic is empty, not generating');
+      setError('Please enter a blog topic first');
+      return;
+    }
+    
+    console.log('Starting blog generation...', {
+      topic: topic.trim(),
+      style: selectedStyle,
+      keywords,
+      seoMode,
+    });
     
     setIsGenerating(true);
     setError(null);
     setShowPreview(false);
     
     try {
+      console.log('Calling generateBlog API...');
       const variants = await generateBlog({
         topic: topic.trim(),
         style: selectedStyle,
@@ -101,6 +115,8 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
         keywords: keywords,
         seoMode: seoMode,
       });
+      
+      console.log('Blog generation successful!', { variantCount: variants.length });
       
       setGeneratedVariants(variants);
       setSelectedVariant(0);
@@ -114,13 +130,19 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to generate blog. Please try again.';
       setError(errorMessage);
-      console.error('Error generating blog:', err);
+      console.error('❌ Error generating blog:', err);
+      console.error('Error details:', {
+        message: err.message,
+        stack: err.stack,
+        name: err.name,
+      });
       // Show detailed error in console for debugging
       if (errorMessage.includes('API key')) {
         console.error('💡 Tip: Make sure VITE_GROQ_API_KEY is set in .env.local and restart the dev server');
       }
     } finally {
       setIsGenerating(false);
+      console.log('Generation finished');
     }
   };
 
@@ -300,9 +322,15 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
 
         {/* Generate Button */}
         <Button
-          onClick={handleGenerate}
-          disabled={!topic || isGenerating}
-          className="w-full bg-white text-black hover:bg-black h-12 rounded-xl disabled:opacity-50"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Button onClick triggered', { topic, isGenerating });
+            handleGenerate();
+          }}
+          disabled={!topic.trim() || isGenerating}
+          className="w-full bg-white text-black hover:bg-white/90 h-12 rounded-xl disabled:opacity-50 cursor-pointer"
+          type="button"
         >
           {isGenerating ? (
             <>
