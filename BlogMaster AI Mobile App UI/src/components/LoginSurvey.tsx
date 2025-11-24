@@ -49,58 +49,104 @@ export function LoginSurvey({ email, userId, onComplete }: LoginSurveyProps) {
       return;
     }
     
-    // Try to save to Supabase, but don't block if it fails
     try {
-      // If userId is a temp ID, try anonymous auth first
-      let actualUserId = userId;
-      if (userId.startsWith('temp_')) {
-        try {
-          const { data: authData } = await supabase.auth.signInAnonymously();
-          if (authData?.user) {
-            actualUserId = authData.user.id;
-          }
-        } catch (authErr) {
-          console.error('Anonymous sign-in failed:', authErr);
-        }
-      }
+      // Check if userId is a temp ID (starts with 'temp-')
+      const isTempUser = userId.startsWith('temp-');
       
-      // Save to Supabase if we have a real user ID
-      if (actualUserId && !actualUserId.startsWith('temp_')) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .upsert({
-            id: actualUserId,
-            email: email || '',
-            name: name.trim(),
-            purpose: purpose,
-          }, {
-            onConflict: 'id'
+      if (isTempUser) {
+        // For temp users, create a proper Supabase account
+        const email = `${name.trim().toLowerCase().replace(/\s+/g, '')}${Date.now()}@blogmaster.local`;
+        const password = `temp${Date.now()}${Math.random().toString(36).slice(2)}`;
+        
+        try {
+          // Sign up with auto-generated credentials
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+              data: {
+                name: name.trim(),
+              },
+            },
           });
 
-        if (updateError) {
-          console.error('Profile save error (non-blocking):', updateError);
+          if (signUpError) throw signUpError;
+
+          if (signUpData.user) {
+            // Update profile with purpose
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({
+                name: name.trim(),
+                purpose: purpose,
+              })
+              .eq('id', signUpData.user.id);
+
+            if (updateError) {
+              console.warn('Profile update error:', updateError);
+              // Continue anyway
+            }
+            
+            onComplete({ name: name.trim(), purpose });
+            return;
+          }
+        } catch (signUpErr: any) {
+          console.error('Sign up error:', signUpErr);
+          // Continue anyway - save to localStorage
+          localStorage.setItem('userProfile', JSON.stringify({
+            name: name.trim(),
+            email: email,
+            purpose: purpose,
+          }));
+          onComplete({ name: name.trim(), purpose });
+          return;
         }
+      } else {
+        // Regular user - update profile
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', userId)
+          .single();
+
+        let result;
+        
+        if (existingProfile) {
+          result = await supabase
+            .from('profiles')
+            .update({
+              name: name.trim(),
+              purpose: purpose,
+            })
+            .eq('id', userId);
+        } else {
+          result = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              email: email,
+              name: name.trim(),
+              purpose: purpose,
+            });
+        }
+
+        if (result.error) {
+          console.warn('Profile save error:', result.error);
+          // Continue anyway
+        }
+        
+        onComplete({ name: name.trim(), purpose });
       }
-      
-      // Always save to localStorage as backup
-      localStorage.setItem('userProfile', JSON.stringify({ 
-        name: name.trim(), 
-        purpose, 
-        email: email || '' 
-      }));
     } catch (err: any) {
-      // Silently fail - just log it
-      console.error('Profile save failed (non-blocking):', err);
-      // Still save to localStorage
-      localStorage.setItem('userProfile', JSON.stringify({ 
-        name: name.trim(), 
-        purpose, 
-        email: email || '' 
+      console.error('Profile save error:', err);
+      // Always continue - save to localStorage as fallback
+      localStorage.setItem('userProfile', JSON.stringify({
+        name: name.trim(),
+        email: email,
+        purpose: purpose,
       }));
+      onComplete({ name: name.trim(), purpose });
     }
-    
-    // Always proceed regardless of save result
-    onComplete({ name: name.trim(), purpose });
   };
 
   return (
@@ -171,11 +217,11 @@ export function LoginSurvey({ email, userId, onComplete }: LoginSurveyProps) {
               )}
             </div>
 
-            {error && error.includes('Please enter') || error.includes('Please select') || error.includes('Please specify') ? (
+            {error && (
               <div className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl p-3">
                 {error}
               </div>
-            ) : null}
+            )}
 
             {/* Submit Button */}
             <Button

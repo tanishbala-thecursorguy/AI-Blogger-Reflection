@@ -40,50 +40,14 @@ export type Screen =
   | 'templates-history';
 
 export default function App() {
-  // Initialize screen based on localStorage immediately
-  const getInitialScreen = (): Screen => {
-    if (typeof window === 'undefined') return 'onboarding';
-    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-    return onboardingCompleted === 'true' ? 'login-survey' : 'onboarding';
-  };
-
-  const [currentScreen, setCurrentScreen] = useState<Screen>(getInitialScreen());
+  const [currentScreen, setCurrentScreen] = useState<Screen>('onboarding');
   const [userName, setUserName] = useState('User');
   const [userEmail, setUserEmail] = useState('');
-  const [userId, setUserId] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
-    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-    if (onboardingCompleted === 'true') {
-      let tempId = localStorage.getItem('tempUserId');
-      if (!tempId) {
-        tempId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('tempUserId', tempId);
-      }
-      return tempId;
-    }
-    return null;
-  });
+  const [userId, setUserId] = useState<string | null>(null);
 
-  // Generate or get temporary user ID from localStorage
-  const getOrCreateTempUserId = () => {
-    let tempId = localStorage.getItem('tempUserId');
-    if (!tempId) {
-      tempId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('tempUserId', tempId);
-    }
-    return tempId;
-  };
-
-  // Check for existing Supabase session on mount
+  // Check for existing session or create anonymous user and go to survey
   useEffect(() => {
-    // Set userId immediately if onboarding is completed
-    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-    if (onboardingCompleted === 'true' && !userId) {
-      const tempId = getOrCreateTempUserId();
-      setUserId(tempId);
-    }
-
-    const checkSession = async () => {
+    const checkAndSetupUser = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -92,83 +56,61 @@ export default function App() {
           setUserEmail(session.user.email || '');
           
           // Fetch user profile
-          try {
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-
-            if (profile && !error) {
-              setUserName(profile.name || 'User');
-              // Check if survey is completed (has purpose)
-              if (profile.purpose) {
-                setCurrentScreen('home');
-              } else {
-                setCurrentScreen('login-survey');
-              }
-            } else {
-              setCurrentScreen('login-survey');
-            }
-          } catch (profileError) {
-            // If profile fetch fails, go to survey
-            console.error('Profile fetch error:', profileError);
-            setCurrentScreen('login-survey');
-          }
-        } else {
-          // No session - ensure we have temp ID and correct screen
-          if (!userId) {
-            const tempId = getOrCreateTempUserId();
-            setUserId(tempId);
-          }
-          // Screen is already set from initial state
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-        // On error, ensure we have userId and screen is set
-        if (!userId) {
-          const tempId = getOrCreateTempUserId();
-          setUserId(tempId);
-        }
-        // Screen is already set from initial state, don't change it
-      }
-    };
-
-    checkSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        // On logout, use temp ID and go to survey
-        const tempId = getOrCreateTempUserId();
-        setUserId(tempId);
-        setUserEmail('');
-        setUserName('User');
-        setCurrentScreen('login-survey');
-      } else if (event === 'SIGNED_IN' && session?.user) {
-        setUserId(session.user.id);
-        setUserEmail(session.user.email || '');
-        
-        // Always check profile when signed in
-        try {
-          const { data: profile } = await supabase
+          const { data: profile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
 
-          if (profile?.purpose) {
-            setUserName(profile.name || session.user.email?.split('@')[0] || 'User');
-            setCurrentScreen('home');
+          if (profile && !error) {
+            setUserName(profile.name || 'User');
+            // Check if survey is completed (has purpose)
+            if (profile.purpose) {
+              setCurrentScreen('home');
+            } else {
+              setCurrentScreen('login-survey');
+            }
           } else {
-            setUserName(session.user.email?.split('@')[0] || 'User');
             setCurrentScreen('login-survey');
           }
-        } catch (error) {
-          console.error('Error in auth state change:', error);
-          setUserName(session.user.email?.split('@')[0] || 'User');
-          setCurrentScreen('login-survey');
+        } else {
+          // No session - create anonymous user or use temp ID
+          // For now, create a temporary user ID for the survey
+          const tempUserId = `temp-${Date.now()}`;
+          const tempEmail = `user-${Date.now()}@temp.com`;
+          
+          setUserId(tempUserId);
+          setUserEmail(tempEmail);
+          
+          // Check if onboarding was completed
+          const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+          if (onboardingCompleted === 'true') {
+            setCurrentScreen('login-survey');
+          } else {
+            // If onboarding not completed, show onboarding first
+            // But user asked to skip login, so show survey directly
+            localStorage.setItem('onboardingCompleted', 'true');
+            setCurrentScreen('login-survey');
+          }
         }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        // On error, still show survey with temp user
+        const tempUserId = `temp-${Date.now()}`;
+        const tempEmail = `user-${Date.now()}@temp.com`;
+        setUserId(tempUserId);
+        setUserEmail(tempEmail);
+        setCurrentScreen('login-survey');
+      }
+    };
+
+    checkAndSetupUser();
+
+    // Listen for auth changes (but we won't use auth screen anymore)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+        setUserEmail(session.user.email || '');
       }
     });
 
@@ -185,32 +127,17 @@ export default function App() {
     setUserEmail(email);
     setUserId(id);
     
-    try {
-      // Fetch profile to check if survey is completed
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', id)
-        .single();
+    // Fetch profile to check if survey is completed
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-      // If profile exists and has purpose, go to home
-      if (profile && profile.purpose) {
-        setUserName(profile.name || email.split('@')[0] || 'User');
-        navigate('home');
-      } else {
-        // No profile or no purpose - go to survey
-        // Also set name from profile or email if available
-        if (profile?.name) {
-          setUserName(profile.name);
-        } else if (email) {
-          setUserName(email.split('@')[0] || 'User');
-        }
-        navigate('login-survey');
-      }
-    } catch (error) {
-      // If profile fetch fails, still navigate to survey
-      console.error('Error fetching profile:', error);
-      setUserName(email.split('@')[0] || 'User');
+    if (profile?.purpose) {
+      setUserName(profile.name || 'User');
+      navigate('home');
+    } else {
       navigate('login-survey');
     }
   };
@@ -222,29 +149,11 @@ export default function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    // On logout, use temp ID and go to survey
-    const tempId = getOrCreateTempUserId();
-    setUserId(tempId);
+    setUserId(null);
     setUserEmail('');
     setUserName('User');
-    setCurrentScreen('login-survey');
+    setCurrentScreen('auth');
   };
-
-  // Ensure screen is always set - fallback if somehow it's null
-  useEffect(() => {
-    if (!currentScreen || currentScreen === null) {
-      const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-      if (onboardingCompleted === 'true') {
-        if (!userId) {
-          const tempId = getOrCreateTempUserId();
-          setUserId(tempId);
-        }
-        setCurrentScreen('login-survey');
-      } else {
-        setCurrentScreen('onboarding');
-      }
-    }
-  }, [currentScreen, userId]);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -252,11 +161,11 @@ export default function App() {
         <OnboardingScreens 
           onComplete={() => {
             localStorage.setItem('onboardingCompleted', 'true');
-            // Ensure we have a userId before going to survey
-            if (!userId) {
-              const tempId = getOrCreateTempUserId();
-              setUserId(tempId);
-            }
+            // Skip auth, go directly to survey
+            const tempUserId = `temp-${Date.now()}`;
+            const tempEmail = `user-${Date.now()}@temp.com`;
+            setUserId(tempUserId);
+            setUserEmail(tempEmail);
             navigate('login-survey');
           }} 
         />
@@ -267,11 +176,6 @@ export default function App() {
           userId={userId}
           onComplete={handleSurveyComplete} 
         />
-      )}
-      {currentScreen === 'login-survey' && !userId && (
-        <div className="min-h-screen bg-black flex items-center justify-center">
-          <p className="text-white">Loading...</p>
-        </div>
       )}
       {currentScreen === 'home' && <HomeDashboard userName={userName} onNavigate={navigate} />}
       {currentScreen === 'tasks' && <TaskCreation onNavigate={navigate} onBack={() => navigate('home')} />}
