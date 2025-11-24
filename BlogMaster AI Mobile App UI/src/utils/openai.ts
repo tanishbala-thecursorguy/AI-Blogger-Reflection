@@ -391,7 +391,7 @@ KEY RULES:
     console.error('Error generating multiple variants:', error);
   }
   
-  // Fallback: try single generation with Groq only
+  // Fallback: try single generation with OpenAI
   let result: string | null = null;
   
   try {
@@ -605,7 +605,7 @@ RULES:
 
 CRITICAL: Never include generic words or unrelated terms. Every keyword must be about the given topic.`;
 
-  // Try Groq first, then Hugging Face
+  // Use OpenAI API
   let result = await callOpenAI(prompt, systemPrompt);
   
   if (!result) {
