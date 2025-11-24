@@ -89,7 +89,7 @@ export function KeywordResearch({ onBack }: KeywordResearchProps) {
       
       // Generate 3 sets of keywords for variety
       const allKeywordPromises = Array.from({ length: 3 }, (_, i) => 
-        generateSEOKeywords(searchTerm.trim(), 15)
+        generateSEOKeywords(searchTerm.trim())
       );
       
       const allKeywordResults = await Promise.all(allKeywordPromises);

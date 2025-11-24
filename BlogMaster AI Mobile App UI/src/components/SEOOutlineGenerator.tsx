@@ -43,7 +43,7 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
     
     try {
       // Generate keywords first
-      const generatedKeywords = await generateSEOKeywords(topic.trim(), 10);
+      const generatedKeywords = await generateSEOKeywords(topic.trim());
       setKeywords(generatedKeywords);
       
       // Generate 3 outline variants
