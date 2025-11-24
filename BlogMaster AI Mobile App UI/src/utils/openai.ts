@@ -254,8 +254,8 @@ Return as JSON array format:
 export async function generateSEOOutline(
   topic: string,
   keywords: string[]
-): Promise<string[]> {
-  const systemPrompt = `You are an SEO content strategist. Create detailed blog outlines optimized for search engines.`;
+): Promise<Array<Array<{ level: string; text: string; children?: any[] }>>> {
+  const systemPrompt = `You are an SEO content strategist. Create detailed blog outlines optimized for search engines. Return structured JSON format.`;
   
   const keywordText = keywords.length > 0 ? `\nFocus on these keywords: ${keywords.join(', ')}` : '';
   
@@ -267,11 +267,98 @@ Include:
 - 3-5 H2 main sections with sub-points
 - H3 subheadings under each H2
 - Conclusion
-- Suggested keywords to include
 
-Format as a hierarchical outline with proper heading structure.`;
+Return as JSON array format where each item has:
+- level: "H1", "H2", or "H3"
+- text: the heading text
+- children: optional array of nested items (for H2 sections with H3 subsections)
 
-  return generateMultipleVariants(prompt, systemPrompt, 3, 2000);
+Example format:
+[
+  {"level": "H1", "text": "Main Title"},
+  {"level": "H2", "text": "Introduction", "children": []},
+  {"level": "H2", "text": "Section 1", "children": [
+    {"level": "H3", "text": "Subsection 1.1"},
+    {"level": "H3", "text": "Subsection 1.2"}
+  ]},
+  {"level": "H2", "text": "Section 2", "children": []},
+  {"level": "H2", "text": "Conclusion", "children": []}
+]`;
+
+  // Generate 3 variants
+  const variants = await generateMultipleVariants(prompt, systemPrompt, 3, 2500);
+  
+  // Parse each variant into structured format
+  const parsedVariants: Array<Array<{ level: string; text: string; children?: any[] }>> = [];
+  
+  for (const variant of variants) {
+    try {
+      // Try to extract JSON from the response
+      const jsonMatch = variant.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (Array.isArray(parsed)) {
+          parsedVariants.push(parsed);
+          continue;
+        }
+      }
+      
+      // Fallback: Parse markdown-style outline
+      const lines = variant.split('\n').filter(line => line.trim());
+      const outline: Array<{ level: string; text: string; children?: any[] }> = [];
+      let currentH2: any = null;
+      
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('# ')) {
+          outline.push({ level: 'H1', text: trimmed.replace(/^#+\s*/, '') });
+        } else if (trimmed.startsWith('## ')) {
+          if (currentH2) outline.push(currentH2);
+          currentH2 = { level: 'H2', text: trimmed.replace(/^#+\s*/, ''), children: [] };
+        } else if (trimmed.startsWith('### ')) {
+          if (currentH2) {
+            if (!currentH2.children) currentH2.children = [];
+            currentH2.children.push({ level: 'H3', text: trimmed.replace(/^#+\s*/, '') });
+          } else {
+            outline.push({ level: 'H3', text: trimmed.replace(/^#+\s*/, '') });
+          }
+        } else if (trimmed && currentH2) {
+          // If line starts with bullet or dash, add as H3
+          if (trimmed.match(/^[-•*]\s+/)) {
+            if (!currentH2.children) currentH2.children = [];
+            currentH2.children.push({ level: 'H3', text: trimmed.replace(/^[-•*]\s+/, '') });
+          }
+        }
+      }
+      
+      if (currentH2) outline.push(currentH2);
+      
+      if (outline.length > 0) {
+        parsedVariants.push(outline);
+      } else {
+        // Last resort: single item with full text
+        parsedVariants.push([{ level: 'H1', text: topic, children: [] }]);
+      }
+    } catch (parseError) {
+      console.error('Error parsing outline variant:', parseError);
+      // Fallback: create basic outline
+      parsedVariants.push([
+        { level: 'H1', text: topic },
+        { level: 'H2', text: 'Introduction', children: [] },
+        { level: 'H2', text: 'Main Content', children: [] },
+        { level: 'H2', text: 'Conclusion', children: [] }
+      ]);
+    }
+  }
+  
+  return parsedVariants.length > 0 ? parsedVariants : [
+    [
+      { level: 'H1', text: topic },
+      { level: 'H2', text: 'Introduction', children: [] },
+      { level: 'H2', text: 'Main Content', children: [] },
+      { level: 'H2', text: 'Conclusion', children: [] }
+    ]
+  ];
 }
 
 // Generate video script

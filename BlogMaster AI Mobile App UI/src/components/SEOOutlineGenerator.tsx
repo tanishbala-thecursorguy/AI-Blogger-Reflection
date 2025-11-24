@@ -46,20 +46,15 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
       const generatedKeywords = await generateSEOKeywords(topic.trim());
       setKeywords(generatedKeywords);
       
-      // Generate 3 outline variants
+      // Generate 3 outline variants (returns array of outline arrays)
       const variants = await generateSEOOutline(topic.trim(), []);
       
-      // If we got a single outline, create 3 variants by duplicating and modifying
-      if (Array.isArray(variants) && variants.length > 0 && variants[0].level) {
-        // Single outline structure - convert to array of variants
-        setOutlineVariants([variants as any]);
+      if (Array.isArray(variants) && variants.length > 0) {
+        setOutlineVariants(variants);
         setSelectedOutlineVariant(0);
-        setOutline(variants as any);
-      } else if (Array.isArray(variants) && variants.length > 0) {
-        // Already array of variants
-        setOutlineVariants(variants as any);
-        setSelectedOutlineVariant(0);
-        setOutline(variants[0] as any || []);
+        setOutline(variants[0] || []);
+      } else {
+        throw new Error('Failed to generate outline structure');
       }
       
       // Auto-select first keyword
@@ -83,8 +78,12 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
     setError(null);
     
     try {
-      const generatedOutline = await generateSEOOutline(topic.trim(), selectedKeywords);
-      setOutline(generatedOutline);
+      const variants = await generateSEOOutline(topic.trim(), selectedKeywords);
+      if (Array.isArray(variants) && variants.length > 0) {
+        setOutlineVariants(variants);
+        setSelectedOutlineVariant(0);
+        setOutline(variants[0] || []);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to regenerate outline. Please try again.');
       console.error('Error regenerating outline:', err);
