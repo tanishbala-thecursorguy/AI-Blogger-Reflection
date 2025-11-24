@@ -178,7 +178,13 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        throw new Error('User not authenticated');
+        // If auto-saving (showNotification = false), fail silently
+        if (!showNotification) {
+          console.log('User not authenticated, skipping auto-save');
+          return;
+        }
+        // If user explicitly clicked save, show error
+        throw new Error('Please log in to save your blog');
       }
 
       // Create new blog entry in Supabase
@@ -206,7 +212,10 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
       }
     } catch (err: any) {
       console.error('Error saving blog:', err);
-      alert(err.message || 'Failed to save blog. Please try again.');
+      // Only show alert if user explicitly tried to save
+      if (showNotification) {
+        alert(err.message || 'Failed to save blog. Please try again.');
+      }
     } finally {
       setIsSaving(false);
     }
