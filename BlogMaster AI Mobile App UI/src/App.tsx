@@ -113,17 +113,32 @@ export default function App() {
     setUserEmail(email);
     setUserId(id);
     
-    // Fetch profile to check if survey is completed
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', id)
-      .single();
+    try {
+      // Fetch profile to check if survey is completed
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    if (profile?.purpose) {
-      setUserName(profile.name || 'User');
-      navigate('home');
-    } else {
+      // If profile exists and has purpose, go to home
+      if (profile && profile.purpose) {
+        setUserName(profile.name || email.split('@')[0] || 'User');
+        navigate('home');
+      } else {
+        // No profile or no purpose - go to survey
+        // Also set name from profile or email if available
+        if (profile?.name) {
+          setUserName(profile.name);
+        } else if (email) {
+          setUserName(email.split('@')[0] || 'User');
+        }
+        navigate('login-survey');
+      }
+    } catch (error) {
+      // If profile fetch fails, still navigate to survey
+      console.error('Error fetching profile:', error);
+      setUserName(email.split('@')[0] || 'User');
       navigate('login-survey');
     }
   };
