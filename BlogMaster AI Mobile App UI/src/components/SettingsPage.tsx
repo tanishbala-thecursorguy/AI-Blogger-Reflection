@@ -109,13 +109,40 @@ export function SettingsPage({ onBack, onLogout, onNavigate }: SettingsPageProps
     }
   }, [defaultTone]);
 
-  // Get template count
+  // Get template count from Supabase
   const [templateCount, setTemplateCount] = useState(0);
   useEffect(() => {
-    const templates = localStorage.getItem('blogTemplates');
-    if (templates) {
-      setTemplateCount(JSON.parse(templates).length);
-    }
+    const fetchTemplates = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { count, error } = await supabase
+            .from('templates')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id);
+          
+          if (error) {
+            console.error('Error fetching template count:', error);
+            // Fallback to localStorage if Supabase fails
+            const templates = localStorage.getItem('blogTemplates');
+            if (templates) {
+              setTemplateCount(JSON.parse(templates).length);
+            }
+          } else {
+            setTemplateCount(count || 0);
+          }
+        }
+      } catch (err) {
+        console.error('Error in fetchTemplates:', err);
+        // Fallback to localStorage
+        const templates = localStorage.getItem('blogTemplates');
+        if (templates) {
+          setTemplateCount(JSON.parse(templates).length);
+        }
+      }
+    };
+    
+    fetchTemplates();
   }, []);
 
   const toneOptions = ['Professional', 'Casual', 'Friendly', 'Authoritative', 'Conversational'];
