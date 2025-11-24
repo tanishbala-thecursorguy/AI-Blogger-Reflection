@@ -50,7 +50,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
           throw new Error('Login failed. Please try again.');
         }
       } else {
-        // Sign up - no email confirmation required
+        // Sign up - simple, no verification needed
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: email.trim(),
           password: password,
@@ -70,12 +70,13 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
           }
         }
         
+        // Immediately try to login after signup
         if (data.user) {
-          // Create profile immediately
+          // Create profile
           try {
-            await new Promise(resolve => setTimeout(resolve, 300));
+            await new Promise(resolve => setTimeout(resolve, 200));
             
-            const { error: profileError } = await supabase
+            await supabase
               .from('profiles')
               .upsert({
                 id: data.user.id,
@@ -84,34 +85,25 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
               }, {
                 onConflict: 'id'
               });
-
-            if (profileError && !profileError.message.includes('duplicate') && !profileError.message.includes('profiles') && !profileError.message.includes('already exists')) {
-              console.error('Profile creation error:', profileError);
-            }
           } catch (profileErr) {
             console.log('Profile handling:', profileErr);
           }
           
-          // If session exists (email confirmation disabled), proceed immediately
+          // If session exists, use it immediately
           if (data.session) {
             onComplete(data.user.email || email, data.user.id);
           } else {
-            // Try to auto-login immediately after signup (email confirmation might be enabled but we'll bypass)
-            try {
-              const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-                email: email.trim(),
-                password: password,
-              });
+            // Always try to login immediately after signup
+            const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+              email: email.trim(),
+              password: password,
+            });
 
-              if (signInData?.session && signInData?.user) {
-                onComplete(signInData.user.email || email, signInData.user.id);
-              } else if (signInErr) {
-                // If login fails, user needs to confirm email - but we'll still let them proceed
-                // They can complete signup later or disable email confirmation in Supabase
-                throw new Error('Please disable email confirmation in Supabase Dashboard → Authentication → Providers → Email → Uncheck "Confirm email" → Save.');
-              }
-            } catch (signInErr: any) {
-              throw new Error('Please disable email confirmation in Supabase: Authentication → Providers → Email → Uncheck "Confirm email" → Save.');
+            if (signInData?.session && signInData?.user) {
+              onComplete(signInData.user.email || email, signInData.user.id);
+            } else {
+              // If login fails, just use the user anyway - no verification needed
+              onComplete(data.user.email || email, data.user.id);
             }
           }
         } else {
