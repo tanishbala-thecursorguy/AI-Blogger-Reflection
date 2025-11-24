@@ -239,9 +239,18 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
         <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
           <Label className="text-white">Blog Topic</Label>
           <Input
+            type="text"
             placeholder="E.g., How to use AI for content marketing"
             value={topic}
-            onChange={(e) => setTopic(e.target.value)}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              setTopic(newValue);
+            }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && topic.trim() && !isGenerating) {
+                handleGenerate();
+              }
+            }}
             className="bg-black border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
           />
         </Card>
