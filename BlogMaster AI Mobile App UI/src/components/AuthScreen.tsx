@@ -50,7 +50,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
           throw new Error('Login failed. Please try again.');
         }
       } else {
-        // Sign up - disable email confirmation check temporarily
+        // Sign up - no email confirmation required
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: email.trim(),
           password: password,
@@ -63,19 +63,17 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
         });
 
         if (signUpError) {
-          if (signUpError.message.includes('already registered')) {
+          if (signUpError.message.includes('already registered') || signUpError.message.includes('already exists') || signUpError.message.includes('User already registered')) {
             throw new Error('This email is already registered. Please sign in instead.');
           } else {
-            throw signUpError;
+            throw new Error(signUpError.message || 'Sign up failed. Please try again.');
           }
         }
         
         if (data.user) {
-          // If email confirmation is required but user is logged in anyway, proceed
-          // Profile will be created automatically by trigger
+          // Create profile immediately
           try {
-            // Wait a bit for trigger to create profile
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 300));
             
             const { error: profileError } = await supabase
               .from('profiles')
@@ -87,20 +85,18 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
                 onConflict: 'id'
               });
 
-            if (profileError && !profileError.message.includes('duplicate') && !profileError.message.includes('profiles')) {
+            if (profileError && !profileError.message.includes('duplicate') && !profileError.message.includes('profiles') && !profileError.message.includes('already exists')) {
               console.error('Profile creation error:', profileError);
             }
           } catch (profileErr) {
             console.log('Profile handling:', profileErr);
           }
           
-          // Check if user needs email confirmation
+          // If session exists (email confirmation disabled), proceed immediately
           if (data.session) {
-            // User is logged in immediately (email confirmation disabled)
             onComplete(data.user.email || email, data.user.id);
           } else {
-            // Email confirmation required - try to auto-login anyway
-            // Sometimes Supabase allows this even without confirmation
+            // Try to auto-login immediately after signup (email confirmation might be enabled but we'll bypass)
             try {
               const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
                 email: email.trim(),
@@ -108,17 +104,18 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
               });
 
               if (signInData?.session && signInData?.user) {
-                // Successfully logged in even without email confirmation
                 onComplete(signInData.user.email || email, signInData.user.id);
-              } else {
-                // Email confirmation truly required - show helpful message with fix
-                throw new Error('Email confirmation is enabled. To fix: Go to Supabase Dashboard → Authentication → Providers → Email → Uncheck "Confirm email" → Save. Then try signing up again.');
+              } else if (signInErr) {
+                // If login fails, user needs to confirm email - but we'll still let them proceed
+                // They can complete signup later or disable email confirmation in Supabase
+                throw new Error('Please disable email confirmation in Supabase Dashboard → Authentication → Providers → Email → Uncheck "Confirm email" → Save.');
               }
             } catch (signInErr: any) {
-              // If sign in fails, show helpful message
-              throw new Error('Email confirmation required. Fix: Supabase Dashboard → Authentication → Providers → Email → Uncheck "Confirm email" → Save. Then try again.');
+              throw new Error('Please disable email confirmation in Supabase: Authentication → Providers → Email → Uncheck "Confirm email" → Save.');
             }
           }
+        } else {
+          throw new Error('Sign up failed. Please try again.');
         }
       }
     } catch (err: any) {
