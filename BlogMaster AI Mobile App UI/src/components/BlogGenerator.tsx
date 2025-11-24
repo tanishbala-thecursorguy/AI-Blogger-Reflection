@@ -344,16 +344,16 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
           </Card>
         )}
 
-              {/* Live Preview */}
-              {showPreview && generatedContent && (
-                <Card className="bg-black border-white/10 p-6 rounded-2xl space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-white font-semibold">Generated Blog</h2>
-                      {generatedVariants.length > 1 && (
-                        <p className="text-white/60 text-sm">Variant {selectedVariant + 1} of {generatedVariants.length}</p>
-                      )}
-                    </div>
+        {/* Live Preview */}
+        {showPreview && generatedContent && (
+          <Card className="bg-black border-white/10 p-6 rounded-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-white font-semibold">Generated Blog</h2>
+                {generatedVariants.length > 1 && (
+                  <p className="text-white/60 text-sm">Variant {selectedVariant + 1} of {generatedVariants.length}</p>
+                )}
+              </div>
               <div className="flex gap-2">
                 <Button
                   onClick={() => {
@@ -396,7 +396,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                   disabled={isSaving || saved}
                   size="sm"
                   variant="outline"
-                  className={`rounded-lg border-white/20 text-white hover:bg-white/10 disabled:opacity-50 ${saved ? 'bg-green-500 text-white border-green-500' : ''}`}
+                  className="rounded-lg border-white/20 text-white hover:bg-white/10 disabled:opacity-50"
                 >
                   {isSaving ? (
                     <>
@@ -405,7 +405,7 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
                     </>
                   ) : saved ? (
                     <>
-                      <Save className="w-4 h-4 mr-2" />
+                      <Save className="w-4 h-4 mr-2 text-green-400" />
                       Saved!
                     </>
                   ) : (
