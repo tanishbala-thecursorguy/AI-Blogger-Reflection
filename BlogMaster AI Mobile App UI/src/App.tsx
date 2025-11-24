@@ -76,6 +76,13 @@ export default function App() {
 
   // Check for existing Supabase session on mount
   useEffect(() => {
+    // Set userId immediately if onboarding is completed
+    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+    if (onboardingCompleted === 'true' && !userId) {
+      const tempId = getOrCreateTempUserId();
+      setUserId(tempId);
+    }
+
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -85,45 +92,45 @@ export default function App() {
           setUserEmail(session.user.email || '');
           
           // Fetch user profile
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
+          try {
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
 
-          if (profile && !error) {
-            setUserName(profile.name || 'User');
-            // Check if survey is completed (has purpose)
-            if (profile.purpose) {
-              setCurrentScreen('home');
+            if (profile && !error) {
+              setUserName(profile.name || 'User');
+              // Check if survey is completed (has purpose)
+              if (profile.purpose) {
+                setCurrentScreen('home');
+              } else {
+                setCurrentScreen('login-survey');
+              }
             } else {
               setCurrentScreen('login-survey');
             }
-          } else {
+          } catch (profileError) {
+            // If profile fetch fails, go to survey
+            console.error('Profile fetch error:', profileError);
             setCurrentScreen('login-survey');
           }
         } else {
-          // No session - go directly to survey with temp ID
-          const tempId = getOrCreateTempUserId();
-          setUserId(tempId);
-          setUserEmail('');
-          
-          // Check if onboarding was completed
-          const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-          if (onboardingCompleted === 'true') {
-            setCurrentScreen('login-survey');
-          } else {
-            // Always show onboarding first time
-            setCurrentScreen('onboarding');
+          // No session - ensure we have temp ID and correct screen
+          if (!userId) {
+            const tempId = getOrCreateTempUserId();
+            setUserId(tempId);
           }
+          // Screen is already set from initial state
         }
       } catch (error) {
         console.error('Error checking session:', error);
-        // Default to survey with temp ID
-        const tempId = getOrCreateTempUserId();
-        setUserId(tempId);
-        const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-        setCurrentScreen(onboardingCompleted === 'true' ? 'login-survey' : 'onboarding');
+        // On error, ensure we have userId and screen is set
+        if (!userId) {
+          const tempId = getOrCreateTempUserId();
+          setUserId(tempId);
+        }
+        // Screen is already set from initial state, don't change it
       }
     };
 
@@ -239,10 +246,9 @@ export default function App() {
     }
   }, [currentScreen, userId]);
 
-  // Always ensure we render something
-  const renderContent = () => {
-    if (currentScreen === 'onboarding') {
-      return (
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {currentScreen === 'onboarding' && (
         <OnboardingScreens 
           onComplete={() => {
             localStorage.setItem('onboardingCompleted', 'true');
@@ -254,45 +260,19 @@ export default function App() {
             navigate('login-survey');
           }} 
         />
-      );
-    }
-    
-    if (currentScreen === 'login-survey') {
-      if (userId) {
-        return (
-          <LoginSurvey 
-            email={userEmail}
-            userId={userId}
-            onComplete={handleSurveyComplete} 
-          />
-        );
-      } else {
-        return (
-          <div className="min-h-screen bg-black flex items-center justify-center">
-            <p className="text-white">Loading...</p>
-          </div>
-        );
-      }
-    }
-    
-    // Fallback - show onboarding if screen is somehow invalid
-    return (
-      <OnboardingScreens 
-        onComplete={() => {
-          localStorage.setItem('onboardingCompleted', 'true');
-          if (!userId) {
-            const tempId = getOrCreateTempUserId();
-            setUserId(tempId);
-          }
-          navigate('login-survey');
-        }} 
-      />
-    );
-  };
-
-  return (
-    <div className="min-h-screen bg-black text-white">
-      {renderContent()}
+      )}
+      {currentScreen === 'login-survey' && userId && (
+        <LoginSurvey 
+          email={userEmail}
+          userId={userId}
+          onComplete={handleSurveyComplete} 
+        />
+      )}
+      {currentScreen === 'login-survey' && !userId && (
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <p className="text-white">Loading...</p>
+        </div>
+      )}
       {currentScreen === 'home' && <HomeDashboard userName={userName} onNavigate={navigate} />}
       {currentScreen === 'tasks' && <TaskCreation onNavigate={navigate} onBack={() => navigate('home')} />}
       {currentScreen === 'blog-generator' && <BlogGenerator onBack={() => navigate('home')} onNavigate={navigate} />}
