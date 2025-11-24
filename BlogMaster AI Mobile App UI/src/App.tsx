@@ -97,6 +97,29 @@ export default function App() {
       } else if (session?.user) {
         setUserId(session.user.id);
         setUserEmail(session.user.email || '');
+        
+        // If signed in and not already on home or survey, check profile and navigate
+        if (currentScreen === 'auth' || currentScreen === 'onboarding') {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            if (profile?.purpose) {
+              setUserName(profile.name || session.user.email?.split('@')[0] || 'User');
+              setCurrentScreen('home');
+            } else {
+              setUserName(session.user.email?.split('@')[0] || 'User');
+              setCurrentScreen('login-survey');
+            }
+          } catch (error) {
+            console.error('Error in auth state change:', error);
+            setUserName(session.user.email?.split('@')[0] || 'User');
+            setCurrentScreen('login-survey');
+          }
+        }
       }
     });
 
