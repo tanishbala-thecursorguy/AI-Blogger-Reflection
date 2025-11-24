@@ -19,6 +19,8 @@ interface ExportMenuProps {
 
 export function ExportMenu({ onBack }: ExportMenuProps) {
   const [blogContent, setBlogContent] = useState('');
+  const [videoScriptVariants, setVideoScriptVariants] = useState<string[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<number>(0);
   const [videoScript, setVideoScript] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,13 +149,43 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
           </Card>
         )}
 
+        {/* Variant Selection */}
+        {videoScriptVariants.length > 1 && (
+          <Card className="bg-black border-white/10 p-4 rounded-2xl">
+            <Label className="text-white mb-3 block">Select Video Script Variant ({videoScriptVariants.length} available)</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {videoScriptVariants.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setSelectedVariant(index);
+                    setVideoScript(videoScriptVariants[index]);
+                  }}
+                  className={`p-3 rounded-xl border transition-all text-sm ${
+                    selectedVariant === index
+                      ? 'bg-white text-black border-white'
+                      : 'bg-black text-white border-white/10 hover:bg-black'
+                  }`}
+                >
+                  Variant {index + 1}
+                </button>
+              ))}
+            </div>
+          </Card>
+        )}
+
         {/* Generated Video Script */}
         {videoScript && (
           <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Video className="w-5 h-5 text-white" />
-                <h2 className="text-white">Generated Video Script</h2>
+                <div>
+                  <h2 className="text-white">Generated Video Script</h2>
+                  {videoScriptVariants.length > 1 && (
+                    <p className="text-white/60 text-sm mt-1">Variant {selectedVariant + 1} of {videoScriptVariants.length}</p>
+                  )}
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button
