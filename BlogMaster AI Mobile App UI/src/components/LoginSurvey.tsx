@@ -51,24 +51,52 @@ export function LoginSurvey({ email, userId, onComplete }: LoginSurveyProps) {
     
     // Try to save to Supabase, but don't block if it fails
     try {
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: userId,
-          email: email,
-          name: name.trim(),
-          purpose: purpose,
-        }, {
-          onConflict: 'id'
-        });
-
-      if (updateError) {
-        console.error('Profile save error (non-blocking):', updateError);
-        // Don't throw - just log and continue
+      // If userId is a temp ID, try anonymous auth first
+      let actualUserId = userId;
+      if (userId.startsWith('temp_')) {
+        try {
+          const { data: authData } = await supabase.auth.signInAnonymously();
+          if (authData?.user) {
+            actualUserId = authData.user.id;
+          }
+        } catch (authErr) {
+          console.error('Anonymous sign-in failed:', authErr);
+        }
       }
+      
+      // Save to Supabase if we have a real user ID
+      if (actualUserId && !actualUserId.startsWith('temp_')) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: actualUserId,
+            email: email || '',
+            name: name.trim(),
+            purpose: purpose,
+          }, {
+            onConflict: 'id'
+          });
+
+        if (updateError) {
+          console.error('Profile save error (non-blocking):', updateError);
+        }
+      }
+      
+      // Always save to localStorage as backup
+      localStorage.setItem('userProfile', JSON.stringify({ 
+        name: name.trim(), 
+        purpose, 
+        email: email || '' 
+      }));
     } catch (err: any) {
       // Silently fail - just log it
       console.error('Profile save failed (non-blocking):', err);
+      // Still save to localStorage
+      localStorage.setItem('userProfile', JSON.stringify({ 
+        name: name.trim(), 
+        purpose, 
+        email: email || '' 
+      }));
     }
     
     // Always proceed regardless of save result
