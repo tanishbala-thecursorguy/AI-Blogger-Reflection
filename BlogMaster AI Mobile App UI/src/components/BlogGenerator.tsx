@@ -112,8 +112,13 @@ export function BlogGenerator({ onBack, onNavigate }: BlogGeneratorProps) {
         handleSaveBlog(firstContent, false);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to generate blog. Please try again.');
+      const errorMessage = err.message || 'Failed to generate blog. Please try again.';
+      setError(errorMessage);
       console.error('Error generating blog:', err);
+      // Show detailed error in console for debugging
+      if (errorMessage.includes('API key')) {
+        console.error('💡 Tip: Make sure VITE_GROQ_API_KEY is set in .env.local and restart the dev server');
+      }
     } finally {
       setIsGenerating(false);
     }

@@ -36,33 +36,60 @@ You must generate content in this EXACT format:
 // Helper function to call Groq API
 async function callGroqAPI(prompt: string, systemPrompt: string = '', maxTokens: number = 4000) {
   if (!GROQ_API_KEY) {
-    throw new Error('Groq API key is required. Please set VITE_GROQ_API_KEY in your environment variables.');
+    throw new Error('Groq API key is required. Please set VITE_GROQ_API_KEY in your .env.local file and restart the dev server.');
   }
 
-  const response = await fetch(GROQ_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${GROQ_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: [
-        ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
-        { role: 'user', content: prompt },
-      ],
-      max_tokens: maxTokens,
-      temperature: 0.7,
-    }),
-  });
+  try {
+    const response = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [
+          ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+          { role: 'user', content: prompt },
+        ],
+        max_tokens: maxTokens,
+        temperature: 0.7,
+      }),
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
-    throw new Error(`Groq API error: ${error.error?.message || 'Failed to generate content'}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { error: { message: errorText || 'Unknown error' } };
+      }
+      
+      const errorMessage = errorData.error?.message || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      console.error('Groq API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+      });
+      throw new Error(`Groq API error: ${errorMessage}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.choices || !data.choices[0]?.message?.content) {
+      console.error('Invalid API response:', data);
+      throw new Error('Invalid response from API. No content generated.');
+    }
+    
+    return data.choices[0].message.content;
+  } catch (error: any) {
+    if (error.message?.includes('Groq API')) {
+      throw error;
+    }
+    console.error('API call error:', error);
+    throw new Error(`Failed to generate content: ${error.message || 'Network error'}`);
   }
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
 }
 
 // Generate multiple variants (default 3)
