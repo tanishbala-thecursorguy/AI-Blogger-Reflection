@@ -222,12 +222,12 @@ export function AIEditor({ onBack }: AIEditorProps) {
 
         {/* Enhanced Content Preview */}
         {enhancedContent && enhancedContent !== content && (
-          <Card className="bg-white border-white/10 p-5 rounded-2xl space-y-3">
+          <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-black">Enhanced Content</Label>
+              <Label className="text-white">Enhanced Content</Label>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-green-400" />
-                <span className="text-black/60 text-sm">Enhanced</span>
+                <span className="text-white/60 text-sm">Enhanced</span>
               </div>
             </div>
             <Textarea
@@ -236,7 +236,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
                 setEnhancedContent(e.target.value);
                 setContent(e.target.value);
               }}
-              className="bg-black border-white/10 text-black min-h-[300px] rounded-xl font-mono text-sm"
+              className="bg-black border-white/10 text-white placeholder:text-white/40 min-h-[300px] rounded-xl font-mono text-sm"
             />
             <div className="flex gap-2">
               <Button
@@ -251,7 +251,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
                 }}
                 size="sm"
                 variant="outline"
-                className="bg-black border-black/20 text-black hover:bg-black/5 rounded-lg"
+                className="bg-black border-white/20 text-white hover:bg-white/10 rounded-lg"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download
@@ -264,7 +264,7 @@ export function AIEditor({ onBack }: AIEditorProps) {
                 }}
                 size="sm"
                 variant="outline"
-                className="bg-black border-black/20 text-black hover:bg-black/5 rounded-lg"
+                className="bg-black border-white/20 text-white hover:bg-white/10 rounded-lg"
               >
                 <Copy className="w-4 h-4 mr-2" />
                 Copy
