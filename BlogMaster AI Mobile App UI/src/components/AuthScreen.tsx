@@ -99,8 +99,25 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
             // User is logged in immediately (email confirmation disabled)
             onComplete(data.user.email || email, data.user.id);
           } else {
-            // Email confirmation required
-            throw new Error('Please check your email to confirm your account before signing in.');
+            // Email confirmation required - try to auto-login anyway
+            // Sometimes Supabase allows this even without confirmation
+            try {
+              const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+                email: email.trim(),
+                password: password,
+              });
+
+              if (signInData?.session && signInData?.user) {
+                // Successfully logged in even without email confirmation
+                onComplete(signInData.user.email || email, signInData.user.id);
+              } else {
+                // Email confirmation truly required - show helpful message with fix
+                throw new Error('Email confirmation is enabled. To fix: Go to Supabase Dashboard → Authentication → Providers → Email → Uncheck "Confirm email" → Save. Then try signing up again.');
+              }
+            } catch (signInErr: any) {
+              // If sign in fails, show helpful message
+              throw new Error('Email confirmation required. Fix: Supabase Dashboard → Authentication → Providers → Email → Uncheck "Confirm email" → Save. Then try again.');
+            }
           }
         }
       }
