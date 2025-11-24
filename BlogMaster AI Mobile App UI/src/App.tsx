@@ -45,6 +45,16 @@ export default function App() {
   const [userEmail, setUserEmail] = useState('');
   const [userId, setUserId] = useState<string | null>(null);
 
+  // Generate or get temporary user ID from localStorage
+  const getOrCreateTempUserId = () => {
+    let tempId = localStorage.getItem('tempUserId');
+    if (!tempId) {
+      tempId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('tempUserId', tempId);
+    }
+    return tempId;
+  };
+
   // Check for existing Supabase session on mount
   useEffect(() => {
     const checkSession = async () => {
@@ -74,19 +84,26 @@ export default function App() {
             setCurrentScreen('login-survey');
           }
         } else {
+          // No session - go directly to survey with temp ID
+          const tempId = getOrCreateTempUserId();
+          setUserId(tempId);
+          setUserEmail('');
+          
           // Check if onboarding was completed
           const onboardingCompleted = localStorage.getItem('onboardingCompleted');
           if (onboardingCompleted === 'true') {
-            setCurrentScreen('auth');
+            setCurrentScreen('login-survey');
           } else {
             setCurrentScreen('onboarding');
           }
         }
       } catch (error) {
         console.error('Error checking session:', error);
-        // Default to auth screen on error
+        // Default to survey with temp ID
+        const tempId = getOrCreateTempUserId();
+        setUserId(tempId);
         const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-        setCurrentScreen(onboardingCompleted === 'true' ? 'auth' : 'onboarding');
+        setCurrentScreen(onboardingCompleted === 'true' ? 'login-survey' : 'onboarding');
       }
     };
 
@@ -95,10 +112,12 @@ export default function App() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
-        setUserId(null);
+        // On logout, use temp ID and go to survey
+        const tempId = getOrCreateTempUserId();
+        setUserId(tempId);
         setUserEmail('');
         setUserName('User');
-        setCurrentScreen('auth');
+        setCurrentScreen('login-survey');
       } else if (event === 'SIGNED_IN' && session?.user) {
         setUserId(session.user.id);
         setUserEmail(session.user.email || '');
@@ -188,11 +207,15 @@ export default function App() {
         <OnboardingScreens 
           onComplete={() => {
             localStorage.setItem('onboardingCompleted', 'true');
-            navigate('auth');
+            // Ensure we have a userId before going to survey
+            if (!userId) {
+              const tempId = getOrCreateTempUserId();
+              setUserId(tempId);
+            }
+            navigate('login-survey');
           }} 
         />
       )}
-      {currentScreen === 'auth' && <AuthScreen onComplete={handleLogin} />}
       {currentScreen === 'login-survey' && userId && (
         <LoginSurvey 
           email={userEmail}
