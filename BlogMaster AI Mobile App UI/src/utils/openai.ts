@@ -1,13 +1,9 @@
 // API Configuration:
-// - Groq API (FREE): Used for all text generation (blogs, rewriting, SEO, etc.)
-//   Set VITE_GROQ_API_KEY in .env.local (get free at https://console.groq.com/)
-// - OpenAI API: Used ONLY for image generation (DALL-E)
+// - OpenAI API: Used for all text generation (blogs, rewriting, SEO, etc.) and image generation (DALL-E)
 //   Set VITE_OPENAI_API_KEY in .env.local
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
-
-const GROQ_MODEL = 'llama-3.1-8b-instant'; // Fast and free
+const OPENAI_MODEL = 'gpt-4o-mini'; // Fast and efficient model
 
 const BLOG_FORMAT_INSTRUCTIONS = `
 # Title (H1)
@@ -165,8 +161,8 @@ async function generateMultipleVariants(
     try {
       const variantPrompt = `${basePrompt}\n\nVARIANT ${i + 1} INSTRUCTION: ${variantInstructions[i] || 'Generate a unique variant.'}`;
       
-      // Use Groq API only
-      let result = await callGroqAPI(variantPrompt, systemPrompt, wordCount);
+      // Use OpenAI API
+      let result = await callOpenAI(variantPrompt, systemPrompt, wordCount);
       
       if (result) {
         variants.push(result);
@@ -186,7 +182,7 @@ async function generateMultipleVariants(
   if (variants.length === 0) {
     // Try once more without variant instructions
     try {
-      let result = await callGroqAPI(basePrompt, systemPrompt, wordCount);
+      let result = await callOpenAI(basePrompt, systemPrompt, wordCount);
       if (result) {
         variants.push(result);
         // Duplicate to have at least 2 variants
@@ -201,29 +197,29 @@ async function generateMultipleVariants(
   
   // Ensure we have at least one variant
   if (variants.length === 0) {
-    throw new Error('Failed to generate any variants. Please check your Groq API key and try again.');
+    throw new Error('Failed to generate any variants. Please check your OpenAI API key and try again.');
   }
   
   return variants;
 }
 
-// Helper function to call Groq API
-async function callGroqAPI(prompt: string, systemPrompt: string, wordCount?: number): Promise<string | null> {
-  if (!GROQ_API_KEY) {
-    throw new Error('Groq API key is required. Please set VITE_GROQ_API_KEY in your .env.local file. Get a free API key at https://console.groq.com/');
+// Helper function to call OpenAI API
+async function callOpenAI(prompt: string, systemPrompt: string, wordCount?: number): Promise<string | null> {
+  if (!OPENAI_API_KEY) {
+    throw new Error('OpenAI API key is required. Please set VITE_OPENAI_API_KEY in your .env.local file.');
   }
   
   const maxTokens = wordCount ? calculateMaxTokens(wordCount) : 4000;
   
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: GROQ_MODEL,
+        model: OPENAI_MODEL,
         messages: [
           {
             role: 'system',
@@ -235,7 +231,7 @@ async function callGroqAPI(prompt: string, systemPrompt: string, wordCount?: num
           },
         ],
         temperature: 0.7,
-        max_tokens: Math.min(maxTokens, 16384), // Groq has a max limit
+        max_tokens: Math.min(maxTokens, 16384),
       }),
     });
 
@@ -243,28 +239,26 @@ async function callGroqAPI(prompt: string, systemPrompt: string, wordCount?: num
       const data = await response.json();
       const content = data.choices[0]?.message?.content?.trim();
       if (content) {
-        console.log('Groq API: Successfully generated content');
+        console.log('OpenAI API: Successfully generated content');
         return content;
       }
     } else {
       const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
-      console.error('Groq API error:', response.status, errorData);
+      console.error('OpenAI API error:', response.status, errorData);
       // If rate limited or unauthorized, don't retry
       if (response.status === 401 || response.status === 429) {
-        throw new Error(`Groq API error: ${errorData.error?.message || errorData.error || 'Authentication or rate limit error'}`);
+        throw new Error(`OpenAI API error: ${errorData.error?.message || errorData.error || 'Authentication or rate limit error'}`);
       }
     }
   } catch (error: any) {
-    console.error('Groq API error:', error);
+    console.error('OpenAI API error:', error);
     // Re-throw if it's an auth/rate limit error
-    if (error.message?.includes('Groq API error')) {
+    if (error.message?.includes('OpenAI API error')) {
       throw error;
     }
   }
   return null;
 }
-
-// NOTE: Hugging Face API removed - using Groq API only for all text generation
 
 // Helper function to get tone/style instructions based on writing style
 function getStyleInstructions(style: string): string {
@@ -401,14 +395,14 @@ KEY RULES:
   let result: string | null = null;
   
   try {
-    result = await callGroqAPI(prompt, systemPrompt, wordCount);
+    result = await callOpenAI(prompt, systemPrompt, wordCount);
   } catch (error: any) {
-    console.error('Groq API failed:', error?.message || error);
-    throw new Error(`Failed to generate blog: ${error?.message || 'Groq API error'}. Please check your Groq API key.`);
+    console.error('OpenAI API failed:', error?.message || error);
+    throw new Error(`Failed to generate blog: ${error?.message || 'OpenAI API error'}. Please check your OpenAI API key.`);
   }
 
   if (!result) {
-    throw new Error('Failed to generate blog. Please check your Groq API key and try again.');
+    throw new Error('Failed to generate blog. Please check your OpenAI API key and try again.');
   }
 
   return [result]; // Return as array for consistency
@@ -458,10 +452,10 @@ Now rewrite the blog post with these improvements.`;
   }
   
   // Fallback: single generation
-  let result = await callGroqAPI(prompt, systemPrompt, originalWordCount);
+  let result = await callOpenAI(prompt, systemPrompt, originalWordCount);
   
   if (!result) {
-    throw new Error('Failed to rewrite blog. Please check your Groq API key and try again.');
+    throw new Error('Failed to rewrite blog. Please check your OpenAI API key and try again.');
   }
 
   return [result];
@@ -496,11 +490,11 @@ KEY RULES:
 4. Topics should vary in format (how-to, lists, comparisons, guides, etc.)
 5. Make topics compelling and valuable to readers`;
 
-  let result = await callGroqAPI(prompt, systemPrompt);
+  let result = await callOpenAI(prompt, systemPrompt);
   
   if (!result) {
     // Fallback: Generate simple topic ideas
-    console.log('Groq API failed, using fallback topics');
+    console.log('OpenAI API failed, using fallback topics');
     return Array.from({ length: count }, (_, i) => 
       `How to Master ${niche}: Complete Guide for ${i + 1 === 1 ? 'Beginners' : i + 1 === 2 ? 'Professionals' : 'Experts'}`
     );
@@ -612,10 +606,10 @@ RULES:
 CRITICAL: Never include generic words or unrelated terms. Every keyword must be about the given topic.`;
 
   // Try Groq first, then Hugging Face
-  let result = await callGroqAPI(prompt, systemPrompt);
+  let result = await callOpenAI(prompt, systemPrompt);
   
   if (!result) {
-    throw new Error('Failed to generate keywords. Please check your Groq API key and try again.');
+    throw new Error('Failed to generate keywords. Please check your OpenAI API key and try again.');
   }
   
   // If result is empty, use fallback
@@ -797,11 +791,11 @@ Remember to:
 
   const systemPrompt = `You are an expert video script writer who creates engaging, conversational scripts for social media platforms. You excel at creating hooks, adding humor naturally, and structuring content for maximum engagement. Always include timestamps, visual cues, and make the script feel natural and fun.`;
 
-  // Use Groq API only
-  let result = await callGroqAPI(prompt, systemPrompt);
+  // Use OpenAI API only
+  let result = await callOpenAI(prompt, systemPrompt);
   
   if (!result) {
-    throw new Error('Failed to generate video script. Please check your Groq API key and try again.');
+    throw new Error('Failed to generate video script. Please check your OpenAI API key and try again.');
   }
 
   return result;
@@ -846,7 +840,7 @@ Return the outline in this exact JSON format:
   for (let i = 0; i < 3; i++) {
     const variantPrompt = `${prompt}\n\nVARIANT ${i + 1}: Create ${i === 0 ? 'a comprehensive, detailed outline' : i === 1 ? 'an alternative structure with different sections' : 'a unique approach with varied headings'}.`;
     
-    let result = await callGroqAPI(variantPrompt, systemPrompt);
+    let result = await callOpenAI(variantPrompt, systemPrompt);
     
     if (result) {
       try {
@@ -943,10 +937,10 @@ Now enhance the content following this exact format:`;
   // Estimate word count from original content
   const originalWordCount = content.split(/\s+/).length;
   
-  let result = await callGroqAPI(prompt, systemPrompt, originalWordCount);
+  let result = await callOpenAI(prompt, systemPrompt, originalWordCount);
   
   if (!result) {
-    throw new Error('Failed to enhance content. Please check your Groq API key and try again.');
+    throw new Error('Failed to enhance content. Please check your OpenAI API key and try again.');
   }
 
   // Generate multiple variants
@@ -1021,10 +1015,10 @@ Important:
 
   const wordCount = Math.ceil(content.split(/\s+/).length * 1.2); // Estimate for API call
   
-  let result = await callGroqAPI(prompt, systemPrompt, wordCount);
+  let result = await callOpenAI(prompt, systemPrompt, wordCount);
   
   if (!result) {
-    throw new Error('Failed to analyze content. Please check your Groq API key and try again.');
+    throw new Error('Failed to analyze content. Please check your OpenAI API key and try again.');
   }
 
   // Try to parse JSON response
