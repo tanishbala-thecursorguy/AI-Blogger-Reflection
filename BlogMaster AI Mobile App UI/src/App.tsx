@@ -149,10 +149,13 @@ export default function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setUserId(null);
-    setUserEmail('');
+    // Create temp user for survey
+    const tempUserId = `temp-${Date.now()}`;
+    const tempEmail = `user-${Date.now()}@temp.com`;
+    setUserId(tempUserId);
+    setUserEmail(tempEmail);
     setUserName('User');
-    setCurrentScreen('auth');
+    setCurrentScreen('login-survey');
   };
 
   return (
