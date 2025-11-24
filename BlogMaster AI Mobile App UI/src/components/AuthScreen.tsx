@@ -32,17 +32,22 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
 
         if (signInError) {
           // Better error messages
-          if (signInError.message.includes('Invalid login credentials')) {
+          if (signInError.message.includes('Invalid login credentials') || signInError.message.includes('invalid')) {
             throw new Error('Invalid email or password. Please check your credentials and try again.');
-          } else if (signInError.message.includes('Email not confirmed')) {
+          } else if (signInError.message.includes('Email not confirmed') || signInError.message.includes('not confirmed')) {
             throw new Error('Please check your email and confirm your account before signing in.');
           } else {
-            throw signInError;
+            throw new Error(signInError.message || 'Login failed. Please try again.');
           }
         }
         
-        if (data.user) {
+        if (data.user && data.session) {
           onComplete(data.user.email || email, data.user.id);
+        } else if (data.user && !data.session) {
+          // Email confirmation required
+          throw new Error('Please check your email and confirm your account before signing in.');
+        } else {
+          throw new Error('Login failed. Please try again.');
         }
       } else {
         // Sign up - disable email confirmation check temporarily
