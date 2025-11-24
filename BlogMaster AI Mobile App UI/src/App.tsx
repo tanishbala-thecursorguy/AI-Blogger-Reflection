@@ -78,10 +78,15 @@ export default function App() {
           const onboardingCompleted = localStorage.getItem('onboardingCompleted');
           if (onboardingCompleted === 'true') {
             setCurrentScreen('auth');
+          } else {
+            setCurrentScreen('onboarding');
           }
         }
       } catch (error) {
         console.error('Error checking session:', error);
+        // Default to auth screen on error
+        const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+        setCurrentScreen(onboardingCompleted === 'true' ? 'auth' : 'onboarding');
       }
     };
 
@@ -94,31 +99,29 @@ export default function App() {
         setUserEmail('');
         setUserName('User');
         setCurrentScreen('auth');
-      } else if (session?.user) {
+      } else if (event === 'SIGNED_IN' && session?.user) {
         setUserId(session.user.id);
         setUserEmail(session.user.email || '');
         
-        // If signed in and not already on home or survey, check profile and navigate
-        if (currentScreen === 'auth' || currentScreen === 'onboarding') {
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
+        // Always check profile when signed in
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
 
-            if (profile?.purpose) {
-              setUserName(profile.name || session.user.email?.split('@')[0] || 'User');
-              setCurrentScreen('home');
-            } else {
-              setUserName(session.user.email?.split('@')[0] || 'User');
-              setCurrentScreen('login-survey');
-            }
-          } catch (error) {
-            console.error('Error in auth state change:', error);
+          if (profile?.purpose) {
+            setUserName(profile.name || session.user.email?.split('@')[0] || 'User');
+            setCurrentScreen('home');
+          } else {
             setUserName(session.user.email?.split('@')[0] || 'User');
             setCurrentScreen('login-survey');
           }
+        } catch (error) {
+          console.error('Error in auth state change:', error);
+          setUserName(session.user.email?.split('@')[0] || 'User');
+          setCurrentScreen('login-survey');
         }
       }
     });
