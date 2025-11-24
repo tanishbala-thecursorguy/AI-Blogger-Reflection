@@ -50,9 +50,13 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
       const variants = await generateSEOOutline(topic.trim(), []);
       
       if (Array.isArray(variants) && variants.length > 0) {
-        setOutlineVariants(variants);
+        // Add expanded property to all nodes
+        const variantsWithExpanded = variants.map(variant => 
+          variant.map(node => ({ ...node, expanded: false }))
+        );
+        setOutlineVariants(variantsWithExpanded);
         setSelectedOutlineVariant(0);
-        setOutline(variants[0] || []);
+        setOutline(variantsWithExpanded[0] || []);
       } else {
         throw new Error('Failed to generate outline structure');
       }
@@ -80,9 +84,13 @@ export function SEOOutlineGenerator({ onBack, onNavigate }: SEOOutlineGeneratorP
     try {
       const variants = await generateSEOOutline(topic.trim(), selectedKeywords);
       if (Array.isArray(variants) && variants.length > 0) {
-        setOutlineVariants(variants);
+        // Add expanded property to all nodes
+        const variantsWithExpanded = variants.map(variant => 
+          variant.map(node => ({ ...node, expanded: false }))
+        );
+        setOutlineVariants(variantsWithExpanded);
         setSelectedOutlineVariant(0);
-        setOutline(variants[0] || []);
+        setOutline(variantsWithExpanded[0] || []);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to regenerate outline. Please try again.');

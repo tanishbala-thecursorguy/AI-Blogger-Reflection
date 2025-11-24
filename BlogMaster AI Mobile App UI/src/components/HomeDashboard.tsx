@@ -5,7 +5,7 @@ import { Screen } from '../App';
 import { supabase } from '../lib/supabase';
 import {
   FileText,
-  ImageIcon,
+  Lightbulb,
   ListTree,
   RefreshCw,
   Target,
@@ -24,7 +24,7 @@ interface HomeDashboardProps {
 
 const quickActions = [
   { icon: FileText, label: 'Generate Blog', screen: 'blog-generator' as Screen },
-  { icon: ImageIcon, label: 'Image Generation', screen: 'image-generator' as Screen },
+  { icon: Lightbulb, label: 'Topic Ideas', screen: 'tasks' as Screen },
   { icon: ListTree, label: 'SEO Outline', screen: 'seo-outline' as Screen },
   { icon: RefreshCw, label: 'Rewrite Blog', screen: 'blog-rewriter' as Screen },
   { icon: Target, label: 'Competitor Analysis', screen: 'competitor-analysis' as Screen },
@@ -65,7 +65,7 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
 
       if (blogs) {
         const formattedBlogs: Blog[] = blogs.map(blog => ({
-          id: parseInt(blog.id) || Date.now(),
+          id: String(blog.id || Date.now()),
           title: blog.title,
           date: new Date(blog.created_at).toLocaleDateString('en-US', {
             month: 'short',
@@ -177,54 +177,54 @@ export function HomeDashboard({ userName, onNavigate }: HomeDashboardProps) {
           </div>
 
           {recentBlogs.length > 0 ? (
-            <div className="space-y-3">
-              {recentBlogs.map((blog) => (
-                <Card
-                  key={blog.id}
+          <div className="space-y-3">
+            {recentBlogs.map((blog) => (
+              <Card
+                key={blog.id}
                   className="bg-black border-white/10 p-4 rounded-2xl hover:bg-black transition-colors cursor-pointer"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <h3 className="text-white text-sm mb-2">{blog.title}</h3>
-                        <div className="flex items-center gap-3 text-white/60 text-xs">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {blog.date}
-                          </div>
-                          <div>•</div>
-                          <div>{blog.words} words</div>
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <h3 className="text-white text-sm mb-2">{blog.title}</h3>
+                      <div className="flex items-center gap-3 text-white/60 text-xs">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {blog.date}
                         </div>
-                      </div>
-                      <div
-                        className={`px-2 py-1 rounded-lg text-xs ${
-                          blog.status === 'Published'
-                            ? 'bg-black text-white'
-                            : blog.status === 'Draft'
-                            ? 'bg-black text-white/60'
-                            : 'bg-black text-white/80'
-                        }`}
-                      >
-                        {blog.status}
+                        <div>•</div>
+                        <div>{blog.words} words</div>
                       </div>
                     </div>
+                    <div
+                      className={`px-2 py-1 rounded-lg text-xs ${
+                        blog.status === 'Published'
+                            ? 'bg-black text-white'
+                          : blog.status === 'Draft'
+                            ? 'bg-black text-white/60'
+                            : 'bg-black text-white/80'
+                      }`}
+                    >
+                      {blog.status}
+                    </div>
+                  </div>
 
-                    <Button
+                  <Button
                       onClick={() => {
                         // Store blog content for editing
                         localStorage.setItem('editingBlog', JSON.stringify(blog));
                         onNavigate('blog-generator');
                       }}
-                      variant="ghost"
+                    variant="ghost"
                       className="w-full h-9 bg-black hover:bg-black text-white rounded-xl"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Continue Editing
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Continue Editing
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
           ) : (
             <Card className="bg-black border-white/10 p-8 rounded-2xl text-center">
               <FileText className="w-12 h-12 text-white/20 mx-auto mb-3" />

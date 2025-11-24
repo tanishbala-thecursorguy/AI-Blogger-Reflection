@@ -108,7 +108,7 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
           const mainContent = doc.querySelector('main, article, .content, .post-content, .entry-content') || doc.body;
           
           // Get text content
-          contentToAnalyze = mainContent.innerText || mainContent.textContent || '';
+          contentToAnalyze = (mainContent as HTMLElement).innerText || mainContent.textContent || '';
           
           // Clean up extra whitespace
           contentToAnalyze = contentToAnalyze.replace(/\s+/g, ' ').trim();
@@ -169,7 +169,6 @@ export function CompetitorAnalysis({ onBack }: CompetitorAnalysisProps) {
         : '';
 
       const variants = await rewriteBlog(originalContent, {
-        style: 'Professional',
         tone: 'Authoritative',
         improvements: ['Improve SEO', 'Improve Readability', 'Expand', ...improvements.slice(0, 2)],
       });

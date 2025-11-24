@@ -62,7 +62,7 @@ export function ImageGenerator({ onBack }: ImageGeneratorProps) {
 
     try {
       const result = await generateImage(prompt.trim(), {
-        style: selectedStyle,
+        style: selectedStyle as 'photographic' | 'stock-photo' | 'minimal' | 'illustration' | 'abstract',
         size: selectedSize,
         quality: selectedQuality,
       });
