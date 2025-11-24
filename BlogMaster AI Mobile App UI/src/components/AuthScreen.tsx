@@ -30,84 +30,35 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
           password: password,
         });
 
-        if (signInError) {
-          // Better error messages
-          if (signInError.message.includes('Invalid login credentials') || signInError.message.includes('invalid')) {
-            throw new Error('Invalid email or password. Please check your credentials and try again.');
-          } else if (signInError.message.includes('Email not confirmed') || signInError.message.includes('not confirmed')) {
-            throw new Error('Please check your email and confirm your account before signing in.');
-          } else {
-            throw new Error(signInError.message || 'Login failed. Please try again.');
-          }
-        }
-        
-        if (data.user && data.session) {
+        if (signInError) throw signInError;
+        if (data.user) {
           onComplete(data.user.email || email, data.user.id);
-        } else if (data.user && !data.session) {
-          // Email confirmation required
-          throw new Error('Please check your email and confirm your account before signing in.');
-        } else {
-          throw new Error('Login failed. Please try again.');
         }
       } else {
-        // Sign up - simple, no verification needed
+        // Sign up
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: email.trim(),
           password: password,
           options: {
-            emailRedirectTo: window.location.origin,
             data: {
               name: username.trim() || email.split('@')[0],
             },
           },
         });
 
-        if (signUpError) {
-          if (signUpError.message.includes('already registered') || signUpError.message.includes('already exists') || signUpError.message.includes('User already registered')) {
-            throw new Error('This email is already registered. Please sign in instead.');
-          } else {
-            throw new Error(signUpError.message || 'Sign up failed. Please try again.');
-          }
-        }
-        
-        // Immediately try to login after signup
+        if (signUpError) throw signUpError;
         if (data.user) {
           // Create profile
-          try {
-            await new Promise(resolve => setTimeout(resolve, 200));
-            
-            await supabase
-              .from('profiles')
-              .upsert({
-                id: data.user.id,
-                email: email.trim(),
-                name: username.trim() || email.split('@')[0],
-              }, {
-                onConflict: 'id'
-              });
-          } catch (profileErr) {
-            console.log('Profile handling:', profileErr);
-          }
-          
-          // If session exists, use it immediately
-          if (data.session) {
-            onComplete(data.user.email || email, data.user.id);
-          } else {
-            // Always try to login immediately after signup
-            const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: data.user.id,
               email: email.trim(),
-              password: password,
+              name: username.trim() || email.split('@')[0],
             });
 
-            if (signInData?.session && signInData?.user) {
-              onComplete(signInData.user.email || email, signInData.user.id);
-            } else {
-              // If login fails, just use the user anyway - no verification needed
-              onComplete(data.user.email || email, data.user.id);
-            }
-          }
-        } else {
-          throw new Error('Sign up failed. Please try again.');
+          if (profileError) console.error('Profile creation error:', profileError);
+          onComplete(data.user.email || email, data.user.id);
         }
       }
     } catch (err: any) {

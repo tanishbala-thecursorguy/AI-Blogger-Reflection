@@ -54,8 +54,7 @@
       outDir: 'dist',
     },
     server: {
-      port: 3003,
+      port: 3001,
       open: true,
-      host: true,
     },
   });
