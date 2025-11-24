@@ -330,17 +330,17 @@ export function BlogRewriter({ onBack }: BlogRewriterProps) {
             </Card>
 
             {/* After */}
-            <Card className="bg-white border-white/10 p-5 rounded-2xl space-y-2">
+            <Card className="bg-black border-white/10 p-5 rounded-2xl space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-black/60 text-sm">Rewritten</span>
-                <span className="text-black/60 text-sm">
+                <span className="text-white/60 text-sm">Rewritten</span>
+                <span className="text-white/60 text-sm">
                   {rewrittenText.split(' ').length} words
                 </span>
               </div>
               <Textarea
                 value={rewrittenText}
                 onChange={(e) => setRewrittenText(e.target.value)}
-                className="bg-black border-white/10 text-black min-h-[400px] rounded-xl font-mono text-sm"
+                className="bg-black border-white/10 text-white placeholder:text-white/40 min-h-[400px] rounded-xl font-mono text-sm"
                 placeholder="Rewritten content will appear here..."
               />
             </Card>
