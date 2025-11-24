@@ -42,8 +42,11 @@ export function ExportMenu({ onBack }: ExportMenuProps) {
     setVideoScript('');
     
     try {
-      const script = await generateVideoScript(blogContent);
-      setVideoScript(script);
+      const scripts = await generateVideoScript(blogContent);
+      // generateVideoScript returns an array of variants
+      setVideoScriptVariants(scripts);
+      setSelectedVariant(0);
+      setVideoScript(scripts[0] || '');
     } catch (err: any) {
       setError(err.message || 'Failed to generate video script. Please try again.');
       console.error('Error generating video script:', err);
