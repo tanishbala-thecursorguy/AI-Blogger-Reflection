@@ -106,6 +106,22 @@ export function SettingsPage({ onBack, onLogout, onNavigate }: SettingsPageProps
   useEffect(() => {
     if (defaultTone) {
       localStorage.setItem('defaultTone', defaultTone);
+      // Also save to Supabase profile
+      const saveTone = async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { error } = await supabase
+              .from('profiles')
+              .update({ default_tone: defaultTone })
+              .eq('id', user.id);
+            if (error) console.error('Error saving default tone:', error);
+          }
+        } catch (err) {
+          console.error('Error in saveTone:', err);
+        }
+      };
+      saveTone();
     }
   }, [defaultTone]);
 
